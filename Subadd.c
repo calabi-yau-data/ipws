@@ -864,7 +864,7 @@ void Bmin2BaseUCn(int *d, int *v, int *bmin,  int *base, int *nuc)
      Base_List *BL; Init_BaseList(&BL,d); n=&(BL->v[*v]); i=*n-1;
 
      if(*bmin<=BL->base[*v][i])
-     {	while(*bmin <= (BL->base[*v][i-1])) if(--i==0) break;
+     {	while(i > 0 && *bmin <= (BL->base[*v][i-1])) --i;
      }
      else
      {	do AuxNextGoodBase(v,&nx,BL); while(*bmin > (BL->base[*v][++i]));
@@ -875,7 +875,7 @@ void NUCtoBase(int *d, int *v, int *nuc, int *Base)
 {    int i, *n, nx = NX(*d,*v);
      Base_List *BL; Init_BaseList(&BL,d); n=&(BL->v[*v]); i=*n-1;
      if(*nuc<=BL->nuc[*v][i])
-     {	while(*nuc <= (BL->nuc[*v][i-1])) if(--i==0) break;
+     {	while(i > 0 && *nuc <= (BL->nuc[*v][i-1])) --i;
      }
      else
      {	do AuxNextGoodBase(v,&nx,BL); while(*nuc > (BL->nuc[*v][++i]));
@@ -899,7 +899,7 @@ void UNIT_Bmin2BaseUCn(int *d, int *v, int *bmin,  int *base, int *nuc)
 {    int i, *n, nx = UNIT_NX(*d,*v);
      Base_List *BL; UNIT_Init_BaseList(&BL,d); n=&(BL->v[*v]); i=*n-1;
      if(*bmin<=BL->base[*v][i])
-     {	while(*bmin <= (BL->base[*v][i-1])) if(--i==0) break;
+     {	while(i > 0 && *bmin <= (BL->base[*v][i-1])) --i;
      }
      else
      {	do AuxNextGoodBase(v,&nx,BL); while(*bmin > (BL->base[*v][++i]));
@@ -910,7 +910,7 @@ void UNIT_NUCtoBase(int *d, int *v, int *nuc, int *Base)
 {    int i, *n, nx = UNIT_NX(*d,*v);
      Base_List *BL; UNIT_Init_BaseList(&BL,d); n=&(BL->v[*v]); i=*n-1;
      if(*nuc<=BL->nuc[*v][i])
-     {	while(*nuc <= (BL->nuc[*v][i-1])) if(--i==0) break;
+     {	while(i > 0 && *nuc <= (BL->nuc[*v][i-1])) --i;
      }
      else
      {	do AuxNextGoodBase(v,&nx,BL); while(*nuc > (BL->nuc[*v][++i]));
