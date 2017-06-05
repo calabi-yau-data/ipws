@@ -45,10 +45,10 @@ cws:    cws.o $(OBJECTS) LG.o Global.h LG.h
 
 nef:    nef.o $(OBJECTS) $(NEF_OBJ) Global.h 
 	$(CC) $(CFLAGS) -o nef.x nef.o $(OBJECTS) $(NEF_OBJ)
-	
+
 mori:   mori.o  $(OBJECTS) $(MORI_OBJ) LG.o Mori.h 
 	$(CC) $(CFLAGS) -o mori.x mori.o $(OBJECTS) $(MORI_OBJ) LG.o
-	
+
 
 
 #			     D E P E N D E N C I E S
