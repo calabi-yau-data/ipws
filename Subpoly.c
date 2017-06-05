@@ -1,4 +1,5 @@
 #include "Global.h"
+// Must come after Global.h
 #include "Subpoly.h"
 #include "Rat.h"
 
