@@ -86,6 +86,7 @@ void Init_New_List(NF_List *S)
      S->PPE = (PPEnt *) malloc( ADD_LIST_LENGTH * sizeof(PPEnt) );
      S->SLp = (int   *) malloc( SL_Nmax * sizeof(int)   );
      S->NewNF = (unsigned char *) malloc( S->ANB * sizeof(char) );
+     S->NC = 0;
      assert((S->PE!=NULL)&&(S->PPE!=NULL)&&(S->SLp!=NULL)&&(S->NewNF!=NULL));
 #ifdef  __DECC
         /* printf("NULL=%p S->PE=%p S->NewNF=%p\n",NULL,S->PE,S->NewNF); */
