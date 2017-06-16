@@ -276,26 +276,29 @@ void Cancel(Equation *q, int d)
 int ComputeAndAddAverageWeight(Equation *q, int n, RgcClassData *X)
 {
     int i, j;
-    if (X->q[n].ne < X->d - n)
+    EqList *el = &X->q[n];
+
+    if (el->ne < X->d - n)
         return 0;
+
     q->c = -1;
-    for (i = 0; i < X->q[n].ne; i++) {
-        if (X->q[n].e[i].c >= 0) {
+    for (i = 0; i < el->ne; i++) {
+        if (el->e[i].c >= 0) {
             PrintQ(n, X);
             exit(0);
         }
-        q->c = -Flcm(-q->c, -X->q[n].e[i].c);
+        q->c = -Flcm(-q->c, -el->e[i].c);
     }
     for (j = 0; j < X->d; j++) {
         q->a[j] = 0;
-        for (i = 0; i < X->q[n].ne; i++)
-            q->a[j] += X->q[n].e[i].a[j] * (q->c / X->q[n].e[i].c);
+        for (i = 0; i < el->ne; i++)
+            q->a[j] += el->e[i].a[j] * (q->c / el->e[i].c);
         if (q->a[j] <= 0) {
             assert(q->a[j] == 0);
             return 0;
         }
     }
-    q->c *= X->q[n].ne;
+    q->c *= el->ne;
     Cancel(q, X->d);
     RgcAddweight(*q, X);
     return 1;
