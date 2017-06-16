@@ -60,6 +60,8 @@ void RgcInsertat(Equation ww, int position, RgcClassData *X)
 void RgcAddweight(Equation wn, RgcClassData *X)
 {
     int i, j, p, n0, n1, k;
+
+    // Check buffer size
     if (X->wnum >= WDIM) {
         if (X->wnum > WDIM)
             return;
@@ -70,17 +72,24 @@ void RgcAddweight(Equation wn, RgcClassData *X)
             return;
         }
     }
+
+    // Skip weight systems containing a weight of 1/2
     for (i = 0; i < X->d; i++)
         if (2 * wn.a[i] == -wn.c)
             return;
+
+    // Skip weight systems containing a weight of 1
     for (i = 0; i < X->d; i++)
         if (wn.a[i] == -wn.c)
             return;
+
+    // Skip weight systems containing two weights with a sum of 1
     if (!X->allow11)
         for (i = 0; i < X->d - 1; i++)
             for (j = i + 1; j < X->d; j++)
                 if (wn.a[i] + wn.a[j] == -wn.c)
                     return;
+
     X->candnum++;
     for (i = 0; i < X->d - 1; i++)
         for (p = i + 1; p < X->d; p++)
@@ -89,6 +98,7 @@ void RgcAddweight(Equation wn, RgcClassData *X)
                 wn.a[i] = wn.a[p];
                 wn.a[p] = k;
             } /* make n0<=n1<=...<=n# */
+
     if (X->wnum) {
         i = RgcWeicomp(wn, X->wli[n0 = 0], X->d);
         if (!i)
