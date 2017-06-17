@@ -28,15 +28,20 @@ int main(int narg, char *fn[])
 #define WDIM 800000
 
 typedef struct {
-    int d, r2, allow11;
-    Long wnum, winum, candnum;
-    Long x[POLY_Dmax + 1][POLY_Dmax];
-    EqList q[POLY_Dmax];
+    int d, r2, allow11; // Classification parameters
+    Long x[POLY_Dmax + 1][POLY_Dmax]; // List of points that have to be allowed
+                                      // by the weight system
+    EqList q[POLY_Dmax]; // TODO: Precursor to weight systems. Written in
+                         // ComputeQ0 and ComputeQ
     INCI qI[POLY_Dmax][EQUA_Nmax];
-    int f0[POLY_Dmax];
-    Equation wli[WDIM];
+    int f0[POLY_Dmax]; // TODO: This is something to check for redundant points
+    Equation wli[WDIM]; // Unique weight system candidates
+    Long wnum; // Number of weight system candidates
+    Long candnum; // Number of weight system candidates, including duplicates
+    Long winum; // Number of IP weight systems
 } RgcClassData;
 
+// Compares weight systems
 int RgcWeicomp(Equation w1, Equation w2, int d)
 {
     /* w2-w1, i.e. pos for w1<w2,neg for w1>w2  */
@@ -57,6 +62,8 @@ void RgcInsertat(Equation ww, int position, RgcClassData *X)
     X->wnum++;
 }
 
+// Adds weight system wn to the sorted list X->wli, if it is basic and not
+// already there.
 void RgcAddweight(Equation wn, RgcClassData *X)
 {
     int i, j, p, n0, n1, k;
@@ -90,6 +97,7 @@ void RgcAddweight(Equation wn, RgcClassData *X)
                 if (wn.a[i] + wn.a[j] == -wn.c)
                     return;
 
+    // Sort weights
     X->candnum++;
     for (i = 0; i < X->d - 1; i++)
         for (p = i + 1; p < X->d; p++)
@@ -99,6 +107,7 @@ void RgcAddweight(Equation wn, RgcClassData *X)
                 wn.a[p] = k;
             } /* make n0<=n1<=...<=n# */
 
+    // Add weight system to the sorted list if it is not already there
     if (X->wnum) {
         i = RgcWeicomp(wn, X->wli[n0 = 0], X->d);
         if (!i)
@@ -153,34 +162,53 @@ void PrintEquation(Equation *q, int d /*, char *c, int j*/)
     /*printf("  %s  np=%d\n", c, j);*/
 }
 
+// Tests if the last point added to X->x should really be considered.
 int LastPointForbidden(int n, RgcClassData *X)
 {
     int l;
     Long *y = X->x[n];
     Long ysum = 0, ymax = 0;
+
     assert(n < X->d);
+
     for (l = 0; l < X->d; l++) {
         ysum += y[l];
         if (y[l] > ymax)
             ymax = y[l];
     }
+
+    // Point leads to weight systems containing a weight of 1
     if (ysum < 2)
         return 1;
+
+    // Point leads to weight systems containing a weight of 1/2 or two weights
+    // with a sum of 1
     if (ysum == 2)
         if ((!X->allow11) || (ymax == 2))
             return 1;
+
+    // Point does not allow positive weight systems (except if all coordinates
+    // are 1)
     if (X->r2 == 2)
         if (ymax < 2)
             return 1;
+
+    // TODO: Why can we exclude this?
     if (X->r2 == 1)
         if (ymax < 3)
             return 1;
+
+    // TODO: This drastically removes redundant points. How does it work?
     for (l = X->f0[n - 1]; l < X->d - 1; l++)
         if (y[l] < y[l + 1])
             return 1;
+
     return 0;
 }
 
+// Initializes X->q such that it represents the following weight systems:
+// (r, 0, ... 0), (0, r, ... 0), ... (0, 0, ... r).
+// TODO: Also does something to X->f0 and X->qI
 void ComputeQ0(RgcClassData *X)
 {
     int i, j;
@@ -260,6 +288,7 @@ Long Flcm(Long a, Long b)
     return (a * b) / Fgcd(a, b);
 }
 
+// Normalizes q such that it does not have any common divisors
 void Cancel(Equation *q, int d)
 {
     Long gcd = -q->c;
