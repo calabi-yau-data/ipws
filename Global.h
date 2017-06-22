@@ -1,3 +1,6 @@
+#ifndef GLOBAL_H
+#define GLOBAL_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -578,3 +581,4 @@ void Print_FaceInfo(int n, FaceInfo *FI);
 Displays the information contained in the FaceInfo *FI.
 */
 
+#endif
