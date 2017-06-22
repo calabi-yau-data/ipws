@@ -1,6 +1,7 @@
 #include "Global.h"
 #include "LG.h"
 #include "Rat.h"
+#include "weight_system_store.h"
 
 FILE *inFILE, *outFILE;
 
@@ -25,8 +26,6 @@ int main(int narg, char *fn[])
     return 0;
 }
 
-#define WDIM 800000
-
 typedef struct {
     int d, r2, allow11; // Classification parameters
     Long x[POLY_Dmax + 1][POLY_Dmax]; // List of points that have to be allowed
@@ -35,50 +34,17 @@ typedef struct {
                          // ComputeQ0 and ComputeQ
     INCI qI[POLY_Dmax][EQUA_Nmax];
     int f0[POLY_Dmax]; // TODO: This is something to check for redundant points
-    Equation wli[WDIM]; // Unique weight system candidates
+    weight_system_store_t *wli;
     Long wnum; // Number of weight system candidates
     Long candnum; // Number of weight system candidates, including duplicates
     Long winum; // Number of IP weight systems
 } RgcClassData;
-
-// Compares weight systems
-int RgcWeicomp(Equation w1, Equation w2, int d)
-{
-    /* w2-w1, i.e. pos for w1<w2,neg for w1>w2  */
-    int i = d - 1;
-    if (w1.c - w2.c)
-        return w1.c - w2.c;
-    while ((i) && (w1.a[i] == w2.a[i]))
-        i--;
-    return w2.a[i] - w1.a[i];
-}
-
-void RgcInsertat(Equation ww, int position, RgcClassData *X)
-{
-    int i;
-    for (i = X->wnum - 1; i >= position; i--)
-        X->wli[i + 1] = X->wli[i];
-    X->wli[position] = ww;
-    X->wnum++;
-}
 
 // Adds weight system wn to the sorted list X->wli, if it is basic and not
 // already there.
 void RgcAddweight(Equation wn, RgcClassData *X)
 {
     int i, j, p, n0, n1, k;
-
-    // Check buffer size
-    if (X->wnum >= WDIM) {
-        if (X->wnum > WDIM)
-            return;
-        else {
-            X->wnum++;
-            printf("WDIM too small!\n");
-            fflush(0);
-            return;
-        }
-    }
 
     // Skip weight systems containing a weight of 1/2
     for (i = 0; i < X->d; i++)
@@ -108,34 +74,7 @@ void RgcAddweight(Equation wn, RgcClassData *X)
             } /* make n0<=n1<=...<=n# */
 
     // Add weight system to the sorted list if it is not already there
-    if (X->wnum) {
-        i = RgcWeicomp(wn, X->wli[n0 = 0], X->d);
-        if (!i)
-            return;
-        if (i > 0) {
-            RgcInsertat(wn, 0, X);
-            return;
-        }
-        i = RgcWeicomp(wn, X->wli[n1 = X->wnum - 1], X->d);
-        if (!i)
-            return;
-        if (i < 0) {
-            RgcInsertat(wn, X->wnum, X);
-            return;
-        }
-        while (n1 > n0 + 1) {
-            p = (n0 + n1) / 2;
-            i = RgcWeicomp(wn, X->wli[p], X->d);
-            if (!i)
-                return;
-            if (i > 0)
-                n1 = p;
-            else
-                n0 = p;
-        }
-        RgcInsertat(wn, n1, X);
-    } else
-        RgcInsertat(wn, 0, X);
+    weight_system_store_insert(X->wli, &wn);
 }
 
 void PrintQ(int n, RgcClassData *X)
@@ -494,15 +433,21 @@ void RgcWeights(int narg, char *fn[])
     X->winum = 0;
     X->candnum = 0;
     X->allow11 = 0;
+    X->wli = weight_system_store_new(X->d);
+
     RecConstructRgcWeights(0, X);
-    if (X->wnum <= WDIM) {
-        for (i = 0; i < X->wnum; i++) {
-            j = WsIpCheck(&X->wli[i], d);
-            if (j) {
-                PrintEquation(&X->wli[i], X->d);
-                printf("  np=%d\n", j);
-                X->winum++;
-           /*else PrintEquation(&X->wli[i], X->d, "n");*/}
+
+    X->wnum = weight_system_store_size(X->wli);
+
+    weight_system_store_begin_iteration(X->wli);
+    Equation *e;
+    while (e = weight_system_store_next(X->wli)) {
+        j = WsIpCheck(e, d);
+        if (j) {
+            PrintEquation(e, X->d);
+            printf("  np=%d\n", j);
+            X->winum++;
+            /*else PrintEquation(&X->wli[i], X->d, "n");*/
         }
     }
     printf("#ip=%ld, #cand=%ld(%ld)\n", X->winum, X->wnum, X->candnum);

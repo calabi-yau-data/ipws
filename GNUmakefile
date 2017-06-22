@@ -44,7 +44,7 @@ cws:    cws.o $(OBJECTS) LG.o Global.h LG.h
 	$(CC) $(CFLAGS) -o cws.x cws.o $(OBJECTS) LG.o
 
 cws0:   cws0.o $(OBJECTS) LG.o Global.h LG.h
-	$(CC) $(CFLAGS) -o cws0.x cws0.o $(OBJECTS)
+	g++ $(CFLAGS) -o cws0.x weight_system_store_set.cpp cws0.o $(OBJECTS)
 
 nef:    nef.o $(OBJECTS) $(NEF_OBJ) Global.h 
 	$(CC) $(CFLAGS) -o nef.x nef.o $(OBJECTS) $(NEF_OBJ)
