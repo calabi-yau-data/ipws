@@ -316,6 +316,19 @@ void RecConstructRgcWeights(int n, RgcClassData *X)
         return;
     if (n >= DIMENSION - 1)
         return;
+
+    switch (n) {
+    case 0:
+        break;
+    case 1:
+        fprintf(stderr, "\n* ");
+        break;
+    default:
+        fprintf(stderr, "%d:%d ", n, weight_system_store_size(X->wli));
+        fflush(stderr);
+        break;
+    }
+
     /* Examine all integer points of simplex:                               */
     for (k = 0; k < DIMENSION - 1; k++) {
         y[k] = 0;
@@ -413,6 +426,7 @@ void RgcWeights(int narg, char *fn[])
     X->wli = weight_system_store_new();
 
     RecConstructRgcWeights(0, X);
+    fprintf(stderr, "\n");
 
     X->wnum = weight_system_store_size(X->wli);
 
