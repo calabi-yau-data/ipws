@@ -2,26 +2,25 @@
 
 #include <set>
 
-class Comparator {
-public:
-    bool operator()(const Equation &w1, const Equation &w2) const
+struct WeightSystem {
+    int16_t weights[DIMENSION];
+
+    bool operator<(const WeightSystem &rhs) const
     {
-        int i = DIMENSION - 1;
-        if (w1.c - w2.c)
-            return w1.c > w2.c;
-        while ((i) && (w1.a[i] == w2.a[i]))
-            i--;
-        return w2.a[i] > w1.a[i];
+        for (size_t i = DIMENSION; i--;)
+            if (weights[i] != rhs.weights[i])
+                return weights[i] < rhs.weights[i];
+        return false;
     }
 };
 
-using Set = std::set<Equation, Comparator>;
+using Set = std::set<WeightSystem>;
 
 struct weight_system_store {
     Set s;
+    Set::iterator it;
+    Equation eq;
 };
-
-static Set::iterator it;
 
 weight_system_store_t *weight_system_store_new()
 {
@@ -35,7 +34,11 @@ void weight_system_store_free(weight_system_store_t *store)
 
 void weight_system_store_insert(weight_system_store_t *store, const Equation *e)
 {
-    store->s.insert(*e);
+    WeightSystem ws;
+    for (size_t i = 0; i < DIMENSION; ++i)
+        ws.weights[i] = e->a[i];
+
+    store->s.insert(ws);
 }
 
 int weight_system_store_size(weight_system_store_t *store)
@@ -45,12 +48,22 @@ int weight_system_store_size(weight_system_store_t *store)
 
 void weight_system_store_begin_iteration(weight_system_store_t *store)
 {
-    it = store->s.begin();
+    store->it = store->s.begin();
 }
 
 const Equation *weight_system_store_next(weight_system_store_t *store)
 {
-    if (it == store->s.end())
+    if (store->it == store->s.end())
         return nullptr;
-    return &*it++;
+
+    const WeightSystem &ws = *store->it++;
+
+    store->eq.c = 0;
+    for (size_t i = 0; i < DIMENSION; ++i) {
+        store->eq.a[i] = ws.weights[i];
+        store->eq.c -= store->eq.a[i];
+    }
+    store->eq.c = store->eq.c * 2 / TWO_TIMES_R;
+
+    return &store->eq;
 }
