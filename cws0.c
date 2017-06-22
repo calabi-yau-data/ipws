@@ -5,11 +5,6 @@
 
 FILE *inFILE, *outFILE;
 
-int IsDigit(char c)
-{
-    return (('0' <= c) && (c <= '9'));
-}
-
 void RgcWeights(int narg, char *fn[]);
 
 int main(int narg, char *fn[])
@@ -17,17 +12,12 @@ int main(int narg, char *fn[])
     inFILE = stdin;
     outFILE = stdout;
 
-    if (narg == 1) {
-        printf("\nFor help type `%s -h'\n\n", fn[0]);
-        exit(0);
-    }
-    if (fn[1][1] == 'd')
-        RgcWeights(narg, fn);
+    RgcWeights(narg, fn);
     return 0;
 }
 
 typedef struct {
-    int r2, allow11; // Classification parameters
+    int allow11; // Classification parameters
     Long x[POLY_Dmax + 1][POLY_Dmax]; // List of points that have to be allowed
                                       // by the weight system
     EqList q[POLY_Dmax]; // TODO: Precursor to weight systems. Written in
@@ -128,12 +118,12 @@ int LastPointForbidden(int n, RgcClassData *X)
 
     // Point does not allow positive weight systems (except if all coordinates
     // are 1)
-    if (X->r2 == 2)
+    if (TWO_TIMES_R == 2)
         if (ymax < 2)
             return 1;
 
     // TODO: Why can we exclude this?
-    if (X->r2 == 1)
+    if (TWO_TIMES_R == 1)
         if (ymax < 3)
             return 1;
 
@@ -155,11 +145,11 @@ void ComputeQ0(RgcClassData *X)
     for (i = 0; i < X->q[0].ne; i++) {
         for (j = 0; j < DIMENSION; j++)
             X->q[0].e[i].a[j] = 0;
-        if (X->r2 % 2) {
-            X->q[0].e[i].a[i] = X->r2;
+        if (TWO_TIMES_R % 2) {
+            X->q[0].e[i].a[i] = TWO_TIMES_R;
             X->q[0].e[i].c = -2;
         } else {
-            X->q[0].e[i].a[i] = X->r2 / 2;
+            X->q[0].e[i].a[i] = TWO_TIMES_R / 2;
             X->q[0].e[i].c = -1;
         }
     }
@@ -405,18 +395,9 @@ int WsIpCheck(Equation *q)
 
 void RgcWeights(int narg, char *fn[])
 {
-    int i, j, n = 1, r2 = 2;
-    char *c = &fn[1][2];
+    int i, j, n = 1;
     RgcClassData *X = (RgcClassData *)malloc(sizeof(RgcClassData));
-    if (narg > ++n) {
-        if ((fn[n][0] != '-') || (fn[n][1] != 'r')) {
-            printf("the second option has to be of the type -r\n");
-            exit(0);
-        }
-        c = &fn[n][2];
-        r2 = atoi(c);
-    }
-    X->r2 = r2;
+
     X->wnum = 0;
     X->winum = 0;
     X->candnum = 0;

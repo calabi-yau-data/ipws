@@ -24,6 +24,7 @@ necessary to set even Long to 64 bits.
 
 #define   		POLY_Dmax	6	/* max dim of polytope	    */
 #define DIMENSION POLY_Dmax
+#define TWO_TIMES_R 1
 
 /*
 POLY_Dmax should be set to the dimension of the polytopes that are analysed.
