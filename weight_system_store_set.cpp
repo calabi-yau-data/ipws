@@ -2,13 +2,11 @@
 
 #include <set>
 
-static int dim = 0;
-
 class Comparator {
 public:
     bool operator()(const Equation &w1, const Equation &w2) const
     {
-        int i = dim - 1;
+        int i = DIMENSION - 1;
         if (w1.c - w2.c)
             return w1.c > w2.c;
         while ((i) && (w1.a[i] == w2.a[i]))
@@ -25,9 +23,8 @@ struct weight_system_store {
 
 static Set::iterator it;
 
-weight_system_store_t *weight_system_store_new(int dimension)
+weight_system_store_t *weight_system_store_new()
 {
-    dim = dimension;
     return new weight_system_store_t{};
 }
 

@@ -10,7 +10,7 @@ extern "C" {
 struct weight_system_store;
 typedef struct weight_system_store weight_system_store_t;
 
-weight_system_store_t *weight_system_store_new(int dimension);
+weight_system_store_t *weight_system_store_new();
 void weight_system_store_free(weight_system_store_t *store);
 
 void weight_system_store_insert(weight_system_store_t *store,
