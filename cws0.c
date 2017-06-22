@@ -30,6 +30,14 @@ typedef struct {
     Long winum; // Number of IP weight systems
 } RgcClassData;
 
+// __attribute__ ((noinline))
+static Long Eval_Eq(Equation *E, Long *V) {
+    Long p = E->c;
+    for (int i = 0; i < DIMENSION; ++i)
+        p += V[i] * E->a[i];
+    return p;
+}
+
 // Adds weight system wn to the sorted list X->wli, if it is basic and not
 // already there.
 void RgcAddweight(Equation wn, RgcClassData *X)
@@ -183,7 +191,7 @@ void ComputeQ(int n, RgcClassData *X)
     X->f0[n] = ++i;
     qNew->ne = 0;
     for (i = 0; i < qOld->ne; i++)
-        if (!(yqOld[i] = Eval_Eq_on_V(&(qOld->e[i]), y, DIMENSION))) {
+        if (!(yqOld[i] = Eval_Eq(&(qOld->e[i]), y))) {
             qNew->e[qNew->ne] = qOld->e[i];
             qINew[qNew->ne] = qIOld[i];
             (qNew->ne)++;
@@ -269,12 +277,12 @@ void ComputeAndAddLastQ(RgcClassData *X)
     Equation q;
     Equation *q0 = &X->q[DIMENSION - 2].e[0], *q1 = &X->q[DIMENSION - 2].e[1];
     Long *y = X->x[DIMENSION - 1];
-    Long yq0 = Eval_Eq_on_V(q0, y, DIMENSION), yq1;
+    Long yq0 = Eval_Eq(q0, y), yq1;
     if (LastPointForbidden(DIMENSION - 1, X))
         return;
     if (!yq0)
         return;
-    yq1 = Eval_Eq_on_V(q1, y, DIMENSION);
+    yq1 = Eval_Eq(q1, y);
     if (yq0 < 0) {
         if (yq1 <= 0)
             return;
@@ -383,7 +391,7 @@ int WsIpCheck(Equation *q)
     for (k = 0; k < DIMENSION; k++)
         y[k] = 1;
     for (k = 0; k < E.ne; k++)
-        if (Eval_Eq_on_V(&(E.e[k]), y, DIMENSION) <= 0)
+        if (Eval_Eq(&(E.e[k]), y) <= 0)
             if (!E.e[k].c) {
                 free(P);
                 return 0;
