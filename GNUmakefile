@@ -31,26 +31,26 @@ all:	poly class cws nef mori cws0
 
 clean:	;	rm -f *.o
 
-cleanall: ;	rm -f *.o *.x core
+cleanall: ;	rm -f *.o poly class cws nef mori cws0
 
 
-poly:	poly.o $(OBJECTS) LG.o Global.h LG.h
-	$(CC) $(CFLAGS) -o poly.x poly.o $(OBJECTS) LG.o
+poly: poly.o $(OBJECTS) LG.o Global.h LG.h
+	$(CC) $(CFLAGS) -o poly poly.o $(OBJECTS) LG.o
 
-class:	class.o $(OBJECTS) $(CLASS_OBJ) Global.h Subpoly.h
-	$(CC) $(CFLAGS) -o class.x class.o $(OBJECTS) $(CLASS_OBJ)
+class: class.o $(OBJECTS) $(CLASS_OBJ) Global.h Subpoly.h
+	$(CC) $(CFLAGS) -o class class.o $(OBJECTS) $(CLASS_OBJ)
 
-cws:    cws.o $(OBJECTS) LG.o Global.h LG.h
-	$(CC) $(CFLAGS) -o cws.x cws.o $(OBJECTS) LG.o
+cws: cws.o $(OBJECTS) LG.o Global.h LG.h
+	$(CC) $(CFLAGS) -o cws cws.o $(OBJECTS) LG.o
 
-cws0:   cws0.o $(OBJECTS) LG.o Global.h LG.h
-	g++ $(CFLAGS) -o cws0.x weight_system_store_set.cpp cws0.o $(OBJECTS)
+cws0: cws0.o $(OBJECTS) LG.o Global.h LG.h
+	g++ $(CFLAGS) -o cws0 weight_system_store_set.cpp cws0.o $(OBJECTS)
 
-nef:    nef.o $(OBJECTS) $(NEF_OBJ) Global.h 
-	$(CC) $(CFLAGS) -o nef.x nef.o $(OBJECTS) $(NEF_OBJ)
+nef:  nef.o $(OBJECTS) $(NEF_OBJ) Global.h
+	$(CC) $(CFLAGS) -o nef nef.o $(OBJECTS) $(NEF_OBJ)
 
-mori:   mori.o  $(OBJECTS) $(MORI_OBJ) LG.o Mori.h 
-	$(CC) $(CFLAGS) -o mori.x mori.o $(OBJECTS) $(MORI_OBJ) LG.o
+mori: mori.o  $(OBJECTS) $(MORI_OBJ) LG.o Mori.h
+	$(CC) $(CFLAGS) -o mori mori.o $(OBJECTS) $(MORI_OBJ) LG.o
 
 
 
@@ -83,15 +83,15 @@ mori.o:     	Global.h LG.h Mori.h
 #	experimental stuff ...
 #
 #bpoly: bpoly.o 	Global.h $(OBJECTS)
-#	$(CC)  	$(CFLAGS) -o bpoly.x  bpoly.o $(OBJECTS)
+#	$(CC)  	$(CFLAGS) -o bpoly  bpoly.o $(OBJECTS)
 
 #bpoly.o: bpoly.c Global.h
 
 #vnl:	vnl.o  $(OBJECTS) Global.h
-#	$(CC)   $(CFLAGS) -o  vnl.x  vnl.o  $(OBJECTS)
+#	$(CC)   $(CFLAGS) -o  vnl  vnl.o  $(OBJECTS)
 
 #vnl.o:  vnl.c	Global.h
 
 #gen:    gen.o   $(OBJECTS) $(NEF_OBJ) Global.h
-#	$(CC)   $(CFLAGS) -o  gen.x  gen.o  $(OBJECTS) $(NEF_OBJ)
+#	$(CC)   $(CFLAGS) -o  gen  gen.o  $(OBJECTS) $(NEF_OBJ)
 #gen.o: 	gen.c
