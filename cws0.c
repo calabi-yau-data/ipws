@@ -1,23 +1,22 @@
 #include "Global.h"
-#include "LG.h"
 #include "Rat.h"
 #include "weight_system_store.h"
 
 FILE *inFILE, *outFILE;
 
-void RgcWeights(int narg, char *fn[]);
+void RgcWeights(void);
 
-int main(int narg, char *fn[])
+int main()
 {
     inFILE = stdin;
     outFILE = stdout;
 
-    RgcWeights(narg, fn);
+    RgcWeights();
     return 0;
 }
 
 typedef struct {
-    int allow11; // Classification parameters
+    int allow11;                      // Classification parameters
     Long x[POLY_Dmax + 1][POLY_Dmax]; // List of points that have to be allowed
                                       // by the weight system
     EqList q[POLY_Dmax]; // TODO: Precursor to weight systems. Written in
@@ -25,13 +24,14 @@ typedef struct {
     INCI qI[POLY_Dmax][EQUA_Nmax];
     int f0[POLY_Dmax]; // TODO: This is something to check for redundant points
     weight_system_store_t *wli;
-    Long wnum; // Number of weight system candidates
+    Long wnum;    // Number of weight system candidates
     Long candnum; // Number of weight system candidates, including duplicates
-    Long winum; // Number of IP weight systems
+    Long winum;   // Number of IP weight systems
 } RgcClassData;
 
 // __attribute__ ((noinline))
-static Long Eval_Eq(Equation *E, Long *V) {
+static Long Eval_Eq(Equation *E, Long *V)
+{
     Long p = E->c;
     for (int i = 0; i < DIMENSION; ++i)
         p += V[i] * E->a[i];
@@ -42,7 +42,7 @@ static Long Eval_Eq(Equation *E, Long *V) {
 // already there.
 void RgcAddweight(Equation wn, RgcClassData *X)
 {
-    int i, j, p, n0, n1, k;
+    int i, j, p, k;
 
     // Skip weight systems containing a weight of 1/2
     for (i = 0; i < DIMENSION; i++)
@@ -90,7 +90,7 @@ void PrintQ(int n, RgcClassData *X)
     }
 }
 
-void PrintEquation(Equation *q /*, char *c, int j*/)
+void PrintEquation(const Equation *q /*, char *c, int j*/)
 {
     int i;
     printf("%d  ", (int)-q->c);
@@ -209,8 +209,8 @@ void ComputeQ(int n, RgcClassData *X)
                             }
                         assert(qNew->ne < EQUA_Nmax - 1);
                         qINew[qNew->ne] = newINCI;
-                        qNew->e[qNew->ne] =
-                            EEV_To_Equation(&qOld->e[i], &qOld->e[j], y, DIMENSION);
+                        qNew->e[qNew->ne] = EEV_To_Equation(
+                            &qOld->e[i], &qOld->e[j], y, DIMENSION);
                         if (qNew->e[qNew->ne].c > 0) {
                             for (k = 0; k < DIMENSION; k++)
                                 qNew->e[qNew->ne].a[k] *= -1;
@@ -361,7 +361,7 @@ void AddPointToPoly(Long *y, PolyPointList *P)
     P->np++;
 }
 
-int WsIpCheck(Equation *q)
+int WsIpCheck(const Equation *q)
 {
     int k, l;
     PolyPointList *P = (PolyPointList *)malloc(sizeof(PolyPointList));
@@ -414,9 +414,8 @@ int WsIpCheck(Equation *q)
     return k;
 }
 
-void RgcWeights(int narg, char *fn[])
+void RgcWeights(void)
 {
-    int i, j, n = 1;
     RgcClassData *X = (RgcClassData *)malloc(sizeof(RgcClassData));
 
     X->wnum = 0;
@@ -430,13 +429,13 @@ void RgcWeights(int narg, char *fn[])
 
     X->wnum = weight_system_store_size(X->wli);
 
+    const Equation *e;
     weight_system_store_begin_iteration(X->wli);
-    Equation *e;
     while (e = weight_system_store_next(X->wli)) {
-        j = WsIpCheck(e);
-        if (j) {
+        int i = WsIpCheck(e);
+        if (i) {
             PrintEquation(e);
-            printf("  np=%d\n", j);
+            printf("  np=%d\n", i);
             X->winum++;
             /*else PrintEquation(&X->wli[i], DIMENSION, "n");*/
         }
