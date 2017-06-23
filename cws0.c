@@ -27,6 +27,8 @@ typedef struct {
     Long wnum;    // Number of weight system candidates
     Long candnum; // Number of weight system candidates, including duplicates
     Long winum;   // Number of IP weight systems
+    size_t recursion_level_counts[POLY_Dmax];
+    size_t weight_counts[POLY_Dmax];
 } RgcClassData;
 
 // __attribute__ ((noinline))
@@ -244,6 +246,8 @@ int ComputeAndAddAverageWeight(Equation *q, int n, RgcClassData *X)
     int i, j;
     EqList *el = &X->q[n];
 
+    ++X->weight_counts[n];
+
     if (el->ne < DIMENSION - n)
         return 0;
 
@@ -278,6 +282,11 @@ void ComputeAndAddLastQ(RgcClassData *X)
     Equation *q0 = &X->q[DIMENSION - 2].e[0], *q1 = &X->q[DIMENSION - 2].e[1];
     Long *y = X->x[DIMENSION - 1];
     Long yq0 = Eval_Eq(q0, y), yq1;
+
+    ++X->weight_counts[DIMENSION - 1];
+    if (++X->weight_counts[DIMENSION - 1] % 100000 == 0)
+        print_stats(X);
+
     if (LastPointForbidden(DIMENSION - 1, X))
         return;
     if (!yq0)
@@ -299,6 +308,20 @@ void ComputeAndAddLastQ(RgcClassData *X)
     RgcAddweight(q, X);
 }
 
+void print_stats(const RgcClassData *X)
+{
+    for (size_t i = 1; i < DIMENSION - 1; ++i)
+        printf("%d ", X->recursion_level_counts[i]);
+    printf("-- ");
+
+    for (size_t i = 1; i < DIMENSION; ++i)
+        printf("%d ", X->weight_counts[i]);
+    printf("-- ");
+
+    printf("%d -- %d ", X->candnum, weight_system_store_size(X->wli));
+    printf("\n");
+}
+
 void RecConstructRgcWeights(int n, RgcClassData *X)
 {
     /* we have q[n-1], x[n] */
@@ -306,12 +329,18 @@ void RecConstructRgcWeights(int n, RgcClassData *X)
     Equation q;
     Long yq[POLY_Dmax];
     Long *y = X->x[n + 1];
+
+    ++X->recursion_level_counts[n];
+
     if (n == 0)
         ComputeQ0(X);
     else if (LastPointForbidden(n, X))
         return;
     else
         ComputeQ(n, X);
+
+    print_stats(X);
+
     if (!ComputeAndAddAverageWeight(&q, n, X))
         return;
     if (n >= DIMENSION - 1)
@@ -423,6 +452,10 @@ void RgcWeights(void)
     X->candnum = 0;
     X->allow11 = 0;
     X->wli = weight_system_store_new();
+    for (size_t i = 0; i < DIMENSION; ++i) {
+        X->weight_counts[i] = 0;
+        X->recursion_level_counts[i] = 0;
+    }
 
     RecConstructRgcWeights(0, X);
     fprintf(stderr, "\n");
