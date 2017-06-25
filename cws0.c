@@ -110,7 +110,7 @@ int LastPointForbidden(int n, RgcClassData *X)
     Long *y = X->x[n];
     Long ysum = 0, ymax = 0;
 
-    assert(n < DIMENSION);
+    // assert(n < DIMENSION);
 
     for (l = 0; l < DIMENSION; l++) {
         ysum += y[l];
