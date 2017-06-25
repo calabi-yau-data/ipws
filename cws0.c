@@ -359,17 +359,17 @@ void RecConstructRgcWeights(int n, RgcClassData *X)
     if (n >= DIMENSION - 1)
         return;
 
-    switch (n) {
-    case 0:
-        break;
-    case 1:
-        fprintf(stderr, "\n* ");
-        break;
-    default:
-        fprintf(stderr, "%d:%d ", n, weight_system_store_size(X->wli));
-        fflush(stderr);
-        break;
-    }
+    // switch (n) {
+    // case 0:
+    //     break;
+    // case 1:
+    //     fprintf(stderr, "\n* ");
+    //     break;
+    // default:
+    //     fprintf(stderr, "%d:%d ", n, weight_system_store_size(X->wli));
+    //     fflush(stderr);
+    //     break;
+    // }
 
     /* Examine all integer points of simplex:                               */
     for (k = 0; k < DIMENSION - 1; k++) {
@@ -477,7 +477,7 @@ void RgcWeights(void)
     X->start_time = time(NULL);
 
     RecConstructRgcWeights(0, X);
-    fprintf(stderr, "\n");
+    // fprintf(stderr, "\n");
 
     X->wnum = weight_system_store_size(X->wli);
 
