@@ -1,3 +1,5 @@
+#include <time.h>
+
 #include "Global.h"
 #include "Rat.h"
 #include "weight_system_store.h"
@@ -31,7 +33,24 @@ typedef struct {
     Long winum;   // Number of IP weight systems
     size_t recursion_level_counts[POLY_Dmax];
     size_t weight_counts[POLY_Dmax];
+    time_t start_time;
 } RgcClassData;
+
+void print_stats(const RgcClassData *X)
+{
+    printf("%7.2f: ", (time(NULL) - X->start_time) / 60.0);
+    for (size_t i = 1; i < DIMENSION - 1; ++i)
+        printf("%ld ", X->recursion_level_counts[i]);
+    printf("-- ");
+
+    for (size_t i = 1; i < DIMENSION; ++i)
+        printf("%ld ", X->weight_counts[i]);
+    printf("-- ");
+
+    printf("%ld -- %d ", X->candnum, weight_system_store_size(X->wli));
+    printf("\n");
+    fflush(stdout);
+}
 
 // __attribute__ ((noinline))
 static Long Eval_Eq(Equation *E, Long *V)
@@ -316,20 +335,6 @@ void ComputeAndAddLastQ(RgcClassData *X)
     RgcAddweight(q, X);
 }
 
-void print_stats(const RgcClassData *X)
-{
-    for (size_t i = 1; i < DIMENSION - 1; ++i)
-        printf("%d ", X->recursion_level_counts[i]);
-    printf("-- ");
-
-    for (size_t i = 1; i < DIMENSION; ++i)
-        printf("%d ", X->weight_counts[i]);
-    printf("-- ");
-
-    printf("%d -- %d ", X->candnum, weight_system_store_size(X->wli));
-    printf("\n");
-}
-
 void RecConstructRgcWeights(int n, RgcClassData *X)
 {
     /* we have q[n-1], x[n] */
@@ -469,6 +474,7 @@ void RgcWeights(void)
         X->weight_counts[i] = 0;
         X->recursion_level_counts[i] = 0;
     }
+    X->start_time = time(NULL);
 
     RecConstructRgcWeights(0, X);
     fprintf(stderr, "\n");
