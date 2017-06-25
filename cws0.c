@@ -4,6 +4,8 @@
 
 FILE *inFILE, *outFILE;
 
+#define SKEW 0
+
 void RgcWeights(void);
 
 int main()
@@ -138,9 +140,11 @@ int LastPointForbidden(int n, RgcClassData *X)
             return 1;
 
     // TODO: This drastically removes redundant points. How does it work?
+#if SKEW == 0
     for (l = X->f0[n - 1]; l < DIMENSION - 1; l++)
         if (y[l] < y[l + 1])
             return 1;
+#endif
 
     return 0;
 }
@@ -263,12 +267,16 @@ int ComputeAndAddAverageWeight(Equation *q, int n, RgcClassData *X)
         q->a[j] = 0;
         for (i = 0; i < el->ne; i++)
             q->a[j] += el->e[i].a[j] * (q->c / el->e[i].c);
+
+        q->a[j] += el->e[0].a[j] * (q->c / el->e[0].c) * SKEW;
+
         if (q->a[j] <= 0) {
             assert(q->a[j] == 0);
             return 0;
         }
     }
-    q->c *= el->ne;
+
+    q->c *= el->ne + SKEW;
     Cancel(q);
     RgcAddweight(*q, X);
     return 1;
