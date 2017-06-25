@@ -392,6 +392,11 @@ void RecConstructRgcWeights(int n, RgcClassData *X)
 
 void AddPointToPoly(Long *y, PolyPointList *P)
 {
+    if (P->np >= POINT_Nmax) {
+        printf("ohh no\n");
+        exit(1);
+    }
+
     int i;
     for (i = 0; i < P->n; i++)
         P->x[P->np][i] = y[i];
