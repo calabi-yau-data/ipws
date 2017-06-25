@@ -1,7 +1,10 @@
 #include <time.h>
 
+extern "C" {
 #include "Global.h"
 #include "Rat.h"
+}
+
 #include "weight_system_store.h"
 
 FILE *inFILE, *outFILE;
