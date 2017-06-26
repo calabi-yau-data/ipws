@@ -1,4 +1,9 @@
 #include <time.h>
+#include <set>
+#include <array>
+#include <algorithm>
+#include <iostream>
+#include <vector>
 
 extern "C" {
 #include "Global.h"
@@ -6,6 +11,97 @@ extern "C" {
 }
 
 #include "weight_system_store.h"
+
+struct EquationRedux {
+    std::array<Long, POLY_Dmax> a;
+    Long c;
+
+    EquationRedux() { }
+    EquationRedux(const Equation &e)
+    {
+        c = e.c;
+        for (int i = 0; i < DIMENSION; ++i)
+            a[i] = e.a[i];
+    }
+
+    bool operator!=(const EquationRedux &rhs) const
+    {
+        if (c != rhs.c)
+            return true;
+
+        for (int i = 0; i < DIMENSION; ++i)
+            if (a[i] != rhs.a[i])
+                return true;
+
+        return false;
+    }
+
+    bool operator<(const EquationRedux &rhs) const
+    {
+        if (c != rhs.c)
+            return c < rhs.c;
+
+        for (int i = 0; i < DIMENSION; ++i)
+            if (a[i] != rhs.a[i])
+                return a[i] < rhs.a[i];
+
+        return false;
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, const EquationRedux &rhs)
+    {
+        os << rhs.c << "  ";
+
+        for (auto x : rhs.a)
+            os << x << " ";
+        return os;
+    }
+};
+
+class Cone {
+    int ne;
+    // std::array<EquationRedux, DIMENSION * 2> e;
+    std::vector<EquationRedux> e;
+
+public:
+    Cone(const EqList &eq_list)
+    {
+        e.resize(eq_list.ne);
+
+        if (eq_list.ne > e.size()) {
+            std::cout << "too much\n";
+            exit(1);
+        }
+
+        ne = eq_list.ne;
+        for (int i = 0; i < ne; ++i)
+            e[i] = eq_list.e[i];
+
+        std::sort(e.begin(), e.begin() + ne);
+    }
+
+    bool operator<(const Cone &rhs) const
+    {
+        if (ne != rhs.ne)
+            return ne < rhs.ne;
+
+        for (int i = 0; i < ne; ++i)
+            if (e[i] != rhs.e[i])
+                return e[i] < rhs.e[i];
+
+        return false;
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, const Cone &rhs)
+    {
+        for (int i = 0; i < rhs.ne; ++i)
+            os << rhs.e[i] << std::endl;
+        return os;
+    }
+};
+
+std::set<Cone> q_cones;
+int q_cones_insertions = 0;
 
 FILE *inFILE, *outFILE;
 
@@ -246,6 +342,12 @@ void ComputeQ(int n, RgcClassData *X)
                         }
                         qNew->ne++;
                     }
+
+    q_cones.insert(*qNew);
+    ++q_cones_insertions;
+
+    if (q_cones_insertions % 10000 == 0)
+        printf("q_cones: %d/%d\n", q_cones.size(), q_cones_insertions);
 }
 
 Long Flcm(Long a, Long b)
@@ -483,6 +585,11 @@ void RgcWeights(void)
     // fprintf(stderr, "\n");
 
     X->wnum = weight_system_store_size(X->wli);
+
+    printf("q_cones: %d/%d\n", q_cones.size(), q_cones_insertions);
+    fflush(stdout);
+    // for (auto &cone : q_cones)
+    //     std::cout << cone << std::endl;
 
     const Equation *e;
     weight_system_store_begin_iteration(X->wli);
