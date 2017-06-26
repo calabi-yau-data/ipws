@@ -43,8 +43,8 @@ class: class.o $(OBJECTS) $(CLASS_OBJ) Global.h Subpoly.h
 cws: cws.o $(OBJECTS) LG.o Global.h LG.h
 	$(CC) $(CFLAGS) -o cws cws.o $(OBJECTS) LG.o
 
-cws0: cws0.o $(OBJECTS) LG.o Global.h LG.h weight_system_store_vector.cpp
-	g++ $(CFLAGS) -o cws0 weight_system_store_vector.cpp cws0.o $(OBJECTS)
+cws0: cws0.o $(OBJECTS) LG.o Global.h LG.h weight_system_store_vector.o
+	g++ $(CFLAGS) -o cws0 weight_system_store_vector.o cws0.o $(OBJECTS)
 
 nef:  nef.o $(OBJECTS) $(NEF_OBJ) Global.h
 	$(CC) $(CFLAGS) -o nef nef.o $(OBJECTS) $(NEF_OBJ)
@@ -73,8 +73,14 @@ SingularInput.o: Global.h Mori.h
 
 poly.o:         Global.h LG.h
 class.o:		Global.h Subpoly.h
-cws.o:			Global.h LG.h Rat.h
-cws0.o:		Global.h LG.h Rat.h
+cws0.o: Global.h LG.h Rat.h cws0.cpp
+	g++ $(CFLAGS) -c cws0.cpp
+weight_system_store_vector.o: weight_system_store_vector.cpp
+	g++ $(CFLAGS) -c weight_system_store_vector.cpp
+weight_system_store_set.o: weight_system_store_set.cpp
+	g++ $(CFLAGS) -c weight_system_store_set.cpp
+
+cws.o:		Global.h LG.h Rat.h
 nef.o:          Global.h Nef.h LG.h
 mori.o:     	Global.h LG.h Mori.h
 
