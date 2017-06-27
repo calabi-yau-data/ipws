@@ -68,7 +68,7 @@ public:
     {
         e.resize(eq_list.ne);
 
-        if (eq_list.ne > e.size()) {
+        if (eq_list.ne > (int)e.size()) {
             std::cout << "too much\n";
             exit(1);
         }
@@ -372,7 +372,7 @@ void ComputeQ(int n, RgcClassData *X)
     ++q_cones_insertions;
 
     if (q_cones_insertions % 10000 == 0)
-        printf("q_cones: %d/%d\n", q_cones.size(), q_cones_insertions);
+        printf("q_cones: %d/%d\n", (int)q_cones.size(), q_cones_insertions);
 }
 
 Long Flcm(Long a, Long b)
@@ -613,7 +613,7 @@ void RgcWeights(void)
 
     X->wnum = weight_system_store_size(X->wli);
 
-    printf("q_cones: %d/%d\n", q_cones.size(), q_cones_insertions);
+    printf("q_cones: %d/%d\n", (int)q_cones.size(), q_cones_insertions);
     fflush(stdout);
     // for (auto &cone : q_cones)
     //     std::cout << cone << std::endl;
