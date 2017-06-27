@@ -122,6 +122,9 @@ typedef struct {
     int allow11;                      // Classification parameters
     Long x[POLY_Dmax + 1][POLY_Dmax]; // List of points that have to be allowed
                                       // by the weight system
+    Long x_inner_q[POLY_Dmax + 1][POLY_Dmax]; // First index: n,
+                                              // second index: number of q_tilde
+    Equation q_tilde[POLY_Dmax];
     EqList q[POLY_Dmax]; // TODO: Precursor to weight systems. Written in
                          // ComputeQ0 and ComputeQ
     INCI qI[POLY_Dmax][EQUA_Nmax];
@@ -221,6 +224,17 @@ void PrintEquation(const Equation *q /*, char *c, int j*/)
     /*printf("  %s  np=%d\n", c, j);*/
 }
 
+int lex_cmp(const Long *y1, const Long *y2)
+{
+    for (int i = 0; i < DIMENSION; ++i) {
+        if (y1[i] < y2[i])
+            return -1;
+        if (y1[i] > y2[i])
+            return 1;
+    }
+    return 0;
+}
+
 // Tests if the last point added to X->x should really be considered.
 int LastPointForbidden(int n, RgcClassData *X)
 {
@@ -263,6 +277,17 @@ int LastPointForbidden(int n, RgcClassData *X)
         if (y[l] < y[l + 1])
             return 1;
 #endif
+
+    for (int i = 0; i < n; ++i)
+        X->x_inner_q[n][i] = Eval_Eq(&X->q_tilde[i], y);
+
+    for (int i = 0; i < n - 1; ++i) {
+        int rel = X->x_inner_q[i + 1][i] - X->x_inner_q[n][i];
+        if (rel > 0)
+            return 1;
+        if (rel == 0 && lex_cmp(X->x[i + 1], X->x[n]) < 0)
+            return 1;
+    }
 
     return 0;
 }
@@ -463,6 +488,8 @@ void RecConstructRgcWeights(int n, RgcClassData *X)
         return;
     if (n >= DIMENSION - 1)
         return;
+
+    X->q_tilde[n] = q;
 
     // switch (n) {
     // case 0:
