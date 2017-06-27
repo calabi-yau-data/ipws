@@ -289,6 +289,51 @@ int LastPointForbidden(int n, RgcClassData *X)
             return 1;
     }
 
+    for (int i = 1; i < n; ++i) {
+        Long *y_other = X->x[i];
+        Long y_diff[POLY_Dmax];
+
+        for (int j = 0; j < DIMENSION; ++j)
+            y_diff[j] = y_other[j] - y[j];
+
+        int v = 1;
+        if (y_diff[0] > 0)
+            v = y_diff[0];
+        else if (y_diff[0] < 0)
+            v = -y_diff[0];
+
+        for (int j = 1; j < DIMENSION; ++j) {
+            if (y_diff[j] > 0)
+                v = Fgcd(v, y_diff[j]);
+            else if (y_diff[j] < 0)
+                v = Fgcd(v, -y_diff[j]);
+        }
+
+        if (v != 1)
+            for (int j = 0; j < DIMENSION; ++j)
+                y_diff[j] /= v;
+
+        bool all_positive = true;
+        for (int j = 0; j < DIMENSION; ++j) {
+            if (y_other[j] + y_diff[j] < 0) {
+                all_positive = false;
+                break;
+            }
+        }
+        if (all_positive)
+            return 1;
+
+        all_positive = true;
+        for (int j = 0; j < DIMENSION; ++j) {
+            if (y[j] - y_diff[j] < 0) {
+                all_positive = false;
+                break;
+            }
+        }
+        if (all_positive)
+            return 1;
+    }
+
     return 0;
 }
 
