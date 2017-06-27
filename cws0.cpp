@@ -140,6 +140,8 @@ typedef struct {
 
 void print_stats(const RgcClassData *X)
 {
+    return;
+
     printf("%7.2f: ", (time(NULL) - X->start_time) / 60.0);
     for (size_t i = 1; i < DIMENSION - 1; ++i)
         printf("%ld ", X->recursion_level_counts[i]);
