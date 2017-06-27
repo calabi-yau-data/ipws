@@ -22,7 +22,7 @@ For higher dimensional or complicated non-reflexive polytopes it may be
 necessary to set even Long to 64 bits.
 */
 
-#define   		POLY_Dmax	6	/* max dim of polytope	    */
+#define   		POLY_Dmax	4	/* max dim of polytope	    */
 #define DIMENSION POLY_Dmax
 #define TWO_TIMES_R 1
 
