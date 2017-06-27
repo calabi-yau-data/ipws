@@ -668,8 +668,8 @@ void RgcWeights(void)
     while (e = weight_system_store_next(X->wli)) {
         int i = WsIpCheck(e);
         if (i) {
-            PrintEquation(e);
-            printf("  np=%d\n", i);
+            // PrintEquation(e);
+            // printf("  np=%d\n", i);
             X->winum++;
             /*else PrintEquation(&X->wli[i], DIMENSION, "n");*/
         }
