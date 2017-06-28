@@ -140,9 +140,7 @@ typedef struct {
 
 void print_stats(const RgcClassData *X)
 {
-    return;
-
-    printf("%7.2f: ", (time(NULL) - X->start_time) / 60.0);
+    printf("%8.3f: ", (time(NULL) - X->start_time) / 60.0);
     for (size_t i = 1; i < DIMENSION - 1; ++i)
         printf("%ld ", X->recursion_level_counts[i]);
     printf("-- ");
@@ -494,8 +492,8 @@ void ComputeAndAddLastQ(RgcClassData *X)
     Long yq0 = Eval_Eq(q0, y), yq1;
 
     ++X->weight_counts[DIMENSION - 1];
-    if (++X->weight_counts[DIMENSION - 1] % 100000 == 0)
-        print_stats(X);
+    // if (++X->weight_counts[DIMENSION - 1] % 100000 == 0)
+    //     print_stats(X);
 
     if (LastPointForbidden(DIMENSION - 1, X))
         return;
@@ -535,7 +533,7 @@ void RecConstructRgcWeights(int n, RgcClassData *X)
     else
         ComputeQ(n, X);
 
-    print_stats(X);
+    // print_stats(x);
 
     if (!ComputeAndAddAverageWeight(&q, n, X))
         return;
@@ -670,6 +668,8 @@ void RgcWeights(void)
     fflush(stdout);
     // for (auto &cone : q_cones)
     //     std::cout << cone << std::endl;
+
+    print_stats(X);
 
     const Equation *e;
     weight_system_store_begin_iteration(X->wli);
