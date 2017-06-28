@@ -166,6 +166,8 @@ typedef struct {
     time_t start_time;
 } RgcClassData;
 
+int ComputeAverageWeight(Equation &q, int n, RgcClassData &X);
+
 void print_stats(const RgcClassData &X)
 {
     printf("%8.3f: ", (time(NULL) - X.start_time) / 60.0);
@@ -367,7 +369,7 @@ int LastPointForbidden(int n, RgcClassData &X)
 // Initializes X.q such that it represents the following weight systems:
 // (r, 0, ... 0), (0, r, ... 0), ... (0, 0, ... r).
 // TODO: Also does something to X.f0 and X.qI
-void ComputeQ0(RgcClassData &X)
+bool ComputeQ0(Equation &q, RgcClassData &X)
 {
     int i, j;
     X.q[0].ne = DIMENSION;
@@ -386,6 +388,8 @@ void ComputeQ0(RgcClassData &X)
     X.qI[0][0] = INCI_1();
     for (i = 1; i < X.q[0].ne; i++)
         X.qI[0][i] = INCI_PN(X.qI[0][i - 1], 1);
+
+    return ComputeAverageWeight(q, 0, X);
 }
 
 int IsRedundant(INCI newINCI, INCI qINew[DIMENSION], int ne)
@@ -397,7 +401,7 @@ int IsRedundant(INCI newINCI, INCI qINew[DIMENSION], int ne)
     return 0;
 }
 
-void ComputeQ(int n, RgcClassData &X)
+bool ComputeQ(Equation &q, int n, RgcClassData &X)
 {
     /* q[n] from q[n-1], x[n] */
     int i, j, k;
@@ -456,6 +460,8 @@ void ComputeQ(int n, RgcClassData &X)
 
     if (q_cones_insertions % 10000 == 0)
         printf("q_cones: %d/%d\n", (int)q_cones.size(), q_cones_insertions);
+
+    return ComputeAverageWeight(q, n, X);
 }
 
 Long Flcm(Long a, Long b)
@@ -477,7 +483,7 @@ void Cancel(Equation &q)
     }
 }
 
-int ComputeAndAddAverageWeight(Equation &q, int n, RgcClassData &X)
+int ComputeAverageWeight(Equation &q, int n, RgcClassData &X)
 {
     int i, j;
     EqList &el = X.q[n];
@@ -510,45 +516,42 @@ int ComputeAndAddAverageWeight(Equation &q, int n, RgcClassData &X)
 
     q.c *= el.ne + SKEW;
     Cancel(q);
-    RgcAddweight(q, X);
     return 1;
 }
 
-void ComputeAndAddLastQ(RgcClassData &X)
+bool ComputeLastQ(Equation &q, RgcClassData &X)
 {
     /* q[DIMENSION-1] from q[DIMENSION-2], x[DIMENSION-1] */
     int i;
-    Equation q;
     Equation &q0 = X.q[DIMENSION - 2].e[0];
     Equation &q1 = X.q[DIMENSION - 2].e[1];
     Long *y = X.x[DIMENSION - 1];
+
+    assert(X.q[DIMENSION - 2].ne == 2);
 
     ++X.weight_counts[DIMENSION - 1];
     // if (++X.weight_counts[DIMENSION - 1] % 100000 == 0)
     //     print_stats(X);
 
-    if (LastPointForbidden(DIMENSION - 1, X))
-        return;
-
     Long yq0 = eval_eq(q0, y);
     if (!yq0)
-        return;
+        return false;
 
     Long yq1 = eval_eq(q1, y);
     if (yq0 < 0) {
         if (yq1 <= 0)
-            return;
+            return false;
         yq0 *= -1;
     } else {
         if (yq1 >= 0)
-            return;
+            return false;
         yq1 *= -1;
     }
     q.c = yq0 * q1.c + yq1 * q0.c;
     for (i = 0; i < DIMENSION; i++)
         q.a[i] = yq0 * q1.a[i] + yq1 * q0.a[i];
     Cancel(q);
-    RgcAddweight(q, X);
+    return true;
 }
 
 void RecConstructRgcWeights(int n, RgcClassData &X)
@@ -558,18 +561,22 @@ void RecConstructRgcWeights(int n, RgcClassData &X)
 
     ++X.recursion_level_counts[n];
 
-    if (n == 0)
-        ComputeQ0(X);
-    else if (LastPointForbidden(n, X))
-        return;
-    else
-        ComputeQ(n, X);
+    if (n == 0) {
+        if (!ComputeQ0(q, X))
+            return;
+    } else if (n == DIMENSION - 1) {
+        if (!ComputeLastQ(q, X))
+            return;
+    } else {
+        if (!ComputeQ(q, n, X))
+            return;
+    }
 
     // print_stats(x);
 
-    if (!ComputeAndAddAverageWeight(q, n, X))
-        return;
-    if (n >= DIMENSION - 1)
+    RgcAddweight(q, X);
+
+    if (n == DIMENSION - 1)
         return;
 
     X.q_tilde[n] = q;
@@ -588,11 +595,7 @@ void RecConstructRgcWeights(int n, RgcClassData &X)
 
     enumerate_points_below(q, [&](auto &x) {
         std::copy(x.begin(), x.end(), std::begin(X.x[n + 1]));
-
-        if (n == DIMENSION - 2) {
-            assert(X.q[DIMENSION - 2].ne == 2);
-            ComputeAndAddLastQ(X);
-        } else
+        if (!LastPointForbidden(n + 1, X))
             RecConstructRgcWeights(n + 1, X);
     });
 }
