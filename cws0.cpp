@@ -100,6 +100,33 @@ public:
     }
 };
 
+// Enumerates all points x with nonnegative coordinates, satisfying
+// q.a * x + q.c < 0.
+template <class F>
+void enumerate_points_below(const Equation &q, F callback)
+{
+    std::array<Long, DIMENSION> x;
+    std::array<Long, DIMENSION> a_times_x;
+
+    std::fill_n(x.begin(), DIMENSION - 1, 0);
+    std::fill_n(a_times_x.begin(), DIMENSION - 1, 0);
+
+    x[DIMENSION - 1] = -1;
+    a_times_x[DIMENSION - 1] = -q.a[DIMENSION - 1];
+
+    for (int k = DIMENSION - 1; k >= 0;) {
+        x[k]++;
+        a_times_x[k] += q.a[k];
+        for (int i = k + 1; i < DIMENSION; i++)
+            a_times_x[i] = a_times_x[k];
+
+        callback(x);
+
+        for (k = DIMENSION - 1; k >= 0 && a_times_x[k] + q.a[k] >= -q.c; k--)
+            x[k] = 0;
+    }
+}
+
 std::set<Cone> q_cones;
 int q_cones_insertions = 0;
 
@@ -519,10 +546,7 @@ void ComputeAndAddLastQ(RgcClassData *X)
 void RecConstructRgcWeights(int n, RgcClassData *X)
 {
     /* we have q[n-1], x[n] */
-    int k, l;
     Equation q;
-    Long yq[POLY_Dmax];
-    Long *y = X->x[n + 1];
 
     ++X->recursion_level_counts[n];
 
@@ -554,28 +578,15 @@ void RecConstructRgcWeights(int n, RgcClassData *X)
     //     break;
     // }
 
-    /* Examine all integer points of simplex:                               */
-    for (k = 0; k < DIMENSION - 1; k++) {
-        y[k] = 0;
-        yq[k] = 0;
-    }          /* sets k=DIMENSION-1; important!    */
-    y[k] = -1; /* starting point just outside                       */
-    yq[k] = -q.a[k];
-    while (k >= 0) {
-        y[k]++;
-        yq[k] += q.a[k];
-        for (l = k + 1; l < DIMENSION; l++)
-            yq[l] = yq[k];
+    enumerate_points_below(q, [&](auto &x) {
+        std::copy(x.begin(), x.end(), std::begin(X->x[n + 1]));
+
         if (n == DIMENSION - 2) {
             assert(X->q[DIMENSION - 2].ne == 2);
             ComputeAndAddLastQ(X);
         } else
             RecConstructRgcWeights(n + 1, X);
-        for (k = DIMENSION - 1; (k >= 0 ? (yq[k] + q.a[k] >= -q.c) : 0); k--)
-            y[k] = 0;
-    }
-    /* sets k to the highest value where y[k] didn't exceed max value;
-       resets the following max values to min values                 */
+    });
 }
 
 void AddPointToPoly(Long *y, PolyPointList *P)
