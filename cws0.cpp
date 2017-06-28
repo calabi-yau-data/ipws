@@ -394,26 +394,32 @@ void ComputeQ(int n, RgcClassData *X)
         }
     for (i = 0; i < qOld->ne - 1; i++)
         for (j = i + 1; j < qOld->ne; j++)
-            if (yqOld[i] * yqOld[j] < 0)
-                if (INCI_abs(newINCI = INCI_OR(qIOld[i], qIOld[j])) <= n + 1)
-                    if (!IsRedundant(newINCI, qINew, qNew->ne)) {
-                        for (k = qNew->ne - 1; k >= 0; k--)
-                            if (INCI_LE(newINCI, qINew[k])) {
-                                qINew[k] = qINew[qNew->ne - 1];
-                                qNew->e[k] = qNew->e[qNew->ne - 1];
-                                qNew->ne--;
-                            }
-                        assert(qNew->ne < EQUA_Nmax - 1);
-                        qINew[qNew->ne] = newINCI;
-                        qNew->e[qNew->ne] = EEV_To_Equation(
-                            &qOld->e[i], &qOld->e[j], y, DIMENSION);
-                        if (qNew->e[qNew->ne].c > 0) {
-                            for (k = 0; k < DIMENSION; k++)
-                                qNew->e[qNew->ne].a[k] *= -1;
-                            qNew->e[qNew->ne].c *= -1;
-                        }
-                        qNew->ne++;
+            if (yqOld[i] * yqOld[j] < 0) {
+                newINCI = INCI_OR(qIOld[i], qIOld[j]);
+
+                if (INCI_abs(newINCI) > n + 1)
+                    continue;
+
+                if (IsRedundant(newINCI, qINew, qNew->ne))
+                    continue;
+
+                for (k = qNew->ne - 1; k >= 0; k--)
+                    if (INCI_LE(newINCI, qINew[k])) {
+                        qINew[k] = qINew[qNew->ne - 1];
+                        qNew->e[k] = qNew->e[qNew->ne - 1];
+                        qNew->ne--;
                     }
+                assert(qNew->ne < EQUA_Nmax - 1);
+                qINew[qNew->ne] = newINCI;
+                qNew->e[qNew->ne] = EEV_To_Equation(
+                    &qOld->e[i], &qOld->e[j], y, DIMENSION);
+                if (qNew->e[qNew->ne].c > 0) {
+                    for (k = 0; k < DIMENSION; k++)
+                        qNew->e[qNew->ne].a[k] *= -1;
+                    qNew->e[qNew->ne].c *= -1;
+                }
+                qNew->ne++;
+            }
 
     q_cones.insert(*qNew);
     ++q_cones_insertions;
