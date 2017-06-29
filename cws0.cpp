@@ -18,7 +18,7 @@ namespace {
 const int dim = DIMENSION;
 
 struct EquationRedux {
-    std::array<Long, POLY_Dmax> a;
+    std::array<Long, dim> a;
     Long c;
 
     EquationRedux() {}
@@ -141,21 +141,21 @@ void RgcWeights(void);
 
 typedef struct {
     int allow11;                      // Classification parameters
-    Long x[POLY_Dmax + 1][POLY_Dmax]; // List of points that have to be allowed
+    Long x[dim + 1][dim]; // List of points that have to be allowed
                                       // by the weight system
-    Long x_inner_q[POLY_Dmax + 1][POLY_Dmax]; // First index: n,
+    Long x_inner_q[dim + 1][dim]; // First index: n,
                                               // second index: number of q_tilde
-    Equation q_tilde[POLY_Dmax];
-    EqList q[POLY_Dmax]; // TODO: Precursor to weight systems. Written in
+    Equation q_tilde[dim];
+    EqList q[dim]; // TODO: Precursor to weight systems. Written in
                          // ComputeQ0 and ComputeQ
-    INCI qI[POLY_Dmax][EQUA_Nmax];
-    int f0[POLY_Dmax]; // TODO: This is something to check for redundant points
+    INCI qI[dim][EQUA_Nmax];
+    int f0[dim]; // TODO: This is something to check for redundant points
     weight_system_store_t *wli;
     Long wnum;    // Number of weight system candidates
     Long candnum; // Number of weight system candidates, including duplicates
     Long winum;   // Number of IP weight systems
-    size_t recursion_level_counts[POLY_Dmax];
-    size_t weight_counts[POLY_Dmax];
+    size_t recursion_level_counts[dim];
+    size_t weight_counts[dim];
     time_t start_time;
 } RgcClassData;
 
@@ -225,7 +225,7 @@ void RgcAddweight(Equation wn, RgcClassData &X)
 void PrintQ(int n, RgcClassData &X)
 {
     int i, j;
-    assert(n < POLY_Dmax);
+    assert(n < dim);
     for (i = 0; i < n; i++)
         printf(" ");
     printf("q: ne=%d\n", X.q[n].ne);
@@ -312,7 +312,7 @@ int PointForbidden(const std::array<Long, dim> &y, int n, RgcClassData &X)
 
     for (int i = 1; i < n; ++i) {
         Long *y_other = X.x[i];
-        Long y_diff[POLY_Dmax];
+        Long y_diff[dim];
 
         for (int j = 0; j < dim; ++j)
             y_diff[j] = y_other[j] - y[j];
@@ -605,8 +605,8 @@ int WsIpCheck(const Equation &q)
         static_cast<PolyPointList *>(operator new(sizeof(PolyPointList))));
     VertexNumList V;
     EqList E;
-    Long y[POLY_Dmax];
-    Long yq[POLY_Dmax];
+    Long y[dim];
+    Long yq[dim];
     P->n = dim;
     P->np = 0;
     for (k = 0; k < dim; k++) {
