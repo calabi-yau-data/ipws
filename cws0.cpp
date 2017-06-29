@@ -1,10 +1,10 @@
 #include <time.h>
-#include <set>
-#include <array>
 #include <algorithm>
+#include <array>
 #include <iostream>
-#include <vector>
 #include <memory>
+#include <set>
+#include <vector>
 
 extern "C" {
 #include "Global.h"
@@ -13,13 +13,15 @@ extern "C" {
 
 #include "weight_system_store.h"
 
-static const int dim = DIMENSION;
+namespace {
+
+const int dim = DIMENSION;
 
 struct EquationRedux {
     std::array<Long, POLY_Dmax> a;
     Long c;
 
-    EquationRedux() { }
+    EquationRedux() {}
     EquationRedux(const Equation &e)
     {
         c = e.c;
@@ -133,20 +135,9 @@ void enumerate_points_below(const Equation &q, F callback)
 std::set<Cone> q_cones;
 int q_cones_insertions = 0;
 
-FILE *inFILE, *outFILE;
-
 #define SKEW 0
 
 void RgcWeights(void);
-
-int main()
-{
-    inFILE = stdin;
-    outFILE = stdout;
-
-    RgcWeights();
-    return 0;
-}
 
 typedef struct {
     int allow11;                      // Classification parameters
@@ -186,7 +177,7 @@ void print_stats(const RgcClassData &X)
     fflush(stdout);
 }
 
-static Long eval_eq(const Equation &e, const Long v[dim])
+Long eval_eq(const Equation &e, const Long v[dim])
 {
     Long p = e.c;
     for (int i = 0; i < dim; ++i)
@@ -301,8 +292,8 @@ int PointForbidden(const std::array<Long, dim> &y, int n, RgcClassData &X)
         if (ymax < 3)
             return 1;
 
-    // TODO: This drastically removes redundant points. How does it work?
 #if SKEW == 0
+    // TODO: This drastically removes redundant points. How does it work?
     for (l = X.f0[n - 1]; l < dim - 1; l++)
         if (y[l] < y[l + 1])
             return 1;
@@ -446,8 +437,8 @@ bool ComputeQ(Equation &q, int n, RgcClassData &X)
                     }
                 assert(qNew.ne < EQUA_Nmax - 1);
                 qINew[qNew.ne] = newINCI;
-                qNew.e[qNew.ne] = EEV_To_Equation(
-                    &qOld.e[i], &qOld.e[j], y, dim);
+                qNew.e[qNew.ne] =
+                    EEV_To_Equation(&qOld.e[i], &qOld.e[j], y, dim);
                 if (qNew.e[qNew.ne].c > 0) {
                     for (k = 0; k < dim; k++)
                         qNew.e[qNew.ne].a[k] *= -1;
@@ -687,4 +678,17 @@ void RgcWeights(void)
         }
     }
     printf("#ip=%ld, #cand=%ld(%ld)\n", X.winum, X.wnum, X.candnum);
+}
+};
+
+FILE *inFILE;
+FILE *outFILE;
+
+int main()
+{
+    inFILE = stdin;
+    outFILE = stdout;
+
+    RgcWeights();
+    return 0;
 }
