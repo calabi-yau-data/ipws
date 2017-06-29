@@ -13,6 +13,8 @@ extern "C" {
 
 #include "weight_system_store.h"
 
+static const int dim = DIMENSION;
+
 struct EquationRedux {
     std::array<Long, POLY_Dmax> a;
     Long c;
@@ -21,7 +23,7 @@ struct EquationRedux {
     EquationRedux(const Equation &e)
     {
         c = e.c;
-        for (int i = 0; i < DIMENSION; ++i)
+        for (int i = 0; i < dim; ++i)
             a[i] = e.a[i];
     }
 
@@ -30,7 +32,7 @@ struct EquationRedux {
         if (c != rhs.c)
             return true;
 
-        for (int i = 0; i < DIMENSION; ++i)
+        for (int i = 0; i < dim; ++i)
             if (a[i] != rhs.a[i])
                 return true;
 
@@ -42,7 +44,7 @@ struct EquationRedux {
         if (c != rhs.c)
             return c < rhs.c;
 
-        for (int i = 0; i < DIMENSION; ++i)
+        for (int i = 0; i < dim; ++i)
             if (a[i] != rhs.a[i])
                 return a[i] < rhs.a[i];
 
@@ -61,7 +63,7 @@ struct EquationRedux {
 
 class Cone {
     int ne;
-    // std::array<EquationRedux, DIMENSION * 2> e;
+    // std::array<EquationRedux, dim * 2> e;
     std::vector<EquationRedux> e;
 
 public:
@@ -106,24 +108,24 @@ public:
 template <class F>
 void enumerate_points_below(const Equation &q, F callback)
 {
-    std::array<Long, DIMENSION> x;
-    std::array<Long, DIMENSION> a_times_x;
+    std::array<Long, dim> x;
+    std::array<Long, dim> a_times_x;
 
-    std::fill_n(x.begin(), DIMENSION - 1, 0);
-    std::fill_n(a_times_x.begin(), DIMENSION - 1, 0);
+    std::fill_n(x.begin(), dim - 1, 0);
+    std::fill_n(a_times_x.begin(), dim - 1, 0);
 
-    x[DIMENSION - 1] = -1;
-    a_times_x[DIMENSION - 1] = -q.a[DIMENSION - 1];
+    x[dim - 1] = -1;
+    a_times_x[dim - 1] = -q.a[dim - 1];
 
-    for (int k = DIMENSION - 1; k >= 0;) {
+    for (int k = dim - 1; k >= 0;) {
         x[k]++;
         a_times_x[k] += q.a[k];
-        for (int i = k + 1; i < DIMENSION; i++)
+        for (int i = k + 1; i < dim; i++)
             a_times_x[i] = a_times_x[k];
 
         callback(x);
 
-        for (k = DIMENSION - 1; k >= 0 && a_times_x[k] + q.a[k] >= -q.c; k--)
+        for (k = dim - 1; k >= 0 && a_times_x[k] + q.a[k] >= -q.c; k--)
             x[k] = 0;
     }
 }
@@ -171,11 +173,11 @@ int ComputeAverageWeight(Equation &q, int n, RgcClassData &X);
 void print_stats(const RgcClassData &X)
 {
     printf("%8.3f: ", (time(NULL) - X.start_time) / 60.0);
-    for (size_t i = 1; i < DIMENSION - 1; ++i)
+    for (size_t i = 1; i < dim - 1; ++i)
         printf("%ld ", X.recursion_level_counts[i]);
     printf("-- ");
 
-    for (size_t i = 1; i < DIMENSION; ++i)
+    for (size_t i = 1; i < dim; ++i)
         printf("%ld ", X.weight_counts[i]);
     printf("-- ");
 
@@ -184,10 +186,10 @@ void print_stats(const RgcClassData &X)
     fflush(stdout);
 }
 
-static Long eval_eq(const Equation &e, const Long v[DIMENSION])
+static Long eval_eq(const Equation &e, const Long v[dim])
 {
     Long p = e.c;
-    for (int i = 0; i < DIMENSION; ++i)
+    for (int i = 0; i < dim; ++i)
         p += v[i] * e.a[i];
     return p;
 }
@@ -199,26 +201,26 @@ void RgcAddweight(Equation wn, RgcClassData &X)
     int i, j, p, k;
 
     // Skip weight systems containing a weight of 1/2
-    for (i = 0; i < DIMENSION; i++)
+    for (i = 0; i < dim; i++)
         if (2 * wn.a[i] == -wn.c)
             return;
 
     // Skip weight systems containing a weight of 1
-    for (i = 0; i < DIMENSION; i++)
+    for (i = 0; i < dim; i++)
         if (wn.a[i] == -wn.c)
             return;
 
     // Skip weight systems containing two weights with a sum of 1
     if (!X.allow11)
-        for (i = 0; i < DIMENSION - 1; i++)
-            for (j = i + 1; j < DIMENSION; j++)
+        for (i = 0; i < dim - 1; i++)
+            for (j = i + 1; j < dim; j++)
                 if (wn.a[i] + wn.a[j] == -wn.c)
                     return;
 
     // Sort weights
     X.candnum++;
-    for (i = 0; i < DIMENSION - 1; i++)
-        for (p = i + 1; p < DIMENSION; p++)
+    for (i = 0; i < dim - 1; i++)
+        for (p = i + 1; p < dim; p++)
             if (wn.a[i] > wn.a[p]) {
                 k = wn.a[i];
                 wn.a[i] = wn.a[p];
@@ -238,7 +240,7 @@ void PrintQ(int n, RgcClassData &X)
     printf("q: ne=%d\n", X.q[n].ne);
     for (j = 0; j < X.q[n].ne; j++) {
         printf("%d  ", (int)X.q[n].e[j].c);
-        for (i = 0; i < DIMENSION; i++)
+        for (i = 0; i < dim; i++)
             printf("%d ", (int)X.q[n].e[j].a[i]);
         printf("\n");
     }
@@ -248,14 +250,14 @@ void PrintEquation(const Equation &q /*, char *c, int j*/)
 {
     int i;
     printf("%d  ", (int)-q.c);
-    for (i = 0; i < DIMENSION; i++)
+    for (i = 0; i < dim; i++)
         printf("%d ", (int)q.a[i]);
     /*printf("  %s  np=%d\n", c, j);*/
 }
 
-int lex_cmp(const Long y1[DIMENSION], const Long y2[DIMENSION])
+int lex_cmp(const Long y1[dim], const Long y2[dim])
 {
-    for (int i = 0; i < DIMENSION; ++i) {
+    for (int i = 0; i < dim; ++i) {
         if (y1[i] < y2[i])
             return -1;
         if (y1[i] > y2[i])
@@ -265,14 +267,14 @@ int lex_cmp(const Long y1[DIMENSION], const Long y2[DIMENSION])
 }
 
 // Tests if the point y should be considered
-int PointForbidden(const std::array<Long, DIMENSION> &y, int n, RgcClassData &X)
+int PointForbidden(const std::array<Long, dim> &y, int n, RgcClassData &X)
 {
     int l;
     Long ysum = 0, ymax = 0;
 
-    // assert(n < DIMENSION);
+    // assert(n < dim);
 
-    for (l = 0; l < DIMENSION; l++) {
+    for (l = 0; l < dim; l++) {
         ysum += y[l];
         if (y[l] > ymax)
             ymax = y[l];
@@ -301,7 +303,7 @@ int PointForbidden(const std::array<Long, DIMENSION> &y, int n, RgcClassData &X)
 
     // TODO: This drastically removes redundant points. How does it work?
 #if SKEW == 0
-    for (l = X.f0[n - 1]; l < DIMENSION - 1; l++)
+    for (l = X.f0[n - 1]; l < dim - 1; l++)
         if (y[l] < y[l + 1])
             return 1;
 #endif
@@ -321,7 +323,7 @@ int PointForbidden(const std::array<Long, DIMENSION> &y, int n, RgcClassData &X)
         Long *y_other = X.x[i];
         Long y_diff[POLY_Dmax];
 
-        for (int j = 0; j < DIMENSION; ++j)
+        for (int j = 0; j < dim; ++j)
             y_diff[j] = y_other[j] - y[j];
 
         int v = 1;
@@ -330,7 +332,7 @@ int PointForbidden(const std::array<Long, DIMENSION> &y, int n, RgcClassData &X)
         else if (y_diff[0] < 0)
             v = -y_diff[0];
 
-        for (int j = 1; j < DIMENSION; ++j) {
+        for (int j = 1; j < dim; ++j) {
             if (y_diff[j] > 0)
                 v = Fgcd(v, y_diff[j]);
             else if (y_diff[j] < 0)
@@ -338,11 +340,11 @@ int PointForbidden(const std::array<Long, DIMENSION> &y, int n, RgcClassData &X)
         }
 
         if (v != 1)
-            for (int j = 0; j < DIMENSION; ++j)
+            for (int j = 0; j < dim; ++j)
                 y_diff[j] /= v;
 
         bool all_positive = true;
-        for (int j = 0; j < DIMENSION; ++j) {
+        for (int j = 0; j < dim; ++j) {
             if (y_other[j] + y_diff[j] < 0) {
                 all_positive = false;
                 break;
@@ -352,7 +354,7 @@ int PointForbidden(const std::array<Long, DIMENSION> &y, int n, RgcClassData &X)
             return 1;
 
         all_positive = true;
-        for (int j = 0; j < DIMENSION; ++j) {
+        for (int j = 0; j < dim; ++j) {
             if (y[j] - y_diff[j] < 0) {
                 all_positive = false;
                 break;
@@ -371,9 +373,9 @@ int PointForbidden(const std::array<Long, DIMENSION> &y, int n, RgcClassData &X)
 bool ComputeQ0(Equation &q, RgcClassData &X)
 {
     int i, j;
-    X.q[0].ne = DIMENSION;
+    X.q[0].ne = dim;
     for (i = 0; i < X.q[0].ne; i++) {
-        for (j = 0; j < DIMENSION; j++)
+        for (j = 0; j < dim; j++)
             X.q[0].e[i].a[j] = 0;
         if (TWO_TIMES_R % 2) {
             X.q[0].e[i].a[i] = TWO_TIMES_R;
@@ -391,7 +393,7 @@ bool ComputeQ0(Equation &q, RgcClassData &X)
     return ComputeAverageWeight(q, 0, X);
 }
 
-int IsRedundant(INCI newINCI, INCI qINew[DIMENSION], int ne)
+int IsRedundant(INCI newINCI, INCI qINew[dim], int ne)
 {
     int i;
     for (i = 0; i < ne; i++)
@@ -412,8 +414,8 @@ bool ComputeQ(Equation &q, int n, RgcClassData &X)
     INCI *qINew = X.qI[n];
     INCI newINCI;
 
-    assert(n < DIMENSION);
-    for (i = DIMENSION - 1; (i >= X.f0[n - 1]) && (y[i] == 0); i--)
+    assert(n < dim);
+    for (i = dim - 1; (i >= X.f0[n - 1]) && (y[i] == 0); i--)
         ;
     X.f0[n] = ++i;
 
@@ -445,9 +447,9 @@ bool ComputeQ(Equation &q, int n, RgcClassData &X)
                 assert(qNew.ne < EQUA_Nmax - 1);
                 qINew[qNew.ne] = newINCI;
                 qNew.e[qNew.ne] = EEV_To_Equation(
-                    &qOld.e[i], &qOld.e[j], y, DIMENSION);
+                    &qOld.e[i], &qOld.e[j], y, dim);
                 if (qNew.e[qNew.ne].c > 0) {
-                    for (k = 0; k < DIMENSION; k++)
+                    for (k = 0; k < dim; k++)
                         qNew.e[qNew.ne].a[k] *= -1;
                     qNew.e[qNew.ne].c *= -1;
                 }
@@ -473,10 +475,10 @@ void Cancel(Equation &q)
 {
     Long gcd = -q.c;
     int j;
-    for (j = 0; j < DIMENSION; j++)
+    for (j = 0; j < dim; j++)
         gcd = Fgcd(gcd, q.a[j]);
     if (gcd > 1) {
-        for (j = 0; j < DIMENSION; j++)
+        for (j = 0; j < dim; j++)
             q.a[j] /= gcd;
         q.c /= gcd;
     }
@@ -489,7 +491,7 @@ int ComputeAverageWeight(Equation &q, int n, RgcClassData &X)
 
     ++X.weight_counts[n];
 
-    if (el.ne < DIMENSION - n)
+    if (el.ne < dim - n)
         return 0;
 
     q.c = -1;
@@ -500,7 +502,7 @@ int ComputeAverageWeight(Equation &q, int n, RgcClassData &X)
         }
         q.c = -Flcm(-q.c, -el.e[i].c);
     }
-    for (j = 0; j < DIMENSION; j++) {
+    for (j = 0; j < dim; j++) {
         q.a[j] = 0;
         for (i = 0; i < el.ne; i++)
             q.a[j] += el.e[i].a[j] * (q.c / el.e[i].c);
@@ -520,16 +522,16 @@ int ComputeAverageWeight(Equation &q, int n, RgcClassData &X)
 
 bool ComputeLastQ(Equation &q, RgcClassData &X)
 {
-    /* q[DIMENSION-1] from q[DIMENSION-2], x[DIMENSION-1] */
+    /* q[dim-1] from q[dim-2], x[dim-1] */
     int i;
-    Equation &q0 = X.q[DIMENSION - 2].e[0];
-    Equation &q1 = X.q[DIMENSION - 2].e[1];
-    Long *y = X.x[DIMENSION - 1];
+    Equation &q0 = X.q[dim - 2].e[0];
+    Equation &q1 = X.q[dim - 2].e[1];
+    Long *y = X.x[dim - 1];
 
-    assert(X.q[DIMENSION - 2].ne == 2);
+    assert(X.q[dim - 2].ne == 2);
 
-    ++X.weight_counts[DIMENSION - 1];
-    // if (++X.weight_counts[DIMENSION - 1] % 100000 == 0)
+    ++X.weight_counts[dim - 1];
+    // if (++X.weight_counts[dim - 1] % 100000 == 0)
     //     print_stats(X);
 
     Long yq0 = eval_eq(q0, y);
@@ -547,7 +549,7 @@ bool ComputeLastQ(Equation &q, RgcClassData &X)
         yq1 *= -1;
     }
     q.c = yq0 * q1.c + yq1 * q0.c;
-    for (i = 0; i < DIMENSION; i++)
+    for (i = 0; i < dim; i++)
         q.a[i] = yq0 * q1.a[i] + yq1 * q0.a[i];
     Cancel(q);
     return true;
@@ -565,7 +567,7 @@ void RecConstructRgcWeights(int n, RgcClassData &X)
         if (!ComputeQ0(q, X))
             return;
         break;
-    case DIMENSION - 1:
+    case dim - 1:
         if (!ComputeLastQ(q, X))
             return;
         break;
@@ -578,7 +580,7 @@ void RecConstructRgcWeights(int n, RgcClassData &X)
 
     RgcAddweight(q, X);
 
-    if (n == DIMENSION - 1)
+    if (n == dim - 1)
         return;
 
     X.q_tilde[n] = q;
@@ -592,7 +594,7 @@ void RecConstructRgcWeights(int n, RgcClassData &X)
     });
 }
 
-void AddPointToPoly(Long y[DIMENSION], PolyPointList &P)
+void AddPointToPoly(Long y[dim], PolyPointList &P)
 {
     if (P.np >= POINT_Nmax) {
         printf("ohh no\n");
@@ -614,36 +616,36 @@ int WsIpCheck(const Equation &q)
     EqList E;
     Long y[POLY_Dmax];
     Long yq[POLY_Dmax];
-    P->n = DIMENSION;
+    P->n = dim;
     P->np = 0;
-    for (k = 0; k < DIMENSION; k++) {
+    for (k = 0; k < dim; k++) {
         y[k] = 0;
         yq[k] = 0;
     }
-    k = DIMENSION - 1;
+    k = dim - 1;
     AddPointToPoly(y, *P);
     y[k] = -1; /* starting point just outside                       */
     yq[k] = -q.a[k];
     while (k >= 0) {
         y[k]++;
         yq[k] += q.a[k];
-        for (l = k + 1; l < DIMENSION; l++)
+        for (l = k + 1; l < dim; l++)
             yq[l] = yq[k];
         if (yq[k] == -q.c)
             AddPointToPoly(y, *P);
-        for (k = DIMENSION - 1; (k >= 0 ? (yq[k] + q.a[k] > -q.c) : 0); k--)
+        for (k = dim - 1; (k >= 0 ? (yq[k] + q.a[k] > -q.c) : 0); k--)
             y[k] = 0;
     }
     /* sets k to the highest value where y[k] didn't exceed max value;
        resets the following max values to min values                 */
-    if (P->np <= DIMENSION) {
+    if (P->np <= dim) {
         return 0;
     }
     Find_Equations(&*P, &V, &E);
-    if (E.ne < DIMENSION) {
+    if (E.ne < dim) {
         return 0;
     }
-    for (k = 0; k < DIMENSION; k++)
+    for (k = 0; k < dim; k++)
         y[k] = 1;
     for (k = 0; k < E.ne; k++)
         if (eval_eq(E.e[k], y) <= 0)
@@ -681,7 +683,7 @@ void RgcWeights(void)
             // PrintEquation(*e);
             // printf("  np=%d\n", i);
             X.winum++;
-            /*else PrintEquation(X.wli[i], DIMENSION, "n");*/
+            /*else PrintEquation(X.wli[i], dim, "n");*/
         }
     }
     printf("#ip=%ld, #cand=%ld(%ld)\n", X.winum, X.wnum, X.candnum);
