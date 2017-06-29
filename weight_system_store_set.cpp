@@ -14,15 +14,15 @@ public:
         return false;
     }
 
-    WeightSystem(const Equation &eq)
+    WeightSystem(const Hyperplane &eq)
     {
         for (size_t i = 0; i < dim; ++i)
             weights[i] = eq.a[i];
     }
 
-    operator Equation() const
+    operator Hyperplane() const
     {
-        Equation eq;
+        Hyperplane eq;
 
         eq.c = 0;
         for (size_t i = 0; i < dim; ++i) {
@@ -40,7 +40,7 @@ using Set = std::set<WeightSystem>;
 struct weight_system_store {
     Set s;
     Set::iterator it;
-    Equation eq;
+    Hyperplane eq;
 };
 
 weight_system_store_t *weight_system_store_new()
@@ -53,7 +53,8 @@ void weight_system_store_free(weight_system_store_t *store)
     delete store;
 }
 
-void weight_system_store_insert(weight_system_store_t *store, const Equation *e)
+void weight_system_store_insert(weight_system_store_t *store,
+                                const Hyperplane *e)
 {
     store->s.insert(WeightSystem{*e});
 }
@@ -68,7 +69,7 @@ void weight_system_store_begin_iteration(weight_system_store_t *store)
     store->it = store->s.begin();
 }
 
-const Equation *weight_system_store_next(weight_system_store_t *store)
+const Hyperplane *weight_system_store_next(weight_system_store_t *store)
 {
     if (store->it == store->s.end())
         return nullptr;
