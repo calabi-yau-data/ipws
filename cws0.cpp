@@ -7,16 +7,13 @@
 #include <set>
 #include <vector>
 
-extern "C" {
 #include "Global.h"
 #include "Rat.h"
-}
 
 #include "weight_system_store.h"
 
 namespace {
 
-const int dim = DIMENSION;
 const bool allow11 = false;
 
 struct EquationRedux {
@@ -302,12 +299,12 @@ int PointForbidden(const Vector &y, int n, ClassificationData &X)
 
     // Point does not allow positive weight systems (except if all coordinates
     // are 1)
-    if (TWO_TIMES_R == 2)
+    if (two_times_r == 2)
         if (ymax < 2)
             return 1;
 
     // TODO: Why can we exclude this?
-    if (TWO_TIMES_R == 1)
+    if (two_times_r == 1)
         if (ymax < 3)
             return 1;
 
@@ -386,11 +383,11 @@ bool ComputeQ0(Equation &q, ClassificationData &X)
     for (int i = 0; i < X.muh[0].generators.ne; i++) {
         for (int j = 0; j < dim; j++)
             X.muh[0].generators.e[i].a[j] = 0;
-        if (TWO_TIMES_R % 2) {
-            X.muh[0].generators.e[i].a[i] = TWO_TIMES_R;
+        if (two_times_r % 2) {
+            X.muh[0].generators.e[i].a[i] = two_times_r;
             X.muh[0].generators.e[i].c = -2;
         } else {
-            X.muh[0].generators.e[i].a[i] = TWO_TIMES_R / 2;
+            X.muh[0].generators.e[i].a[i] = two_times_r / 2;
             X.muh[0].generators.e[i].c = -1;
         }
     }

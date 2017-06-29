@@ -3,12 +3,12 @@
 #include <set>
 
 class WeightSystem {
-    int16_t weights[DIMENSION];
+    int16_t weights[dim];
 
 public:
     bool operator<(const WeightSystem &rhs) const
     {
-        for (size_t i = DIMENSION; i--;)
+        for (size_t i = dim; i--;)
             if (weights[i] != rhs.weights[i])
                 return weights[i] < rhs.weights[i];
         return false;
@@ -16,7 +16,7 @@ public:
 
     WeightSystem(const Equation &eq)
     {
-        for (size_t i = 0; i < DIMENSION; ++i)
+        for (size_t i = 0; i < dim; ++i)
             weights[i] = eq.a[i];
     }
 
@@ -25,11 +25,11 @@ public:
         Equation eq;
 
         eq.c = 0;
-        for (size_t i = 0; i < DIMENSION; ++i) {
+        for (size_t i = 0; i < dim; ++i) {
             eq.a[i] = weights[i];
             eq.c -= eq.a[i];
         }
-        eq.c = eq.c * 2 / TWO_TIMES_R;
+        eq.c = eq.c * 2 / two_times_r;
 
         return eq;
     }

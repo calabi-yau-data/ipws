@@ -23,8 +23,9 @@ necessary to set even Long to 64 bits.
 */
 
 #define   		POLY_Dmax	4	/* max dim of polytope	    */
-#define DIMENSION POLY_Dmax
-#define TWO_TIMES_R 1
+
+static const int dim = POLY_Dmax;
+static const int two_times_r = 1;
 
 /*
 POLY_Dmax should be set to the dimension of the polytopes that are analysed.
@@ -175,7 +176,9 @@ This list is an extension of the PolyPointList with the combined weight system.
 W[i][j] is the j'th weight; nw is the number of weight systems.
 */
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*  ==========         I/O functions (from Coord.c)		==========  */
 
@@ -583,5 +586,9 @@ void Print_FaceInfo(int n, FaceInfo *FI);
 /*
 Displays the information contained in the FaceInfo *FI.
 */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
