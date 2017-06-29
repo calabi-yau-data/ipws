@@ -22,10 +22,10 @@ For higher dimensional or complicated non-reflexive polytopes it may be
 necessary to set even Long to 64 bits.
 */
 
-#define   		POLY_Dmax	4	/* max dim of polytope	    */
+#define   		POLY_Dmax	5	/* max dim of polytope	    */
 
 static const int dim = POLY_Dmax;
-static const int two_times_r = 1;
+static const int two_times_r = 2;
 
 /*
 POLY_Dmax should be set to the dimension of the polytopes that are analysed.
