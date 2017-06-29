@@ -16,6 +16,7 @@ extern "C" {
 namespace {
 
 const int dim = DIMENSION;
+const bool allow11 = false;
 
 struct EquationRedux {
     std::array<Long, dim> a;
@@ -139,17 +140,26 @@ int q_cones_insertions = 0;
 
 void RgcWeights(void);
 
-typedef struct {
-    int allow11;                      // Classification parameters
-    Long x[dim + 1][dim]; // List of points that have to be allowed
-                                      // by the weight system
-    Long x_inner_q[dim + 1][dim]; // First index: n,
-                                              // second index: number of q_tilde
-    Equation q_tilde[dim];
-    EqList q[dim]; // TODO: Precursor to weight systems. Written in
-                         // ComputeQ0 and ComputeQ
-    INCI qI[dim][EQUA_Nmax];
+using Vector = std::array<Long, dim>;
+
+struct RationalCone {
+    EqList generators;
+    std::array<INCI, EQUA_Nmax> incidences;
+};
+
+struct ClassificationData {
+    template <class T, size_t N>
+    using array = std::array<T, N>;
+
+    array<Vector, dim + 1> x; // List of points that have to be
+                                        // allowed by the weight system
+    array<array<Long, dim>, dim + 1> x_inner_q; // First index: n,
+                                                // second index: number of q_tilde
+    array<Equation, dim> q_tilde;
     int f0[dim]; // TODO: This is something to check for redundant points
+
+    array<RationalCone, dim> muh;
+
     weight_system_store_t *wli;
     Long wnum;    // Number of weight system candidates
     Long candnum; // Number of weight system candidates, including duplicates
@@ -157,11 +167,11 @@ typedef struct {
     size_t recursion_level_counts[dim];
     size_t weight_counts[dim];
     time_t start_time;
-} RgcClassData;
+};
 
-int ComputeAverageWeight(Equation &q, int n, RgcClassData &X);
+int ComputeAverageWeight(Equation &q, int n, ClassificationData &X);
 
-void print_stats(const RgcClassData &X)
+void print_stats(const ClassificationData &X)
 {
     printf("%8.3f: ", (time(NULL) - X.start_time) / 60.0);
     for (size_t i = 1; i < dim - 1; ++i)
@@ -177,7 +187,7 @@ void print_stats(const RgcClassData &X)
     fflush(stdout);
 }
 
-Long eval_eq(const Equation &e, const Long v[dim])
+Long eval_eq(const Equation &e, const Vector &v)
 {
     Long p = e.c;
     for (int i = 0; i < dim; ++i)
@@ -187,7 +197,7 @@ Long eval_eq(const Equation &e, const Long v[dim])
 
 // Adds weight system wn to the sorted list X.wli, if it is basic and not
 // already there.
-void RgcAddweight(Equation wn, RgcClassData &X)
+void RgcAddweight(Equation wn, ClassificationData &X)
 {
     int i, j, p, k;
 
@@ -202,7 +212,7 @@ void RgcAddweight(Equation wn, RgcClassData &X)
             return;
 
     // Skip weight systems containing two weights with a sum of 1
-    if (!X.allow11)
+    if (!allow11)
         for (i = 0; i < dim - 1; i++)
             for (j = i + 1; j < dim; j++)
                 if (wn.a[i] + wn.a[j] == -wn.c)
@@ -222,17 +232,17 @@ void RgcAddweight(Equation wn, RgcClassData &X)
     weight_system_store_insert(X.wli, &wn);
 }
 
-void PrintQ(int n, RgcClassData &X)
+void PrintQ(int n, ClassificationData &X)
 {
     int i, j;
     assert(n < dim);
     for (i = 0; i < n; i++)
         printf(" ");
-    printf("q: ne=%d\n", X.q[n].ne);
-    for (j = 0; j < X.q[n].ne; j++) {
-        printf("%d  ", (int)X.q[n].e[j].c);
+    printf("q: ne=%d\n", X.muh[n].generators.ne);
+    for (j = 0; j < X.muh[n].generators.ne; j++) {
+        printf("%d  ", (int)X.muh[n].generators.e[j].c);
         for (i = 0; i < dim; i++)
-            printf("%d ", (int)X.q[n].e[j].a[i]);
+            printf("%d ", (int)X.muh[n].generators.e[j].a[i]);
         printf("\n");
     }
 }
@@ -246,7 +256,7 @@ void PrintEquation(const Equation &q /*, char *c, int j*/)
     /*printf("  %s  np=%d\n", c, j);*/
 }
 
-int lex_cmp(const Long y1[dim], const Long y2[dim])
+int lex_cmp(const Vector &y1, const Vector &y2)
 {
     for (int i = 0; i < dim; ++i) {
         if (y1[i] < y2[i])
@@ -258,7 +268,7 @@ int lex_cmp(const Long y1[dim], const Long y2[dim])
 }
 
 // Tests if the point y should be considered
-int PointForbidden(const std::array<Long, dim> &y, int n, RgcClassData &X)
+int PointForbidden(const Vector &y, int n, ClassificationData &X)
 {
     int l;
     Long ysum = 0, ymax = 0;
@@ -278,7 +288,7 @@ int PointForbidden(const std::array<Long, dim> &y, int n, RgcClassData &X)
     // Point leads to weight systems containing a weight of 1/2 or two weights
     // with a sum of 1
     if (ysum == 2)
-        if ((!X.allow11) || (ymax == 2))
+        if (!allow11 || ymax == 2)
             return 1;
 
     // Point does not allow positive weight systems (except if all coordinates
@@ -300,18 +310,18 @@ int PointForbidden(const std::array<Long, dim> &y, int n, RgcClassData &X)
 #endif
 
     for (int i = 0; i < n; ++i)
-        X.x_inner_q[n][i] = eval_eq(X.q_tilde[i], y.data());
+        X.x_inner_q[n][i] = eval_eq(X.q_tilde[i], y);
 
     for (int i = 0; i < n - 1; ++i) {
         int rel = X.x_inner_q[i + 1][i] - X.x_inner_q[n][i];
         if (rel > 0)
             return 1;
-        if (rel == 0 && lex_cmp(X.x[i + 1], y.data()) < 0)
+        if (rel == 0 && lex_cmp(X.x[i + 1], y) < 0)
             return 1;
     }
 
     for (int i = 1; i < n; ++i) {
-        Long *y_other = X.x[i];
+        auto &y_other = X.x[i];
         Long y_diff[dim];
 
         for (int j = 0; j < dim; ++j)
@@ -361,30 +371,30 @@ int PointForbidden(const std::array<Long, dim> &y, int n, RgcClassData &X)
 // Initializes X.q such that it represents the following weight systems:
 // (r, 0, ... 0), (0, r, ... 0), ... (0, 0, ... r).
 // TODO: Also does something to X.f0 and X.qI
-bool ComputeQ0(Equation &q, RgcClassData &X)
+bool ComputeQ0(Equation &q, ClassificationData &X)
 {
     int i, j;
-    X.q[0].ne = dim;
-    for (i = 0; i < X.q[0].ne; i++) {
+    X.muh[0].generators.ne = dim;
+    for (i = 0; i < X.muh[0].generators.ne; i++) {
         for (j = 0; j < dim; j++)
-            X.q[0].e[i].a[j] = 0;
+            X.muh[0].generators.e[i].a[j] = 0;
         if (TWO_TIMES_R % 2) {
-            X.q[0].e[i].a[i] = TWO_TIMES_R;
-            X.q[0].e[i].c = -2;
+            X.muh[0].generators.e[i].a[i] = TWO_TIMES_R;
+            X.muh[0].generators.e[i].c = -2;
         } else {
-            X.q[0].e[i].a[i] = TWO_TIMES_R / 2;
-            X.q[0].e[i].c = -1;
+            X.muh[0].generators.e[i].a[i] = TWO_TIMES_R / 2;
+            X.muh[0].generators.e[i].c = -1;
         }
     }
     X.f0[0] = 0;
-    X.qI[0][0] = INCI_1();
-    for (i = 1; i < X.q[0].ne; i++)
-        X.qI[0][i] = INCI_PN(X.qI[0][i - 1], 1);
+    X.muh[0].incidences[0] = INCI_1();
+    for (i = 1; i < X.muh[0].generators.ne; i++)
+        X.muh[0].incidences[i] = INCI_PN(X.muh[0].incidences[i - 1], 1);
 
     return ComputeAverageWeight(q, 0, X);
 }
 
-int IsRedundant(INCI newINCI, INCI qINew[dim], int ne)
+int IsRedundant(INCI newINCI, const std::array<INCI, EQUA_Nmax> &qINew, int ne)
 {
     int i;
     for (i = 0; i < ne; i++)
@@ -393,16 +403,16 @@ int IsRedundant(INCI newINCI, INCI qINew[dim], int ne)
     return 0;
 }
 
-bool ComputeQ(Equation &q, int n, RgcClassData &X)
+bool ComputeQ(Equation &q, int n, ClassificationData &X)
 {
     /* q[n] from q[n-1], x[n] */
     int i, j, k;
-    Long *y = X.x[n];
+    auto &y = X.x[n];
     Long yqOld[EQUA_Nmax];
-    EqList &qOld = X.q[n - 1];
-    EqList &qNew = X.q[n];
-    INCI *qIOld = X.qI[n - 1];
-    INCI *qINew = X.qI[n];
+    EqList &qOld = X.muh[n - 1].generators;
+    EqList &qNew = X.muh[n].generators;
+    auto &qIOld = X.muh[n - 1].incidences;
+    auto &qINew = X.muh[n].incidences;
     INCI newINCI;
 
     assert(n < dim);
@@ -438,7 +448,7 @@ bool ComputeQ(Equation &q, int n, RgcClassData &X)
                 assert(qNew.ne < EQUA_Nmax - 1);
                 qINew[qNew.ne] = newINCI;
                 qNew.e[qNew.ne] =
-                    EEV_To_Equation(&qOld.e[i], &qOld.e[j], y, dim);
+                    EEV_To_Equation(&qOld.e[i], &qOld.e[j], y.data(), dim);
                 if (qNew.e[qNew.ne].c > 0) {
                     for (k = 0; k < dim; k++)
                         qNew.e[qNew.ne].a[k] *= -1;
@@ -475,10 +485,10 @@ void Cancel(Equation &q)
     }
 }
 
-int ComputeAverageWeight(Equation &q, int n, RgcClassData &X)
+int ComputeAverageWeight(Equation &q, int n, ClassificationData &X)
 {
     int i, j;
-    EqList &el = X.q[n];
+    EqList &el = X.muh[n].generators;
 
     ++X.weight_counts[n];
 
@@ -511,15 +521,15 @@ int ComputeAverageWeight(Equation &q, int n, RgcClassData &X)
     return 1;
 }
 
-bool ComputeLastQ(Equation &q, RgcClassData &X)
+bool ComputeLastQ(Equation &q, ClassificationData &X)
 {
     /* q[dim-1] from q[dim-2], x[dim-1] */
-    int i;
-    Equation &q0 = X.q[dim - 2].e[0];
-    Equation &q1 = X.q[dim - 2].e[1];
-    Long *y = X.x[dim - 1];
+    assert(X.muh[dim - 2].generators.ne == 2);
 
-    assert(X.q[dim - 2].ne == 2);
+    int i;
+    Equation &q0 = X.muh[dim - 2].generators.e[0];
+    Equation &q1 = X.muh[dim - 2].generators.e[1];
+    auto &y = X.x[dim - 1];
 
     ++X.weight_counts[dim - 1];
     // if (++X.weight_counts[dim - 1] % 100000 == 0)
@@ -546,7 +556,7 @@ bool ComputeLastQ(Equation &q, RgcClassData &X)
     return true;
 }
 
-void RecConstructRgcWeights(int n, RgcClassData &X)
+void RecConstructRgcWeights(int n, ClassificationData &X)
 {
     /* we have q[n-1], x[n] */
     Equation q;
@@ -605,7 +615,7 @@ int WsIpCheck(const Equation &q)
         static_cast<PolyPointList *>(operator new(sizeof(PolyPointList))));
     VertexNumList V;
     EqList E;
-    Long y[dim];
+    Vector y;
     Long yq[dim];
     P->n = dim;
     P->np = 0;
@@ -614,7 +624,7 @@ int WsIpCheck(const Equation &q)
         yq[k] = 0;
     }
     k = dim - 1;
-    AddPointToPoly(y, *P);
+    AddPointToPoly(y.data(), *P);
     y[k] = -1; /* starting point just outside                       */
     yq[k] = -q.a[k];
     while (k >= 0) {
@@ -623,7 +633,7 @@ int WsIpCheck(const Equation &q)
         for (l = k + 1; l < dim; l++)
             yq[l] = yq[k];
         if (yq[k] == -q.c)
-            AddPointToPoly(y, *P);
+            AddPointToPoly(y.data(), *P);
         for (k = dim - 1; (k >= 0 ? (yq[k] + q.a[k] > -q.c) : 0); k--)
             y[k] = 0;
     }
@@ -649,7 +659,7 @@ int WsIpCheck(const Equation &q)
 
 void RgcWeights(void)
 {
-    RgcClassData X{};
+    ClassificationData X{};
 
     X.wli = weight_system_store_new();
     X.start_time = time(NULL);
