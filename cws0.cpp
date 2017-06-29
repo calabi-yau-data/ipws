@@ -1,6 +1,7 @@
 #include <time.h>
 #include <algorithm>
 #include <array>
+#include <bitset>
 #include <iostream>
 #include <memory>
 #include <set>
@@ -142,9 +143,17 @@ void RgcWeights(void);
 
 using Vector = std::array<Long, dim>;
 
+template <size_t N>
+bool operator<(const std::bitset<N> &lhs, const std::bitset<N> &rhs)
+{
+    return (lhs | rhs) == rhs;
+}
+
 struct RationalCone {
+    using Incidence = std::bitset<dim>;
+
     EqList generators;
-    std::array<INCI, EQUA_Nmax> incidences;
+    std::array<Incidence, EQUA_Nmax> incidences;
 };
 
 struct ClassificationData {
@@ -373,10 +382,9 @@ int PointForbidden(const Vector &y, int n, ClassificationData &X)
 // TODO: Also does something to X.f0 and X.qI
 bool ComputeQ0(Equation &q, ClassificationData &X)
 {
-    int i, j;
     X.muh[0].generators.ne = dim;
-    for (i = 0; i < X.muh[0].generators.ne; i++) {
-        for (j = 0; j < dim; j++)
+    for (int i = 0; i < X.muh[0].generators.ne; i++) {
+        for (int j = 0; j < dim; j++)
             X.muh[0].generators.e[i].a[j] = 0;
         if (TWO_TIMES_R % 2) {
             X.muh[0].generators.e[i].a[i] = TWO_TIMES_R;
@@ -387,20 +395,20 @@ bool ComputeQ0(Equation &q, ClassificationData &X)
         }
     }
     X.f0[0] = 0;
-    X.muh[0].incidences[0] = INCI_1();
-    for (i = 1; i < X.muh[0].generators.ne; i++)
-        X.muh[0].incidences[i] = INCI_PN(X.muh[0].incidences[i - 1], 1);
+    for (int i = 0; i < X.muh[0].generators.ne; i++)
+        X.muh[0].incidences[i].set(i);
 
     return ComputeAverageWeight(q, 0, X);
 }
 
-int IsRedundant(INCI newINCI, const std::array<INCI, EQUA_Nmax> &qINew, int ne)
+bool IsRedundant(const RationalCone::Incidence &new_incidence,
+                 const std::array<RationalCone::Incidence, EQUA_Nmax> &qINew,
+                 int ne)
 {
-    int i;
-    for (i = 0; i < ne; i++)
-        if (INCI_LE(qINew[i], newINCI))
-            return 1;
-    return 0;
+    for (int i = 0; i < ne; i++)
+        if (qINew[i] < new_incidence)
+            return true;
+    return false;
 }
 
 bool ComputeQ(Equation &q, int n, ClassificationData &X)
@@ -413,7 +421,6 @@ bool ComputeQ(Equation &q, int n, ClassificationData &X)
     EqList &qNew = X.muh[n].generators;
     auto &qIOld = X.muh[n - 1].incidences;
     auto &qINew = X.muh[n].incidences;
-    INCI newINCI;
 
     assert(n < dim);
     for (i = dim - 1; (i >= X.f0[n - 1]) && (y[i] == 0); i--)
@@ -431,22 +438,22 @@ bool ComputeQ(Equation &q, int n, ClassificationData &X)
     for (i = 0; i < qOld.ne - 1; i++)
         for (j = i + 1; j < qOld.ne; j++)
             if (yqOld[i] * yqOld[j] < 0) {
-                newINCI = INCI_OR(qIOld[i], qIOld[j]);
+                auto new_incidence = qIOld[i] | qIOld[j];
 
-                if (INCI_abs(newINCI) > n + 1)
+                if (static_cast<int>(new_incidence.count()) > n + 1)
                     continue;
 
-                if (IsRedundant(newINCI, qINew, qNew.ne))
+                if (IsRedundant(new_incidence, qINew, qNew.ne))
                     continue;
 
                 for (k = qNew.ne - 1; k >= 0; k--)
-                    if (INCI_LE(newINCI, qINew[k])) {
+                    if (new_incidence < qINew[k]) {
                         qINew[k] = qINew[qNew.ne - 1];
                         qNew.e[k] = qNew.e[qNew.ne - 1];
                         qNew.ne--;
                     }
                 assert(qNew.ne < EQUA_Nmax - 1);
-                qINew[qNew.ne] = newINCI;
+                qINew[qNew.ne] = new_incidence;
                 qNew.e[qNew.ne] =
                     EEV_To_Equation(&qOld.e[i], &qOld.e[j], y.data(), dim);
                 if (qNew.e[qNew.ne].c > 0) {
