@@ -184,7 +184,7 @@ void print_stats(const RgcClassData &X)
     fflush(stdout);
 }
 
-static Long eval_eq(const Equation &e, Long v[DIMENSION])
+static Long eval_eq(const Equation &e, const Long v[DIMENSION])
 {
     Long p = e.c;
     for (int i = 0; i < DIMENSION; ++i)
@@ -264,11 +264,10 @@ int lex_cmp(const Long y1[DIMENSION], const Long y2[DIMENSION])
     return 0;
 }
 
-// Tests if the last point added to X.x should really be considered.
-int LastPointForbidden(int n, RgcClassData &X)
+// Tests if the point y should be considered
+int PointForbidden(const std::array<Long, DIMENSION> &y, int n, RgcClassData &X)
 {
     int l;
-    Long *y = X.x[n];
     Long ysum = 0, ymax = 0;
 
     // assert(n < DIMENSION);
@@ -308,13 +307,13 @@ int LastPointForbidden(int n, RgcClassData &X)
 #endif
 
     for (int i = 0; i < n; ++i)
-        X.x_inner_q[n][i] = eval_eq(X.q_tilde[i], y);
+        X.x_inner_q[n][i] = eval_eq(X.q_tilde[i], y.data());
 
     for (int i = 0; i < n - 1; ++i) {
         int rel = X.x_inner_q[i + 1][i] - X.x_inner_q[n][i];
         if (rel > 0)
             return 1;
-        if (rel == 0 && lex_cmp(X.x[i + 1], X.x[n]) < 0)
+        if (rel == 0 && lex_cmp(X.x[i + 1], y.data()) < 0)
             return 1;
     }
 
@@ -561,13 +560,16 @@ void RecConstructRgcWeights(int n, RgcClassData &X)
 
     ++X.recursion_level_counts[n];
 
-    if (n == 0) {
+    switch (n) {
+    case 0:
         if (!ComputeQ0(q, X))
             return;
-    } else if (n == DIMENSION - 1) {
+        break;
+    case DIMENSION - 1:
         if (!ComputeLastQ(q, X))
             return;
-    } else {
+        break;
+    default:
         if (!ComputeQ(q, n, X))
             return;
     }
@@ -581,22 +583,12 @@ void RecConstructRgcWeights(int n, RgcClassData &X)
 
     X.q_tilde[n] = q;
 
-    // switch (n) {
-    // case 0:
-    //     break;
-    // case 1:
-    //     fprintf(stderr, "\n* ");
-    //     break;
-    // default:
-    //     fprintf(stderr, "%d:%d ", n, weight_system_store_size(X.wli));
-    //     fflush(stderr);
-    //     break;
-    // }
-
     enumerate_points_below(q, [&](auto &x) {
+        if (PointForbidden(x, n + 1, X))
+            return;
+
         std::copy(x.begin(), x.end(), std::begin(X.x[n + 1]));
-        if (!LastPointForbidden(n + 1, X))
-            RecConstructRgcWeights(n + 1, X);
+        RecConstructRgcWeights(n + 1, X);
     });
 }
 
