@@ -713,9 +713,20 @@ void RgcWeights(void)
     // for (auto &cone : sorted_q_cones)
     //     cout << cone << endl;
 
+    // std::ofstream out{"out", std::ofstream::binary};
+    // std::ofstream txt_out{"out.txt"};
+
     const Hyperplane *e;
     weight_system_store_begin_iteration(X.wli);
     while (e = weight_system_store_next(X.wli)) {
+        // for (int i = 0; i < dim; ++i)
+        //     out.write(reinterpret_cast<const char *>(&e->a[i]), sizeof(e->a[i]));
+
+        // txt_out << "{" << e->a[0];
+        // for (int i = 1; i < dim; ++i)
+        //     txt_out << "," << e->a[i];
+        // txt_out << "},\n";
+
         int i = WsIpCheck(*e);
         if (i) {
             // PrintEquation(*e);
