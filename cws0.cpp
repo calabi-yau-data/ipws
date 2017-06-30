@@ -218,7 +218,7 @@ struct FinalCone {
     Hyperplane eq1, eq2;
 
     FinalCone() {}
-    FinalCone(const RationalCone &cone)
+    explicit FinalCone(const RationalCone &cone)
     {
         assert(cone.generators.size() == 2);
 
@@ -563,7 +563,7 @@ void RecConstructRgcWeights(int n, ClassificationData &X)
 
     if (defer_last_recursion && n == dim - 2) {
         ++deferred_cones_insertions;
-        deferred_cones.insert(q_cone);
+        deferred_cones.insert(FinalCone{q_cone});
         // if (deferred_cones_insertions % 100000 == 0) {
         //     printf("%8.3f: ", (time(NULL) - X.start_time) / 60.0);
         //     cout << deferred_cones.size() << "/"
