@@ -391,7 +391,7 @@ bool point_trivially_forbidden(const Vector &x, int ordered_from_coordinate)
 }
 
 // Returns true if the point should be excluded
-int point_forbidden(const Vector &x, int n, ClassificationData &X)
+bool point_forbidden(const Vector &x, int n, ClassificationData &X)
 {
     for (int i = 0; i < n - 1; ++i) {
         int rel = X.x_inner_q[i + 1][i] - X.x_inner_q[n][i];
