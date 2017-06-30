@@ -62,6 +62,34 @@ void enumerate_points_below(const Hyperplane &q, F callback)
     }
 }
 
+// Enumerates all points x with nonnegative coordinates, satisfying
+// q.a * x + q.c == 0. Not optimized.
+template <class F>
+void enumerate_points_on(const Hyperplane &q, F callback)
+{
+    std::array<Long, dim> x;
+    std::array<Long, dim> ax;
+
+    std::fill_n(x.begin(), dim - 1, 0);
+    std::fill_n(ax.begin(), dim - 1, 0);
+
+    x[dim - 1] = -1;
+    ax[dim - 1] = -q.a[dim - 1];
+
+    for (int k = dim - 1; k >= 0;) {
+        x[k]++;
+        ax[k] += q.a[k];
+        for (int i = k + 1; i < dim; i++)
+            ax[i] = ax[k];
+
+        if (ax[k] + q.c == 0)
+            callback(x);
+
+        for (k = dim - 1; k >= 0 && ax[k] + q.a[k] + q.c > 0; k--)
+            x[k] = 0;
+    }
+}
+
 struct RationalCone {
     struct Generator {
         Hyperplane eq;
@@ -458,6 +486,33 @@ void RecConstructRgcWeights(int n, ClassificationData &X)
     }
 
     // print_stats(x);
+
+    // it is not economical to do this on the last recursion level
+    if (n != dim - 1) {
+        bool skip = false;
+        // if (n == dim - 1)
+        //     q_cone = X.q_cones[n - 1].restrict(X.x[n], n);
+
+        enumerate_points_on(q, [&](auto &x) {
+            for (unsigned int i = 1; i < q_cone.generators.size(); ++i) {
+                if (q_cone.generators[i].eq * x != 0)
+                    return;
+            }
+
+            // TODO: Do we have to check if x is linearly independent of the
+            // other points?
+            for (int i = 0; i < n; ++i) {
+                int diff = X.x_inner_q[i + 1][i] - x * X.qs[i];
+                if (diff > 0 || (diff == 0 && lex_cmp(x, X.x[i + 1]) > 0)) {
+                    skip = true;
+                    return;
+                }
+            }
+        });
+
+        if (skip)
+            return;
+    }
 
     RgcAddweight(q, X);
 
