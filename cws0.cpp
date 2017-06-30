@@ -532,8 +532,8 @@ void RecConstructRgcWeights(int n, ClassificationData &X)
 
     // print_stats(x);
 
-    // it is not economical to do this on the last recursion level
-    if (n != dim - 1) {
+    // it is not economical to do this on the last two recursion levels
+    if (n < dim - 2) {
         bool skip = false;
         // if (n == dim - 1)
         //     q_cone = X.q_cones[n - 1].restrict(X.x[n], n);
