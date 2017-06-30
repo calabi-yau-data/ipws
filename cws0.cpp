@@ -224,16 +224,42 @@ struct FinalCone {
     {
         assert(cone.generators.size() == 2);
 
-        if (cone.generators[0].eq < cone.generators[1].eq) {
-            eq1 = cone.generators[0].eq;
-            eq2 = cone.generators[1].eq;
-        } else {
-            eq1 = cone.generators[1].eq;
-            eq2 = cone.generators[0].eq;
+        std::array<std::array<Long, 2>, dim> blub1, blub2;
+
+        for (int i = 0; i < dim; ++i) {
+            blub1[i][0] = cone.generators[0].eq.a[i];
+            blub1[i][1] = cone.generators[1].eq.a[i];
+
+            blub2[i][1] = cone.generators[0].eq.a[i];
+            blub2[i][0] = cone.generators[1].eq.a[i];
         }
+
+        std::sort(blub1.begin(), blub1.end(),
+                  [](auto &a, auto &b) { return a[0] > b[0]; });
+        std::sort(blub2.begin(), blub2.end(),
+                  [](auto &a, auto &b) { return a[0] > b[0]; });
+
+        bool which = true;
+        for (int i = 0; i < dim; ++i)
+            if (blub1[i][0] != blub2[i][0])
+                which = blub1[i][0] > blub2[i][0];
+
+        auto &blub = which ? blub1 : blub2;
+
+        eq1.c = 0;
+        eq2.c = 0;
+        for (int i = 0; i < dim; ++i) {
+            eq1.a[i] = blub[i][0];
+            eq2.a[i] = blub[i][1];
+            eq1.c += eq1.a[i];
+            eq2.c += eq2.a[i];
+        }
+        eq1.c = -eq1.c * 2 / two_times_r;
+        eq2.c = -eq2.c * 2 / two_times_r;
     }
 
-    operator RationalCone() const {
+    operator RationalCone() const
+    {
         RationalCone ret{};
         ret.generators.push_back({eq1, {}});
         ret.generators.push_back({eq2, {}});
