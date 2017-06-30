@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <array>
 #include <bitset>
+#include <climits>
 #include <iostream>
 #include <memory>
 #include <set>
@@ -14,7 +15,12 @@
 
 #include "weight_system_store.h"
 
+using std::cout;
+using std::endl;
+
 namespace {
+
+const bool defer_last_recursion = true;
 
 template <class T, class F>
 void rearranging_erase_if(std::vector<T> &c, F f)
@@ -207,6 +213,45 @@ public:
         return os;
     }
 };
+
+struct FinalCone {
+    Hyperplane eq1, eq2;
+
+    FinalCone() {}
+    FinalCone(const RationalCone &cone)
+    {
+        assert(cone.generators.size() == 2);
+
+        if (cone.generators[0].eq < cone.generators[1].eq) {
+            eq1 = cone.generators[0].eq;
+            eq2 = cone.generators[1].eq;
+        } else {
+            eq1 = cone.generators[1].eq;
+            eq2 = cone.generators[0].eq;
+        }
+    }
+
+    operator RationalCone() const {
+        RationalCone ret{};
+        ret.generators.push_back({eq1, {}});
+        ret.generators.push_back({eq2, {}});
+        return ret;
+    }
+
+    bool operator<(const FinalCone &rhs) const
+    {
+        if (eq1 != rhs.eq1)
+            return eq1 < rhs.eq1;
+
+        if (eq2 != rhs.eq2)
+            return eq2 < rhs.eq2;
+
+        return false;
+    }
+};
+
+std::set<FinalCone> deferred_cones;
+int deferred_cones_insertions = 0;
 
 std::set<RationalCone> sorted_q_cones;
 int sorted_q_cones_insertions = 0;
@@ -474,8 +519,8 @@ void RecConstructRgcWeights(int n, ClassificationData &X)
 
         q_cone = X.q_cones[n - 1].restrict(X.x[n], n);
 
-        sorted_q_cones.insert(X.q_cones[n]);
-        ++sorted_q_cones_insertions;
+        // sorted_q_cones.insert(X.q_cones[n]);
+        // ++sorted_q_cones_insertions;
 
         // if (sorted_q_cones_insertions % 10000 == 0)
         //     printf("sorted_q_cones: %d/%d\n", (int)sorted_q_cones.size(),
@@ -515,6 +560,17 @@ void RecConstructRgcWeights(int n, ClassificationData &X)
     }
 
     RgcAddweight(q, X);
+
+    if (defer_last_recursion && n == dim - 2) {
+        ++deferred_cones_insertions;
+        deferred_cones.insert(q_cone);
+        // if (deferred_cones_insertions % 100000 == 0) {
+        //     printf("%8.3f: ", (time(NULL) - X.start_time) / 60.0);
+        //     cout << deferred_cones.size() << "/"
+        //          << deferred_cones_insertions << std::endl;
+        // }
+        return;
+    }
 
     if (n == dim - 1)
         return;
@@ -606,15 +662,36 @@ void RgcWeights(void)
     RecConstructRgcWeights(0, X);
     // fprintf(stderr, "\n");
 
-    X.wnum = weight_system_store_size(X.wli);
-
-    printf("q_cones: %d/%d\n", (int)sorted_q_cones.size(),
-           sorted_q_cones_insertions);
-    fflush(stdout);
-    // for (auto &cone : sorted_q_cones)
-    //     std::cout << cone << std::endl;
+    printf("q_cones: %d/%d also %d\n", (int)sorted_q_cones.size(),
+           sorted_q_cones_insertions, (int)deferred_cones.size());
 
     print_stats(X);
+
+    if (defer_last_recursion) {
+        for (auto &cone : deferred_cones) {
+            RationalCone q_cone = cone;
+            Hyperplane q;
+            if (!q_cone.average_if_nonzero(q))
+                return;
+
+            enumerate_points_below(q, [&](auto &x) {
+                    Hyperplane q_final;
+                    // if (point_trivially_forbidden(x, INT_MAX))
+                    //     return;
+
+                    if (intersect_if_positive(q_final, cone.eq1, cone.eq2, x))
+                        RgcAddweight(q_final, X);
+                });
+        }
+
+        print_stats(X);
+    }
+
+    X.wnum = weight_system_store_size(X.wli);
+
+    fflush(stdout);
+    // for (auto &cone : sorted_q_cones)
+    //     cout << cone << endl;
 
     const Hyperplane *e;
     weight_system_store_begin_iteration(X.wli);
