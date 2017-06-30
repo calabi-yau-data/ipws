@@ -1,8 +1,10 @@
+#include <arpa/inet.h>
 #include <time.h>
 #include <algorithm>
 #include <array>
 #include <bitset>
 #include <climits>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <set>
@@ -666,6 +668,24 @@ void RgcWeights(void)
            sorted_q_cones_insertions, (int)deferred_cones.size());
 
     print_stats(X);
+
+    // std::ofstream cones_out{"deferred_cones", std::ofstream::binary};
+    // for (auto &cone : deferred_cones) {
+    //     for (int i = 0; i < dim; ++i) {
+    //         auto v = cone.eq1.a[i];
+    //         assert(v >= 0 && v <= UINT16_MAX);
+    //         uint16_t v16 = htons(v);
+    //         cones_out.write(reinterpret_cast<const char *>(&v16), sizeof(v16));
+    //     }
+    //     for (int i = 0; i < dim; ++i) {
+    //         auto v = cone.eq2.a[i];
+    //         assert(v >= 0 && v <= UINT16_MAX);
+    //         uint16_t v16 = htons(v);
+    //         cones_out.write(reinterpret_cast<const char *>(&v16), sizeof(v16));
+    //     }
+    // }
+    // print_stats(X);
+    // return;
 
     if (defer_last_recursion) {
         for (auto &cone : deferred_cones) {
