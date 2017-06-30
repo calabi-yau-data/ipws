@@ -22,6 +22,9 @@ using std::endl;
 
 namespace {
 
+
+const bool write_cones = false;
+const bool read_from_file = false;
 const bool defer_last_recursion = true;
 
 template <class T, class F>
@@ -308,7 +311,7 @@ struct ClassificationData {
 
 void print_stats(const ClassificationData &X)
 {
-    printf("%8.3f: ", (time(NULL) - X.start_time) / 60.0);
+    printf("%7.2f: ", (time(NULL) - X.start_time) / 60.0);
     for (size_t i = 1; i < dim - 1; ++i)
         printf("%ld ", X.recursion_level_counts[i]);
     printf("-- ");
@@ -592,11 +595,11 @@ void RecConstructRgcWeights(int n, ClassificationData &X)
     if (defer_last_recursion && n == dim - 2) {
         ++deferred_cones_insertions;
         deferred_cones.insert(FinalCone{q_cone});
-        // if (deferred_cones_insertions % 100000 == 0) {
-        //     printf("%8.3f: ", (time(NULL) - X.start_time) / 60.0);
-        //     cout << deferred_cones.size() << "/"
-        //          << deferred_cones_insertions << std::endl;
-        // }
+        if (deferred_cones_insertions % 100000 == 0) {
+            printf("%7.2f: ", (time(NULL) - X.start_time) / 60.0);
+            cout << deferred_cones.size() << "/" << deferred_cones_insertions
+                 << std::endl;
+        }
         return;
     }
 
@@ -687,6 +690,75 @@ void RgcWeights(void)
     X.wli = weight_system_store_new();
     X.start_time = time(NULL);
 
+    std::ofstream out{"out", std::ofstream::binary};
+    std::ofstream txt_out{"out.txt"};
+
+    if (read_from_file) {
+        RationalCone cone{};
+        cone.generators.resize(2);
+        int in_count = 0;
+
+        std::ifstream cones_in{"deferred_cones", std::ifstream::binary};
+        srand(time(NULL));
+        while (cones_in) {
+            // cones_in.seekg((rand() % 46890549) * 20);
+            Hyperplane q;
+
+            q.c = 0;
+            for (int i = 0; i < dim; ++i) {
+                uint16_t v16;
+                cones_in.read(reinterpret_cast<char *>(&v16), sizeof(v16));
+                q.a[i] = ntohs(v16);
+                q.c += q.a[i];
+            }
+            q.c = -q.c * 2 / two_times_r;
+            cone.generators[0].eq = q;
+
+            q.c = 0;
+            for (int i = 0; i < dim; ++i) {
+                uint16_t v16;
+                cones_in.read(reinterpret_cast<char *>(&v16), sizeof(v16));
+                q.a[i] = ntohs(v16);
+                q.c += q.a[i];
+            }
+            q.c = -q.c * 2 / two_times_r;
+            cone.generators[1].eq = q;
+
+            if (!cone.average_if_nonzero(q)) {
+                cout << ".";
+                continue;
+            }
+
+            enumerate_points_below(q, [&](auto &x) {
+                Hyperplane q_final;
+                // if (point_trivially_forbidden(x, INT_MAX))
+                //     return;
+
+                if (intersect_if_positive(q_final, cone.generators[0].eq,
+                                          cone.generators[1].eq, x)) {
+                    // for (int i = 0; i < dim; ++i) {
+                    //     auto v = q_final.a[i];
+                    //     assert(v >= 0 && v <= UINT32_MAX);
+                    //     uint32_t v32 = htonl(v);
+                    //     out.write(reinterpret_cast<const char *>(&v32), sizeof(v32));
+                    // }
+
+                    RgcAddweight(q_final, X);
+                }
+            });
+
+            ++in_count;
+
+            // printf("%7.2f %d %d->%d\n", (time(NULL) - X.start_time) / 60.0,
+            //        weight_system_store_size(X.wli), in_count, X.candnum);
+
+            // if (weight_system_store_size(X.wli) >= 100000)
+            //     break;
+        }
+
+        print_stats(X);
+    } else {
+
     RecConstructRgcWeights(0, X);
     // fprintf(stderr, "\n");
 
@@ -695,23 +767,25 @@ void RgcWeights(void)
 
     print_stats(X);
 
-    // std::ofstream cones_out{"deferred_cones", std::ofstream::binary};
-    // for (auto &cone : deferred_cones) {
-    //     for (int i = 0; i < dim; ++i) {
-    //         auto v = cone.eq1.a[i];
-    //         assert(v >= 0 && v <= UINT16_MAX);
-    //         uint16_t v16 = htons(v);
-    //         cones_out.write(reinterpret_cast<const char *>(&v16), sizeof(v16));
-    //     }
-    //     for (int i = 0; i < dim; ++i) {
-    //         auto v = cone.eq2.a[i];
-    //         assert(v >= 0 && v <= UINT16_MAX);
-    //         uint16_t v16 = htons(v);
-    //         cones_out.write(reinterpret_cast<const char *>(&v16), sizeof(v16));
-    //     }
-    // }
-    // print_stats(X);
-    // return;
+    if (write_cones) {
+        std::ofstream cones_out{"deferred_cones", std::ofstream::binary};
+        for (auto &cone : deferred_cones) {
+            for (int i = 0; i < dim; ++i) {
+                auto v = cone.eq1.a[i];
+                assert(v >= 0 && v <= UINT16_MAX);
+                uint16_t v16 = htons(v);
+                cones_out.write(reinterpret_cast<const char *>(&v16), sizeof(v16));
+            }
+            for (int i = 0; i < dim; ++i) {
+                auto v = cone.eq2.a[i];
+                assert(v >= 0 && v <= UINT16_MAX);
+                uint16_t v16 = htons(v);
+                cones_out.write(reinterpret_cast<const char *>(&v16), sizeof(v16));
+            }
+        }
+        print_stats(X);
+        return;
+    }
 
     if (defer_last_recursion) {
         for (auto &cone : deferred_cones) {
@@ -731,6 +805,8 @@ void RgcWeights(void)
         }
 
         print_stats(X);
+    }
+
     }
 
     X.wnum = weight_system_store_size(X.wli);
@@ -761,6 +837,7 @@ void RgcWeights(void)
             /*else PrintEquation(X.wli[i], dim, "n");*/
         }
     }
+    print_stats(X);
     printf("#ip=%ld, #cand=%ld(%ld)\n", X.winum, X.wnum, X.candnum);
 }
 };
