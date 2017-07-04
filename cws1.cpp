@@ -31,7 +31,7 @@ set<WeightSystem> weight_systems{};
 void add_maybe(WeightSystem ws) {
     Long norm = std::accumulate(ws.a.begin(), ws.a.end(), 0);
 
-    // TODO: check!
+    // TODO: check! also, this does not seem to do much.
     for (unsigned i = 0; i < dim; ++i) {
         if (!allow_weight_one_half && 2 * ws.a[i] * r_numerator == norm * r_denominator)
             return;
@@ -40,6 +40,7 @@ void add_maybe(WeightSystem ws) {
             return;
     }
 
+    // TODO: check! also, this does not seem to do much.
     if (!allow_weights_sum_one)
         for (unsigned i = 0; i < dim - 1; ++i)
             for (unsigned j = i + 1; j < dim; ++j)
