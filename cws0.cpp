@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <bitset>
+#include <chrono>
 #include <climits>
 #include <fstream>
 #include <iostream>
@@ -287,6 +288,18 @@ int deferred_cones_insertions = 0;
 std::set<RationalCone> sorted_q_cones;
 int sorted_q_cones_insertions = 0;
 
+class Stopwatch {
+    std::chrono::time_point<std::chrono::high_resolution_clock> start;
+public:
+    Stopwatch() : start(std::chrono::high_resolution_clock::now()) {}
+
+    double count() const {
+        auto now = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> duration = now - start;
+        return duration.count();
+    }
+};
+
 struct ClassificationData {
     template <class T, size_t N>
     using array = std::array<T, N>;
@@ -306,12 +319,12 @@ struct ClassificationData {
     Long winum;   // Number of IP weight systems
     size_t recursion_level_counts[dim];
     size_t weight_counts[dim];
-    time_t start_time;
+    Stopwatch stopwatch;
 };
 
 void print_stats(const ClassificationData &X)
 {
-    printf("%7.2f: ", (time(NULL) - X.start_time) / 60.0);
+    printf("%7.2f: ", X.stopwatch.count());
     for (size_t i = 1; i < dim - 1; ++i)
         printf("%ld ", X.recursion_level_counts[i]);
     printf("-- ");
@@ -596,7 +609,7 @@ void RecConstructRgcWeights(int n, ClassificationData &X)
         ++deferred_cones_insertions;
         deferred_cones.insert(FinalCone{q_cone});
         if (deferred_cones_insertions % 100000 == 0) {
-            printf("%7.2f: ", (time(NULL) - X.start_time) / 60.0);
+            printf("%7.2f: ", X.stopwatch.count());
             cout << deferred_cones.size() << "/" << deferred_cones_insertions
                  << std::endl;
         }
@@ -688,7 +701,6 @@ void RgcWeights(void)
     ClassificationData X{};
 
     X.wli = weight_system_store_new();
-    X.start_time = time(NULL);
 
     std::ofstream out{"out", std::ofstream::binary};
     std::ofstream txt_out{"out.txt"};
