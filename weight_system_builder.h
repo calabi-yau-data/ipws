@@ -202,8 +202,8 @@ public:
     }
 
     __attribute__ ((noinline))
-    static bool gives_good_weightsystem(const Vector &x, Long r_numerator,
-                                        Long r_denominator) {
+    static bool leads_to_allowed_weightsystem(const Vector &x, Long r_numerator,
+                                              Long r_denominator) {
         Long xsum = 0, xmax = 0;
 
         for (int l = 0; l < dim; l++) {
@@ -212,18 +212,17 @@ public:
                 xmax = x[l];
         }
 
-        // Point leads to weight systems containing a weight of 1
-        if (xsum < 2)
-            return false;
-
-        // Point leads to weight systems containing a weight of 1/2 or two
-        // weights with a sum of 1
-        if (xsum == 2)
-            return false;
-
-        // Point does not allow positive weight systems (except if all
-        // coordinates are 1/r)
+        // Point is not allowed by a positive weight system
         if (xmax * r_numerator <= r_denominator)
+            return false;
+
+        if (!allow_weight_one && xsum == 1)
+            return false;
+
+        if (!allow_weight_one_half && xsum == 2 && xmax == 2)
+            return false;
+
+        if (!allow_weights_sum_one && xsum == 2 && xmax != 2)
             return false;
 
         return true;

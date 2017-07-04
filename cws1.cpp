@@ -30,20 +30,18 @@ set<WeightSystem> weight_systems{};
 
 void add_maybe(WeightSystem ws) {
     for (unsigned i = 0; i < dim; ++i) {
-        // Skip weight systems containing a weight of 1/2
-        if (2 * ws.a[i] == ws.c)
+        if (!allow_weight_one_half && 2 * ws.a[i] == ws.c)
             return;
 
-        // Skip weight systems containing a weight of 1
-        if (ws.a[i] == ws.c)
+        if (!allow_weight_one && ws.a[i] == ws.c)
             return;
     }
 
-    // Skip weight systems containing two weights with a sum of 1
-    for (unsigned i = 0; i < dim - 1; ++i)
-        for (unsigned j = i + 1; j < dim; ++j)
-            if (ws.a[i] + ws.a[j] == ws.c)
-                return;
+    if (!allow_weights_sum_one)
+        for (unsigned i = 0; i < dim - 1; ++i)
+            for (unsigned j = i + 1; j < dim; ++j)
+                if (ws.a[i] + ws.a[j] == ws.c)
+                    return;
 
     ++count;
 
@@ -99,8 +97,8 @@ void rec(const WeightSystemBuilder &builder) {
     while (points.find_next()) {
         const Vector &x = points.get();
 
-        if (!WeightSystemBuilder::gives_good_weightsystem(x, r_numerator,
-                                                          r_denominator) ||
+        if (!WeightSystemBuilder::leads_to_allowed_weightsystem(x, r_numerator,
+                                                                r_denominator) ||
             !is_sorted(x, symmetries))
             continue;
 

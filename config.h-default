@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <stdbool.h>
+
 #define DIMENSION 5
 #define TWO_TIMES_R 3
 
@@ -11,5 +13,14 @@ static const int dim = DIMENSION;
 static const int two_times_r = TWO_TIMES_R;
 static const Long r_numerator = TWO_TIMES_R;
 static const Long r_denominator = 2;
+
+// Allow weight systems containing a weight of 1
+static const bool allow_weight_one = false;
+
+// Allow weight systems containing a weight of 1/2
+static const bool allow_weight_one_half = false;
+
+// Allow weight systems containing two weights with a sum of 1
+static const bool allow_weights_sum_one = false;
 
 #endif
