@@ -188,12 +188,43 @@ public:
         return ret;
     }
 
+    // __attribute__ ((noinline))
+    // bool sum_if_nonzero(WeightSystem &q) const {
+    //     for (size_t j = 0; j < dim; ++j) {
+    //         q.a[j] = 0;
+    //         for (size_t i = 0; i < generators.size(); ++i)
+    //             q.a[j] += generators[i].eq.a[j];
+
+    //         if (q.a[j] == 0)
+    //             return false;
+    //     }
+
+    //     q.cancel();
+
+    //     return true;
+    // }
+
     __attribute__ ((noinline))
-    bool sum_if_nonzero(WeightSystem &q) const {
+    bool average_if_nonzero(WeightSystem &q) const {
+        unsigned size = generators.size();
+        if (size == 0)
+            return false;
+
+        std::vector<Long> norms;
+        norms.reserve(size);
+
+        for (unsigned i = 0; i < size; ++i)
+            norms.push_back(std::accumulate(generators[i].eq.a.begin(),
+                                            generators[i].eq.a.end(), 0));
+
+        Long lcm = norms[0];
+        for (size_t i = 1; i < generators.size(); ++i)
+            lcm = std::experimental::lcm(lcm, norms[i]);
+
         for (size_t j = 0; j < dim; ++j) {
             q.a[j] = 0;
             for (size_t i = 0; i < generators.size(); ++i)
-                q.a[j] += generators[i].eq.a[j];
+                q.a[j] += generators[i].eq.a[j] * (lcm / norms[i]);
 
             if (q.a[j] == 0)
                 return false;

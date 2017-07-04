@@ -54,7 +54,7 @@ void add_maybe(WeightSystem ws) {
 
 void rec(const WeightSystemBuilder &builder) {
     WeightSystem ws{};
-    if (!builder.sum_if_nonzero(ws))
+    if (!builder.average_if_nonzero(ws))
         return;
 
     // // it is not economical to do this on the last two recursion levels
