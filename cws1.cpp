@@ -33,17 +33,17 @@ void add_maybe(WeightSystem ws) {
 
     // TODO: check!
     for (unsigned i = 0; i < dim; ++i) {
-        if (!allow_weight_one_half && 2 * ws.a[i] * r_denominator == norm * r_numerator)
+        if (!allow_weight_one_half && 2 * ws.a[i] * r_numerator == norm * r_denominator)
             return;
 
-        if (!allow_weight_one && ws.a[i] * r_denominator == norm * r_numerator)
+        if (!allow_weight_one && ws.a[i] * r_numerator == norm * r_denominator)
             return;
     }
 
     if (!allow_weights_sum_one)
         for (unsigned i = 0; i < dim - 1; ++i)
             for (unsigned j = i + 1; j < dim; ++j)
-                if ((ws.a[i] + ws.a[j]) * r_denominator == norm * r_numerator)
+                if ((ws.a[i] + ws.a[j]) * r_numerator == norm * r_denominator)
                     return;
 
     ++count;
