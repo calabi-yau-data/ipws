@@ -27,11 +27,11 @@ CFLAGS=-O3 -g -W -Wall -Wno-parentheses -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOUR
 #             command
 #             ...
 
-all:	poly class cws nef mori cws0
+all:	poly class cws nef mori cws0 cws1
 
 clean:	;	rm -f *.o
 
-cleanall: ;	rm -f *.o poly class cws nef mori cws0
+cleanall: ;	rm -f *.o poly class cws nef mori cws0 cws1
 
 
 poly: poly.o $(OBJECTS) LG.o Global.h LG.h
@@ -45,6 +45,9 @@ cws: cws.o $(OBJECTS) LG.o Global.h LG.h
 
 cws0: cws0.o $(OBJECTS) LG.o Global.h LG.h weight_system_store_set.o
 	g++ $(CFLAGS) -o cws0 weight_system_store_set.o cws0.o $(OBJECTS)
+
+cws1: cws1.o $(OBJECTS) LG.o
+	g++ $(CFLAGS) -o cws1 cws1.o $(OBJECTS)
 
 nef:  nef.o $(OBJECTS) $(NEF_OBJ) Global.h
 	$(CC) $(CFLAGS) -o nef nef.o $(OBJECTS) $(NEF_OBJ)
@@ -75,6 +78,8 @@ poly.o:         Global.h LG.h
 class.o:		Global.h Subpoly.h
 cws0.o: Global.h LG.h Rat.h cws0.cpp
 	g++ $(CFLAGS) -c cws0.cpp
+cws1.o: Global.h LG.h Rat.h weight_system.h vector.h weight_system_builder.h cws1.cpp stl_utils.h
+	g++ $(CFLAGS) -c cws1.cpp
 weight_system_store_vector.o: weight_system_store_vector.cpp
 	g++ $(CFLAGS) -c weight_system_store_vector.cpp
 weight_system_store_set.o: weight_system_store_set.cpp
