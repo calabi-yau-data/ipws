@@ -99,7 +99,7 @@ void rec(const WeightSystemBuilder &builder) {
 
         if (!WeightSystemBuilder::leads_to_allowed_weightsystem(x, r_numerator,
                                                                 r_denominator) ||
-            !is_sorted(x, symmetries))
+            (!debug_ignore_symmetries && !is_sorted(x, symmetries)))
             continue;
 
         rec(builder.restrict(x));

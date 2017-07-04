@@ -23,4 +23,6 @@ static const bool allow_weight_one_half = false;
 // Allow weight systems containing two weights with a sum of 1
 static const bool allow_weights_sum_one = false;
 
+static const bool debug_ignore_symmetries = false;
+
 #endif
