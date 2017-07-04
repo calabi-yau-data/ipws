@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <experimental/numeric>
 
+#include "config.h"
+
 class WeightSystemPointsBelow;
 
 // Represents the weight system q = a / c

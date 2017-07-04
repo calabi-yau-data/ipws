@@ -78,7 +78,7 @@ poly.o:         Global.h LG.h
 class.o:		Global.h Subpoly.h
 cws0.o: Global.h LG.h Rat.h cws0.cpp
 	g++ $(CFLAGS) -c cws0.cpp
-cws1.o: Global.h LG.h Rat.h weight_system.h vector.h weight_system_builder.h cws1.cpp stl_utils.h
+cws1.o: Global.h LG.h Rat.h weight_system.h vector.h weight_system_builder.h cws1.cpp stl_utils.h config.h
 	g++ $(CFLAGS) -c cws1.cpp
 weight_system_store_vector.o: weight_system_store_vector.cpp
 	g++ $(CFLAGS) -c weight_system_store_vector.cpp

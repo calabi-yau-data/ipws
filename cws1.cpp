@@ -1,6 +1,7 @@
 #include <iostream>
 #include <set>
 
+#include "config.h"
 #include "stl_utils.h"
 #include "stopwatch.h"
 #include "weight_system.h"
@@ -9,9 +10,6 @@
 
 FILE *inFILE;
 FILE *outFILE;
-
-const Long r_numerator = 3;
-const Long r_denominator = 2;
 
 using std::array;
 using std::cout;

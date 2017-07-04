@@ -6,14 +6,15 @@
 #include <string.h>
 #include <time.h>
 #include <assert.h>
+
+#include "config.h"
+
 /*
 These are include files that should exist in your C library.
 */
 
 /*  ============	basic choice of PARAMETERS	      ============  */
 
-#define	                Long            long
-#define                 LLong           long long
 /*
 For reflexive polytopes in 4 or less dimensions, everything should work with
 Long set to 32-bit-integer and LLong set to 64 bits.
@@ -22,10 +23,7 @@ For higher dimensional or complicated non-reflexive polytopes it may be
 necessary to set even Long to 64 bits.
 */
 
-#define   		POLY_Dmax	5	/* max dim of polytope	    */
-
-static const int dim = POLY_Dmax;
-static const int two_times_r = 2;
+#define POLY_Dmax DIMENSION
 
 /*
 POLY_Dmax should be set to the dimension of the polytopes that are analysed.

@@ -1,0 +1,15 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#define DIMENSION 5
+#define TWO_TIMES_R 3
+
+#define Long long
+#define LLong long long
+
+static const int dim = DIMENSION;
+static const int two_times_r = TWO_TIMES_R;
+static const Long r_numerator = TWO_TIMES_R;
+static const Long r_denominator = 2;
+
+#endif
