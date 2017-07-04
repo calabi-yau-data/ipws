@@ -29,6 +29,29 @@ public:
     //     return false;
     // }
 
+    // private
+
+
+    // WeightSystemBuilder canonicalized() {
+    //     using std::array;
+    //     using std::vector;
+
+    //     unsigned size = generators.size();
+
+    //     vector<array<vector<Long>, dim>> gens_perms;
+
+    //     for (unsigned i = 0; i < size; ++i) {
+    //         array<vector<Long>, dim> gens{};
+    //         gens.
+
+    //     }
+
+    //     for (unsigned i = 0; i < size; ++i)
+    //         std::sort(Muh{}, Muh{}, [](auto &a, auto &b) { return true; });
+
+    //     return *this;
+    // }
+
     WeightSystemBuilder() : iteration_{0} {
         // num_symmetries = dim - 1;
         // for (int i = 0; i < dim - 1; ++i)
