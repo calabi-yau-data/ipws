@@ -58,6 +58,32 @@ void rec(const WeightSystemBuilder &builder) {
     if (!builder.average_if_nonzero(ws))
         return;
 
+    // // it is not economical to do this on the last two recursion levels
+    // if (builder.iteration() < dim - 2) {
+    //     bool skip = false;
+
+    //     auto points = points_on(ws);
+    //     while (points.find_next()) {
+    //         const Vector &x = points.get();
+
+    //         if (!builder.allows(x))
+    //             continue;
+
+    //         // TODO: Do we have to check if x is linearly independent of the
+    //         // other points?
+    //         for (unsigned i = 0; i < n; ++i) {
+    //             Long diff = X.x_inner_q[i + 1][i] - x * X.qs[i];
+    //             if (diff > 0 || (diff == 0 && lex_cmp(x, X.x[i + 1]) > 0)) {
+    //                 skip = true;
+    //                 return;
+    //             }
+    //         }
+    //     });
+
+    //     if (skip)
+    //         return;
+    // }
+
     add_maybe(ws);
 
     switch (builder.iteration()) {

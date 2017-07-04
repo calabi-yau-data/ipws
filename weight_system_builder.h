@@ -15,8 +15,6 @@ class WeightSystemBuilder {
     };
     std::vector<Generator> generators; // TODO: can there ever be more generators than dimensions?
     unsigned iteration_;
-    // std::array<std::pair<int, int>, dim - 1> symmetries;
-    // int num_symmetries;
 
 public:
     // bool operator<(const WeightSystemBuilder &rhs) const
@@ -194,6 +192,13 @@ public:
         for (auto &generator : rhs.generators)
             os << generator.eq << std::endl;
         return os;
+    }
+
+    bool allows(const Vector &x) const {
+        for (const auto &gen : generators)
+            if (gen.eq.apply_to(x) != 0)
+                return false;
+        return true;
     }
 
     __attribute__ ((noinline))
