@@ -29,7 +29,7 @@ public:
     //     return false;
     // }
 
-    WeightSystemBuilder(Long r_numerator, Long r_denominator) : iteration_{0} {
+    WeightSystemBuilder() : iteration_{0} {
         // num_symmetries = dim - 1;
         // for (int i = 0; i < dim - 1; ++i)
         //     symmetries[i] = {i, i + 1};
@@ -39,8 +39,7 @@ public:
             auto &generator = generators[generator_nr];
 
             for (int i = 0; i < dim; ++i)
-                generator.eq.a[i] = generator_nr == i ? r_numerator : 0;
-            generator.eq.c = r_denominator;
+                generator.eq.a[i] = generator_nr == i ? 1 : 0;
 
             generator.incidences.set(generator_nr);
         }
@@ -109,7 +108,7 @@ public:
 
     __attribute__ ((noinline))
     WeightSystemBuilder restrict(const Vector &x) const {
-        WeightSystemBuilder ret{};
+        WeightSystemBuilder ret{Noinit{}};
         ret.iteration_ = iteration_ + 1;
 
         // for (int i = 0; i < num_symmetries; ++i) {
@@ -156,8 +155,8 @@ public:
                 });
 
                 auto new_eq = intersect(c1.eq, c2.eq, x);
-                if (new_eq.c < 0)
-                    new_eq = -new_eq;
+                // if (new_eq.c < 0)
+                //     new_eq = -new_eq;
 
                 ret.generators.push_back(Generator{new_eq, new_incidences});
             }
@@ -167,21 +166,16 @@ public:
     }
 
     __attribute__ ((noinline))
-    bool average_if_nonzero(WeightSystem &q) const {
-        q.c = 1;
-        for (size_t i = 0; i < generators.size(); ++i)
-            q.c = std::experimental::lcm(q.c, generators[i].eq.c);
-
+    bool sum_if_nonzero(WeightSystem &q) const {
         for (size_t j = 0; j < dim; ++j) {
             q.a[j] = 0;
             for (size_t i = 0; i < generators.size(); ++i)
-                q.a[j] += generators[i].eq.a[j] * (q.c / generators[i].eq.c);
+                q.a[j] += generators[i].eq.a[j];
 
             if (q.a[j] == 0)
                 return false;
         }
 
-        q.c *= static_cast<Long>(generators.size());
         q.cancel();
 
         return true;
@@ -229,7 +223,9 @@ public:
     }
 
 private:
-    WeightSystemBuilder() {}
+    struct Noinit {};
+
+    WeightSystemBuilder(Noinit) {}
 };
 
 #endif

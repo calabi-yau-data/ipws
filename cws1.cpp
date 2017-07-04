@@ -29,18 +29,21 @@ unsigned count = 0;
 set<WeightSystem> weight_systems{};
 
 void add_maybe(WeightSystem ws) {
+    Long norm = std::accumulate(ws.a.begin(), ws.a.end(), 0);
+
+    // TODO: check!
     for (unsigned i = 0; i < dim; ++i) {
-        if (!allow_weight_one_half && 2 * ws.a[i] == ws.c)
+        if (!allow_weight_one_half && 2 * ws.a[i] * r_denominator == norm * r_numerator)
             return;
 
-        if (!allow_weight_one && ws.a[i] == ws.c)
+        if (!allow_weight_one && ws.a[i] * r_denominator == norm * r_numerator)
             return;
     }
 
     if (!allow_weights_sum_one)
         for (unsigned i = 0; i < dim - 1; ++i)
             for (unsigned j = i + 1; j < dim; ++j)
-                if (ws.a[i] + ws.a[j] == ws.c)
+                if ((ws.a[i] + ws.a[j]) * r_denominator == norm * r_numerator)
                     return;
 
     ++count;
@@ -51,7 +54,7 @@ void add_maybe(WeightSystem ws) {
 
 void rec(const WeightSystemBuilder &builder) {
     WeightSystem ws{};
-    if (!builder.average_if_nonzero(ws))
+    if (!builder.sum_if_nonzero(ws))
         return;
 
     // // it is not economical to do this on the last two recursion levels
@@ -109,7 +112,7 @@ void rec(const WeightSystemBuilder &builder) {
 int main() {
     Stopwatch stopwatch{};
 
-    rec(WeightSystemBuilder{r_numerator, r_denominator});
+    rec(WeightSystemBuilder{});
 
     cout << stopwatch.count() << ": "
          << weight_systems.size() << "/" << count << endl;
