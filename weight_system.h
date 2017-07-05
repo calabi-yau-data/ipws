@@ -12,15 +12,14 @@
 
 class WeightSystemPointsBelow;
 
-// Represents the weight system q = a / c
 struct WeightSystem {
-    Vector a;
+    Vector weights;
 
     int compare(const WeightSystem &rhs) const {
         for (size_t i = 0; i < dim; ++i) {
-            if (a[i] < rhs.a[i])
+            if (weights[i] < rhs.weights[i])
                 return -1;
-            if (a[i] > rhs.a[i])
+            if (weights[i] > rhs.weights[i])
                 return 1;
         }
 
@@ -32,21 +31,21 @@ struct WeightSystem {
     bool operator<(const WeightSystem &rhs) const { return compare(rhs) < 0; }
     bool operator>(const WeightSystem &rhs) const { return compare(rhs) > 0; }
 
-    WeightSystem operator-() const { return WeightSystem{-a}; }
+    WeightSystem operator-() const { return WeightSystem{-weights}; }
 
     Long apply_to(const Vector &v) const {
         Long ret = 0;
         for (size_t i = 0; i < dim; ++i)
-            ret += (v[i] * r_numerator - r_denominator) * a[i];
+            ret += (v[i] * r_numerator - r_denominator) * weights[i];
         return ret;
     }
 
     friend std::ostream &operator<<(std::ostream &os, const WeightSystem &rhs) {
         os << "(";
         if (dim != 0)
-            os << rhs.a[0];
+            os << rhs.weights[0];
         for (size_t i = 1; i < dim; ++i)
-            os << ", " << rhs.a[i];
+            os << ", " << rhs.weights[i];
         return os << ")";
     }
 
@@ -54,13 +53,13 @@ struct WeightSystem {
         if (dim == 0)
             return;
 
-        Long gcd = a[0];
+        Long gcd = weights[0];
 
         for (size_t i = 1; i < dim; ++i)
-            gcd = std::experimental::gcd(gcd, a[i]);
+            gcd = std::experimental::gcd(gcd, weights[i]);
 
         if (gcd != 1)
-            a /= gcd;
+            weights /= gcd;
     }
 
     // Returns the hyperplane through v and the intersection of q1 and q2.
@@ -75,16 +74,16 @@ struct WeightSystem {
 
         WeightSystem ret{};
         if (e1 > 0)
-            ret.a = e1 * q2.a - e2 * q1.a;
+            ret.weights = e1 * q2.weights - e2 * q1.weights;
         else
-            ret.a = e2 * q1.a - e1 * q2.a;
+            ret.weights = e2 * q1.weights - e1 * q2.weights;
 
         ret.cancel();
         return ret;
     }
 
     void sort() {
-        std::sort(a.begin(), a.end());
+        std::sort(weights.begin(), weights.end());
     }
 };
 
@@ -94,13 +93,13 @@ class WeightSystemPointsBelow {
     std::array<Long, dim> ax;
 public:
     WeightSystemPointsBelow(const WeightSystem &q) : q{q} {
-        Long ax0 = -std::accumulate(q.a.begin(), q.a.end(), 0) * r_denominator;
+        Long ax0 = -std::accumulate(q.weights.begin(), q.weights.end(), 0) * r_denominator;
 
         x.fill(0);
         ax.fill(ax0);
 
         x[dim - 1] -= 1;
-        ax[dim - 1] -= q.a[dim - 1] * r_numerator;
+        ax[dim - 1] -= q.weights[dim - 1] * r_numerator;
     }
 
     const Vector &get() {
@@ -110,7 +109,7 @@ public:
     __attribute__ ((noinline))
     bool find_next() {
         int k = dim - 1;
-        while (ax[k] + q.a[k] * r_numerator >= 0) {
+        while (ax[k] + q.weights[k] * r_numerator >= 0) {
             if (k == 0)
                 return false;
             x[k] = 0;
@@ -118,7 +117,7 @@ public:
         }
 
         x[k]++;
-        ax[k] += q.a[k] * r_numerator;
+        ax[k] += q.weights[k] * r_numerator;
         for (int i = k + 1; i < dim; ++i)
             ax[i] = ax[k];
 
@@ -138,7 +137,7 @@ public:
         std::fill_n(ax.begin(), dim - 1, 0);
 
         x[dim - 1] = -1;
-        ax[dim - 1] = -q.a[dim - 1];
+        ax[dim - 1] = -q.weights[dim - 1];
     }
 
     const Vector &get() {
@@ -150,7 +149,7 @@ public:
     bool find_next() {
         while (true) {
             int k = dim - 1;
-            while (ax[k] + q.a[k] > 0) {
+            while (ax[k] + q.weights[k] > 0) {
                 if (k == 0)
                     return false;
                 x[k] = 0;
@@ -158,7 +157,7 @@ public:
             }
 
             x[k]++;
-            ax[k] += q.a[k];
+            ax[k] += q.weights[k];
             for (int i = k + 1; i < dim; ++i)
                 ax[i] = ax[k];
 

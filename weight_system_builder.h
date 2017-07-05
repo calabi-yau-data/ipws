@@ -62,7 +62,7 @@ public:
             auto &generator = generators[generator_nr];
 
             for (int i = 0; i < dim; ++i)
-                generator.eq.a[i] = generator_nr == i ? 1 : 0;
+                generator.eq.weights[i] = generator_nr == i ? 1 : 0;
 
             generator.incidences.set(generator_nr);
         }
@@ -77,7 +77,7 @@ public:
         auto permuted = generators;
 
         for (auto &gen : permuted)
-            std::swap(gen.eq.a[idx1], gen.eq.a[idx2]);
+            std::swap(gen.eq.weights[idx1], gen.eq.weights[idx2]);
 
         std::vector<bool> has_partner(size, false);
         unsigned partner_count = 0;
@@ -191,11 +191,11 @@ public:
     // __attribute__ ((noinline))
     // bool sum_if_nonzero(WeightSystem &q) const {
     //     for (size_t j = 0; j < dim; ++j) {
-    //         q.a[j] = 0;
+    //         q.weights[j] = 0;
     //         for (size_t i = 0; i < generators.size(); ++i)
-    //             q.a[j] += generators[i].eq.a[j];
+    //             q.weights[j] += generators[i].eq.weights[j];
 
-    //         if (q.a[j] == 0)
+    //         if (q.weights[j] == 0)
     //             return false;
     //     }
 
@@ -214,19 +214,19 @@ public:
         norms.reserve(size);
 
         for (unsigned i = 0; i < size; ++i)
-            norms.push_back(std::accumulate(generators[i].eq.a.begin(),
-                                            generators[i].eq.a.end(), 0));
+            norms.push_back(std::accumulate(generators[i].eq.weights.begin(),
+                                            generators[i].eq.weights.end(), 0));
 
         Long lcm = norms[0];
         for (size_t i = 1; i < generators.size(); ++i)
             lcm = std::experimental::lcm(lcm, norms[i]);
 
         for (size_t j = 0; j < dim; ++j) {
-            q.a[j] = 0;
+            q.weights[j] = 0;
             for (size_t i = 0; i < generators.size(); ++i)
-                q.a[j] += generators[i].eq.a[j] * (lcm / norms[i]);
+                q.weights[j] += generators[i].eq.weights[j] * (lcm / norms[i]);
 
-            if (q.a[j] == 0)
+            if (q.weights[j] == 0)
                 return false;
         }
 
