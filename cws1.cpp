@@ -29,7 +29,7 @@ unsigned count = 0;
 set<WeightSystem> weight_systems{};
 
 void add_maybe(WeightSystem ws) {
-    Long norm = std::accumulate(ws.weights.begin(), ws.weights.end(), 0);
+    Long norm = ws.norm();
 
     for (unsigned i = 0; i < dim; ++i) {
         if (!allow_weight_one_half && 2 * ws.weights[i] * r_numerator == norm * r_denominator)

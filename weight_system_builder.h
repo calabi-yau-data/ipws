@@ -22,7 +22,7 @@ public:
     //     if (generators.size() != rhs.generators.size())
     //         return generators.size() < rhs.generators.size();
 
-    //     for (size_t i = 0; i < generators.size(); ++i)
+    //     for (unsigned i = 0; i < generators.size(); ++i)
     //         if (generators[i].eq != rhs.generators[i].eq)
     //             return generators[i].eq < rhs.generators[i].eq;
 
@@ -190,9 +190,9 @@ public:
 
     // __attribute__ ((noinline))
     // bool sum_if_nonzero(WeightSystem &q) const {
-    //     for (size_t j = 0; j < dim; ++j) {
+    //     for (unsigned j = 0; j < dim; ++j) {
     //         q.weights[j] = 0;
-    //         for (size_t i = 0; i < generators.size(); ++i)
+    //         for (unsigned i = 0; i < generators.size(); ++i)
     //             q.weights[j] += generators[i].eq.weights[j];
 
     //         if (q.weights[j] == 0)
@@ -214,16 +214,15 @@ public:
         norms.reserve(size);
 
         for (unsigned i = 0; i < size; ++i)
-            norms.push_back(std::accumulate(generators[i].eq.weights.begin(),
-                                            generators[i].eq.weights.end(), 0));
+            norms.push_back(generators[i].eq.norm());
 
         Long lcm = norms[0];
-        for (size_t i = 1; i < generators.size(); ++i)
+        for (unsigned i = 1; i < size; ++i)
             lcm = std::experimental::lcm(lcm, norms[i]);
 
-        for (size_t j = 0; j < dim; ++j) {
+        for (unsigned j = 0; j < dim; ++j) {
             q.weights[j] = 0;
-            for (size_t i = 0; i < generators.size(); ++i)
+            for (unsigned i = 0; i < size; ++i)
                 q.weights[j] += generators[i].eq.weights[j] * (lcm / norms[i]);
 
             if (q.weights[j] == 0)

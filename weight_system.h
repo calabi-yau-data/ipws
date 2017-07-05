@@ -16,7 +16,7 @@ struct WeightSystem {
     Vector weights;
 
     int compare(const WeightSystem &rhs) const {
-        for (size_t i = 0; i < dim; ++i) {
+        for (unsigned i = 0; i < dim; ++i) {
             if (weights[i] < rhs.weights[i])
                 return -1;
             if (weights[i] > rhs.weights[i])
@@ -35,7 +35,7 @@ struct WeightSystem {
 
     Long apply_to(const Vector &v) const {
         Long ret = 0;
-        for (size_t i = 0; i < dim; ++i)
+        for (unsigned i = 0; i < dim; ++i)
             ret += (v[i] * r_numerator - r_denominator) * weights[i];
         return ret;
     }
@@ -44,7 +44,7 @@ struct WeightSystem {
         os << "(";
         if (dim != 0)
             os << rhs.weights[0];
-        for (size_t i = 1; i < dim; ++i)
+        for (unsigned i = 1; i < dim; ++i)
             os << ", " << rhs.weights[i];
         return os << ")";
     }
@@ -55,7 +55,7 @@ struct WeightSystem {
 
         Long gcd = weights[0];
 
-        for (size_t i = 1; i < dim; ++i)
+        for (unsigned i = 1; i < dim; ++i)
             gcd = std::experimental::gcd(gcd, weights[i]);
 
         if (gcd != 1)
@@ -85,6 +85,10 @@ struct WeightSystem {
     void sort() {
         std::sort(weights.begin(), weights.end());
     }
+
+    Long norm() const {
+        return std::accumulate(weights.begin(), weights.end(), 0);
+    }
 };
 
 class WeightSystemPointsBelow {
@@ -93,10 +97,8 @@ class WeightSystemPointsBelow {
     std::array<Long, dim> ax;
 public:
     WeightSystemPointsBelow(const WeightSystem &q) : q{q} {
-        Long ax0 = -std::accumulate(q.weights.begin(), q.weights.end(), 0) * r_denominator;
-
         x.fill(0);
-        ax.fill(ax0);
+        ax.fill(-q.norm() * r_denominator);
 
         x[dim - 1] -= 1;
         ax[dim - 1] -= q.weights[dim - 1] * r_numerator;
