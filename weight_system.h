@@ -33,7 +33,7 @@ struct WeightSystem {
 
     WeightSystem operator-() const { return WeightSystem{-weights}; }
 
-    Long apply_to(const Vector &v) const {
+    Long distance_to(const Vector &v) const {
         Long ret = 0;
         for (unsigned i = 0; i < dim; ++i)
             ret += (v[i] * r_numerator - r_denominator) * weights[i];
@@ -65,8 +65,8 @@ struct WeightSystem {
     // Returns the hyperplane through v and the intersection of q1 and q2.
     friend WeightSystem intersect(const WeightSystem &q1,
                                   const WeightSystem &q2, const Vector &v) {
-        Long e1 = q1.apply_to(v);
-        Long e2 = q2.apply_to(v);
+        Long e1 = q1.distance_to(v);
+        Long e2 = q2.distance_to(v);
 
         Long gcd = std::experimental::gcd(e1, e2);
         e1 /= gcd;

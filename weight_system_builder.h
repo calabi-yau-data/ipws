@@ -147,7 +147,7 @@ public:
         xq.resize(generators.size());
 
         for (unsigned i = 0; i < generators.size(); i++) {
-            xq[i] = generators[i].eq.apply_to(x);
+            xq[i] = generators[i].eq.distance_to(x);
             if (xq[i] == 0)
                 ret.generators.push_back(generators[i]);
         }
@@ -243,7 +243,7 @@ public:
 
     bool allows(const Vector &x) const {
         for (const auto &gen : generators)
-            if (gen.eq.apply_to(x) != 0)
+            if (gen.eq.distance_to(x) != 0)
                 return false;
         return true;
     }
