@@ -86,6 +86,7 @@ void rec(const WeightSystemBuilder &builder) {
 
     switch (builder.iteration()) {
     case dim - 2:
+        // The following happens when redundancies are not checked
         assert(builder.generator_count() == 2);
         // TODO: special case for last iteration brings a big performance boost
         break;
