@@ -76,7 +76,7 @@ SingularInput.o: Global.h Mori.h
 
 poly.o:         Global.h LG.h
 class.o:		Global.h Subpoly.h
-cws0.o: Global.h LG.h Rat.h cws0.cpp
+cws0.o: Global.h LG.h Rat.h cws0.cpp config.h vector.h
 	g++ $(CFLAGS) -c cws0.cpp
 cws1.o: Global.h LG.h Rat.h weight_system.h vector.h weight_system_builder.h cws1.cpp stl_utils.h config.h
 	g++ $(CFLAGS) -c cws1.cpp

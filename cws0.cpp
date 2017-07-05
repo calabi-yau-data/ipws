@@ -45,8 +45,6 @@ bool operator<(const std::bitset<N> &lhs, const std::bitset<N> &rhs)
     return (lhs | rhs) == rhs;
 }
 
-const bool allow11 = false;
-
 // Enumerates all points x with nonnegative coordinates, satisfying
 // q.a * x + q.c < 0. Very optimized.
 template <class F>
@@ -352,18 +350,17 @@ void RgcAddweight(Hyperplane wn, ClassificationData &X)
 {
     int i, j, p, k;
 
-    // Skip weight systems containing a weight of 1/2
-    for (i = 0; i < dim; i++)
-        if (2 * wn.a[i] == -wn.c)
-            return;
+    if (!allow_weight_one_half)
+        for (i = 0; i < dim; i++)
+            if (2 * wn.a[i] == -wn.c)
+                return;
 
-    // Skip weight systems containing a weight of 1
-    for (i = 0; i < dim; i++)
-        if (wn.a[i] == -wn.c)
-            return;
+    if (!allow_weight_one)
+        for (i = 0; i < dim; i++)
+            if (wn.a[i] == -wn.c)
+                return;
 
-    // Skip weight systems containing two weights with a sum of 1
-    if (!allow11)
+    if (!allow_weights_sum_one)
         for (i = 0; i < dim - 1; i++)
             for (j = i + 1; j < dim; j++)
                 if (wn.a[i] + wn.a[j] == -wn.c)
@@ -405,15 +402,16 @@ bool point_trivially_forbidden(const Vector &x, int ordered_from_coordinate)
             xmax = x[l];
     }
 
-    // Point leads to weight systems containing a weight of 1
-    if (xsum < 2)
+    if (!allow_weight_one && xsum == 1)
         return true;
 
-    // Point leads to weight systems containing a weight of 1/2 or two weights
-    // with a sum of 1
-    if (xsum == 2)
-        if (!allow11 || xmax == 2)
+    if (xsum == 2) {
+        if (!allow_weight_one_half && xmax == 2)
             return true;
+
+        if (!allow_weights_sum_one && xmax != 2)
+            return true;
+    }
 
     // Point does not allow positive weight systems (except if all coordinates
     // are 1)
@@ -427,9 +425,10 @@ bool point_trivially_forbidden(const Vector &x, int ordered_from_coordinate)
             return true;
 
     // TODO: This drastically removes redundant points. How does it work?
-    for (int l = ordered_from_coordinate; l < dim - 1; l++)
-        if (x[l] < x[l + 1])
-            return true;
+    if (!debug_ignore_symmetries)
+        for (int l = ordered_from_coordinate; l < dim - 1; l++)
+            if (x[l] < x[l + 1])
+                return true;
 
     return false;
 }
