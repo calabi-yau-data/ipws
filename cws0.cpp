@@ -710,7 +710,7 @@ void RgcWeights(void)
         int in_count = 0;
 
         std::ifstream cones_in{"deferred_cones", std::ifstream::binary};
-        srand((unsigned)time(NULL));
+        srand(static_cast<unsigned>(time(NULL)));
         while (cones_in) {
             // cones_in.seekg((rand() % 46890549) * 20);
             Hyperplane q;
@@ -773,8 +773,8 @@ void RgcWeights(void)
     RecConstructRgcWeights(0, X);
     // fprintf(stderr, "\n");
 
-    printf("q_cones: %d/%d also %d\n", (int)sorted_q_cones.size(),
-           sorted_q_cones_insertions, (int)deferred_cones.size());
+    printf("q_cones: %ld/%d also %ld\n", sorted_q_cones.size(),
+           sorted_q_cones_insertions, deferred_cones.size());
 
     print_stats(X);
 
@@ -784,13 +784,13 @@ void RgcWeights(void)
             for (int i = 0; i < dim; ++i) {
                 auto v = cone.eq1.a[i];
                 assert(v >= 0 && v <= UINT16_MAX);
-                uint16_t v16 = htons((uint16_t)v);
+                uint16_t v16 = htons(static_cast<uint16_t>(v));
                 cones_out.write(reinterpret_cast<const char *>(&v16), sizeof(v16));
             }
             for (int i = 0; i < dim; ++i) {
                 auto v = cone.eq2.a[i];
                 assert(v >= 0 && v <= UINT16_MAX);
-                uint16_t v16 = htons((uint16_t)v);
+                uint16_t v16 = htons(static_cast<uint16_t>(v));
                 cones_out.write(reinterpret_cast<const char *>(&v16), sizeof(v16));
             }
         }
@@ -851,7 +851,7 @@ void RgcWeights(void)
     print_stats(X);
     printf("#ip=%ld, #cand=%ld(%ld)\n", X.winum, X.wnum, X.candnum);
 }
-};
+}
 
 FILE *inFILE;
 FILE *outFILE;

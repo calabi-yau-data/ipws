@@ -70,10 +70,12 @@ public:
 
     unsigned iteration() const { return iteration_; }
 
-    unsigned generator_count() const { return generators.size() ; }
+    unsigned generator_count() const {
+        return static_cast<unsigned>(generators.size());
+    }
 
     bool has_symmetry(unsigned idx1, unsigned idx2) const {
-        unsigned size = generators.size();
+        size_t size = generators.size();
         auto permuted = generators;
 
         for (auto &gen : permuted)
@@ -206,7 +208,7 @@ public:
 
     __attribute__ ((noinline))
     bool average_if_nonzero(WeightSystem &q) const {
-        unsigned size = generators.size();
+        size_t size = generators.size();
         if (size == 0)
             return false;
 

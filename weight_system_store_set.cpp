@@ -16,8 +16,10 @@ public:
 
     WeightSystem(const Hyperplane &eq)
     {
-        for (size_t i = 0; i < dim; ++i)
-            weights[i] = eq.a[i];
+        for (size_t i = 0; i < dim; ++i) {
+            assert(eq.a[i] >= 0 && eq.a[i] <= INT16_MAX);
+            weights[i] = static_cast<int16_t>(eq.a[i]);
+        }
     }
 
     operator Hyperplane() const
@@ -61,7 +63,7 @@ void weight_system_store_insert(weight_system_store_t *store,
 
 int weight_system_store_size(weight_system_store_t *store)
 {
-    return store->s.size();
+    return static_cast<int>(store->s.size());
 }
 
 void weight_system_store_begin_iteration(weight_system_store_t *store)

@@ -163,7 +163,7 @@ else assert(!INCI_LE(x,_I->v[d][l]));
 
 void swap(int* i,int* j) {register int k; k=*i; *i=*j; *j=k;}
 
-int diff(const void *a, const void *b){return *((int *) a) - *((int *) b);} 
+int diff(const void *a, const void *b){return *((const int *) a) - *((const int *) b);}
 
 void Sort_VL(VertexNumList *_V){qsort(_V->v, (size_t)_V->nv, sizeof(int), &diff);}
 
