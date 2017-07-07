@@ -17,7 +17,7 @@ MORI_OBJ= $(MORI_SRC:.c=.o)
 
 CC=gcc
 
-CFLAGS=-O3 -g -W -Wall -Wno-parentheses -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+CFLAGS=-O3 -g -W -Wall -Wconversion -Wno-parentheses -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 # CFLAGS=-O3 -g				      # add -g for GNU debugger gdb
 # CFLAGS=-Ofast -O3 -mips4 -n32		      # SGI / 32 bit
 # CFLAGS=-Ofast -O3 -mips4 -64                # SGI / 64 bit

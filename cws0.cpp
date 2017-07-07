@@ -348,7 +348,7 @@ Long eval_eq(const Equation &e, const Vector &v)
 // already there.
 void RgcAddweight(Hyperplane wn, ClassificationData &X)
 {
-    int i, j, p, k;
+    int i, j, p;
 
     if (!allow_weight_one_half)
         for (i = 0; i < dim; i++)
@@ -371,7 +371,7 @@ void RgcAddweight(Hyperplane wn, ClassificationData &X)
     for (i = 0; i < dim - 1; i++)
         for (p = i + 1; p < dim; p++)
             if (wn.a[i] > wn.a[p]) {
-                k = wn.a[i];
+                Long k = wn.a[i];
                 wn.a[i] = wn.a[p];
                 wn.a[p] = k;
             } /* make n0<=n1<=...<=n# */
@@ -437,7 +437,7 @@ bool point_trivially_forbidden(const Vector &x, int ordered_from_coordinate)
 bool point_forbidden(const Vector &x, int n, ClassificationData &X)
 {
     for (int i = 0; i < n - 1; ++i) {
-        int rel = X.x_inner_q[i + 1][i] - X.x_inner_q[n][i];
+        Long rel = X.x_inner_q[i + 1][i] - X.x_inner_q[n][i];
         if (rel > 0)
             return true;
         if (rel == 0 && lex_cmp(X.x[i + 1], x) < 0)
@@ -451,7 +451,7 @@ bool point_forbidden(const Vector &x, int n, ClassificationData &X)
         for (int j = 0; j < dim; ++j)
             x_diff[j] = x_other[j] - x[j];
 
-        int v = 1;
+        Long v = 1;
         if (x_diff[0] > 0)
             v = x_diff[0];
         else if (x_diff[0] < 0)
@@ -590,7 +590,7 @@ void RecConstructRgcWeights(int n, ClassificationData &X)
             // TODO: Do we have to check if x is linearly independent of the
             // other points?
             for (int i = 0; i < n; ++i) {
-                int diff = X.x_inner_q[i + 1][i] - x * X.qs[i];
+                Long diff = X.x_inner_q[i + 1][i] - x * X.qs[i];
                 if (diff > 0 || (diff == 0 && lex_cmp(x, X.x[i + 1]) > 0)) {
                     skip = true;
                     return;
@@ -710,7 +710,7 @@ void RgcWeights(void)
         int in_count = 0;
 
         std::ifstream cones_in{"deferred_cones", std::ifstream::binary};
-        srand(time(NULL));
+        srand((unsigned)time(NULL));
         while (cones_in) {
             // cones_in.seekg((rand() % 46890549) * 20);
             Hyperplane q;
@@ -784,13 +784,13 @@ void RgcWeights(void)
             for (int i = 0; i < dim; ++i) {
                 auto v = cone.eq1.a[i];
                 assert(v >= 0 && v <= UINT16_MAX);
-                uint16_t v16 = htons(v);
+                uint16_t v16 = htons((uint16_t)v);
                 cones_out.write(reinterpret_cast<const char *>(&v16), sizeof(v16));
             }
             for (int i = 0; i < dim; ++i) {
                 auto v = cone.eq2.a[i];
                 assert(v >= 0 && v <= UINT16_MAX);
-                uint16_t v16 = htons(v);
+                uint16_t v16 = htons((uint16_t)v);
                 cones_out.write(reinterpret_cast<const char *>(&v16), sizeof(v16));
             }
         }
