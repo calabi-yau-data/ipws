@@ -91,7 +91,7 @@ void rec(const WeightSystemBuilder &builder) {
         // TODO: special case for last iteration brings a big performance boost
         break;
     case dim - 1:
-        return; // TODO: is this not needed in the old code?
+        return;
     }
 
     auto symmetries = builder.symmetries();
