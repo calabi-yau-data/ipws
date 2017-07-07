@@ -8,9 +8,6 @@
 #include "weight_system_builder.h"
 #include "vector.h"
 
-FILE *inFILE;
-FILE *outFILE;
-
 using std::array;
 using std::cout;
 using std::endl;
