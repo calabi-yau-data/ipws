@@ -521,7 +521,7 @@ f[i][j] and dip[i][j] give the same informations for the dual (n-i-1
 */
 
 #if (VERT_Nmax <= LONG_LONG_Nbits)
-#define INCI_M2(x)     ((x) % 2)              /* value of first bit      */
+#define INCI_M2(x)     ((unsigned char)(x)%2) /* value of first bit      */
 #define	INCI_AND(x,y)  ((x) & (y))            /* bitwise logical and     */
 #define	INCI_OR(x,y)   ((x) | (y))            /* bitwise logical or      */
 #define	INCI_XOR(x,y)  ((x) ^ (y))            /* bitwise exclusive or    */

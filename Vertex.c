@@ -165,7 +165,7 @@ void swap(int* i,int* j) {register int k; k=*i; *i=*j; *j=k;}
 
 int diff(const void *a, const void *b){return *((int *) a) - *((int *) b);} 
 
-void Sort_VL(VertexNumList *_V){qsort(_V->v, _V->nv, sizeof(int), &diff);}
+void Sort_VL(VertexNumList *_V){qsort(_V->v, (size_t)_V->nv, sizeof(int), &diff);}
 
 void Make_VEPM(PolyPointList *_P, VertexNumList *_V, EqList *_E, 
 	       PairMat PM){
@@ -738,7 +738,8 @@ void Complete_Poly(PairMat VPM, EqList *_E, int nv,
   Long MaxDist[EQUA_Nmax], InvMat[POLY_Dmax][POLY_Dmax], Den=1;
   Long yDen[POLY_Dmax];
   int OrdFac[VERT_Nmax], 
-    BasFac[POLY_Dmax], one[POLY_Dmax], position[POLY_Dmax];
+    BasFac[POLY_Dmax], one[POLY_Dmax];
+  Long position[POLY_Dmax];
   LRat ind[POLY_Dmax][POLY_Dmax], x[POLY_Dmax], y[POLY_Dmax], f, 
     PInvMat[POLY_Dmax][POLY_Dmax];
 
