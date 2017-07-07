@@ -25,6 +25,13 @@ target_link_libraries(cws0 common)
 
 add_executable(cws1 cws1.cpp)
 
+find_package(JNI)
+if (JNI_FOUND)
+  add_library(WsIp SHARED WsIp.c Polynf.c Coord.c Rat.c Vertex.c)
+  target_include_directories(WsIp PRIVATE ${JNI_INCLUDE_DIRS})
+  # -fvisibility
+endif (JNI_FOUND)
+
 set(FLAGS "-pedantic -Wall -Wextra -Wconversion -Wno-parentheses")
 set(FLAGS_DEBUG "-Og -g")
 set(FLAGS_RELEASE "-O3")
