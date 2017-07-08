@@ -451,11 +451,7 @@ bool point_forbidden(const Vector &x, int n, ClassificationData &X)
         for (int j = 0; j < dim; ++j)
             x_diff[j] = x_other[j] - x[j];
 
-        Long v = 1;
-        if (x_diff[0] > 0)
-            v = x_diff[0];
-        else if (x_diff[0] < 0)
-            v = -x_diff[0];
+        Long v = std::abs(x_diff[0]);
 
         for (int j = 1; j < dim; ++j) {
             if (x_diff[j] > 0)

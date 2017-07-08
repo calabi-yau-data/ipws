@@ -64,16 +64,12 @@ struct Hyperplane {
 
     void cancel()
     {
-        Long gcd = 1;
-        if (c > 0)
-            gcd = c;
-        else if (c < 0)
-            gcd = -c;
+        Long gcd = std::abs(c);
 
         for (size_t i = 0; i < dim; ++i)
             gcd = std::experimental::gcd(gcd, a[i]);
 
-        if (gcd != 1) {
+        if (gcd != 1 && gcd != 0) {
             a /= gcd;
             c /= gcd;
         }

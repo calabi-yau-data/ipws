@@ -53,12 +53,12 @@ struct WeightSystem {
         if (dim == 0)
             return;
 
-        Long gcd = weights[0];
+        Long gcd = std::abs(weights[0]);
 
         for (unsigned i = 1; i < dim; ++i)
             gcd = std::experimental::gcd(gcd, weights[i]);
 
-        if (gcd != 1)
+        if (gcd != 1 && gcd != 0)
             weights /= gcd;
     }
 
