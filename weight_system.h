@@ -1,5 +1,5 @@
-#ifndef HYPERPLANE_H
-#define HYPERPLANE_H
+#ifndef WEIGHT_SYSTEM_H
+#define WEIGHT_SYSTEM_H
 
 #include "Global.h"
 #include "vector.h"
