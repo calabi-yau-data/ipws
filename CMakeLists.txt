@@ -29,6 +29,7 @@ find_package(JNI)
 if (JNI_FOUND)
   add_library(WsIp SHARED WsIp.c Polynf.c Coord.c Rat.c Vertex.c)
   target_include_directories(WsIp PRIVATE ${JNI_INCLUDE_DIRS})
+  set_target_properties(WsIp PROPERTIES C_VISIBILITY_PRESET hidden)
 endif (JNI_FOUND)
 
 set(FLAGS_DEBUG "-O0 -g -pedantic -Wall -Wextra -Wconversion -Wno-parentheses")
