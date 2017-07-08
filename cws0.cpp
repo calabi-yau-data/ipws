@@ -842,7 +842,7 @@ void RgcWeights(void)
 
         int i = WsIpCheck(*e);
         if (i) {
-            // PrintEquation(*e);
+            // cout << *e << endl;
             // printf("  np=%d\n", i);
             X.winum++;
             /*else PrintEquation(X.wli[i], dim, "n");*/
