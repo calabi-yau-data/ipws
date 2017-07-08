@@ -29,6 +29,9 @@ const bool read_from_file = false;
 const bool defer_last_recursion = false;
 const bool disable_lex_cmp = true;
 
+// it is not economical to do this on the last two recursion levels
+const int redundancy_check_skip_recursions = 2;
+
 template <class T, class F>
 void rearranging_erase_if(std::vector<T> &c, F f)
 {
@@ -572,11 +575,11 @@ void RecConstructRgcWeights(int n, ClassificationData &X)
 
     // print_stats(x);
 
-    // it is not economical to do this on the last two recursion levels
-    if (n < dim - 2) {
+    if (n < dim - redundancy_check_skip_recursions) {
+        if (n == dim - 1)
+            q_cone = X.q_cones[n - 1].restrict(X.x[n], n);
+
         bool skip = false;
-        // if (n == dim - 1)
-        //     q_cone = X.q_cones[n - 1].restrict(X.x[n], n);
 
         enumerate_points_on(q, [&](auto &x) {
             for (unsigned int i = 1; i < q_cone.generators.size(); ++i) {
