@@ -29,14 +29,12 @@ find_package(JNI)
 if (JNI_FOUND)
   add_library(WsIp SHARED WsIp.c Polynf.c Coord.c Rat.c Vertex.c)
   target_include_directories(WsIp PRIVATE ${JNI_INCLUDE_DIRS})
-  # -fvisibility
 endif (JNI_FOUND)
 
-set(FLAGS "-pedantic -Wall -Wextra -Wconversion -Wno-parentheses")
-set(FLAGS_DEBUG "-Og -g")
+set(FLAGS_DEBUG "-O0 -g -pedantic -Wall -Wextra -Wconversion -Wno-parentheses")
 set(FLAGS_RELEASE "-O3")
-set(CMAKE_C_FLAGS "${FLAGS}")
-set(CMAKE_CXX_FLAGS "${FLAGS}")
+set(CMAKE_C_FLAGS "")
+set(CMAKE_CXX_FLAGS "")
 
 set(CMAKE_C_FLAGS_DEBUG "${FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_DEBUG "${FLAGS_DEBUG}")
