@@ -27,6 +27,7 @@ namespace {
 const bool write_cones = false;
 const bool read_from_file = false;
 const bool defer_last_recursion = false;
+const bool disable_lex_cmp = true;
 
 template <class T, class F>
 void rearranging_erase_if(std::vector<T> &c, F f)
@@ -440,7 +441,7 @@ bool point_forbidden(const Vector &x, int n, ClassificationData &X)
         Long rel = X.x_inner_q[i + 1][i] - X.x_inner_q[n][i];
         if (rel > 0)
             return true;
-        if (rel == 0 && lex_cmp(X.x[i + 1], x) < 0)
+        if (!disable_lex_cmp && rel == 0 && lex_cmp(X.x[i + 1], x) < 0)
             return true;
     }
 
@@ -587,7 +588,8 @@ void RecConstructRgcWeights(int n, ClassificationData &X)
             // other points?
             for (int i = 0; i < n; ++i) {
                 Long diff = X.x_inner_q[i + 1][i] - x * X.qs[i];
-                if (diff > 0 || (diff == 0 && lex_cmp(x, X.x[i + 1]) > 0)) {
+                if (diff > 0 || (!disable_lex_cmp && diff == 0 && lex_cmp(x, X.x[i + 1]) > 0)
+                    ) {
                     skip = true;
                     return;
                 }
