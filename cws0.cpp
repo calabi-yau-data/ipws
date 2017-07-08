@@ -26,7 +26,7 @@ namespace {
 
 const bool write_cones = false;
 const bool read_from_file = false;
-const bool defer_last_recursion = true;
+const bool defer_last_recursion = false;
 
 template <class T, class F>
 void rearranging_erase_if(std::vector<T> &c, F f)
