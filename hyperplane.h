@@ -11,6 +11,9 @@ struct Hyperplane {
     Vector a;
     Long c;
 
+    Hyperplane() {}
+    Hyperplane(const Vector &a, Long c) : a(a), c(c) {}
+
     bool operator!=(const Hyperplane &rhs) const
     {
         if (c != rhs.c)
@@ -35,7 +38,7 @@ struct Hyperplane {
         return false;
     }
 
-    Hyperplane operator-() const { return Hyperplane{-a, -c}; }
+    Hyperplane operator-() const { return Hyperplane(-a, -c); }
     Long operator*(const Vector &rhs) const
     {
         Long ret{c};
