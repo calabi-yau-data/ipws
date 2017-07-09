@@ -1,7 +1,12 @@
 cmake_minimum_required (VERSION 2.6)
 project (PALP)
 
-set(FLAGS "-fsanitize=signed-integer-overflow -fsanitize-undefined-trap-on-error")
+# set(CMAKE_C_COMPILER clang)
+# set(CMAKE_CXX_COMPILER clang++)
+
+# Signed integer overflow check for the types 'int' and 'long'.
+set(FLAGS "${FLAGS} -fsanitize=signed-integer-overflow -fsanitize-undefined-trap-on-error")
+
 set(FLAGS_DEBUG "-O0 -g -pedantic -Wall -Wextra -Wconversion")
 set(FLAGS_RELEASE "-O3")
 set(CMAKE_C_FLAGS "${FLAGS}")
