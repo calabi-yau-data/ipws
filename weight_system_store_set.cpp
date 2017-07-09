@@ -3,7 +3,7 @@
 #include <set>
 
 class WeightSystem {
-    int16_t weights[dim];
+    int32_t weights[dim];
 
 public:
     bool operator<(const WeightSystem &rhs) const
@@ -17,8 +17,8 @@ public:
     WeightSystem(const Hyperplane &eq)
     {
         for (size_t i = 0; i < dim; ++i) {
-            assert(eq.a[i] >= 0 && eq.a[i] <= INT16_MAX);
-            weights[i] = static_cast<int16_t>(eq.a[i]);
+            assert(eq.a[i] >= 0 && eq.a[i] <= INT32_MAX);
+            weights[i] = static_cast<int32_t>(eq.a[i]);
         }
     }
 
