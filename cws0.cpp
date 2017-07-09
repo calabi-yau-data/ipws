@@ -832,7 +832,7 @@ void RgcWeights(void)
 
     const Hyperplane *e;
     weight_system_store_begin_iteration(X.wli);
-    while (e = weight_system_store_next(X.wli)) {
+    while ((e = weight_system_store_next(X.wli))) {
         // for (int i = 0; i < dim; ++i)
         //     out.write(reinterpret_cast<const char *>(&e->a[i]), sizeof(e->a[i]));
 
