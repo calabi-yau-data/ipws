@@ -13,6 +13,7 @@ set(CMAKE_C_FLAGS_RELEASE "${FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS_RELEASE "${FLAGS_RELEASE}")
 
 set(CMAKE_CXX_STANDARD_REQUIRED 14)
+set(CMAKE_CXX_STANDARD 14)
 
 add_library(common Coord.c Polynf.c Rat.c Vertex.c)
 target_compile_options(common PRIVATE -Wno-misleading-indentation)
