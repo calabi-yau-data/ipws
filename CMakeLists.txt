@@ -1,10 +1,11 @@
 cmake_minimum_required (VERSION 2.6)
 project (PALP)
 
+set(FLAGS "-fsanitize=signed-integer-overflow -fsanitize-undefined-trap-on-error")
 set(FLAGS_DEBUG "-O0 -g -pedantic -Wall -Wextra -Wconversion")
 set(FLAGS_RELEASE "-O3")
-set(CMAKE_C_FLAGS "")
-set(CMAKE_CXX_FLAGS "")
+set(CMAKE_C_FLAGS "${FLAGS}")
+set(CMAKE_CXX_FLAGS "${FLAGS}")
 
 set(CMAKE_C_FLAGS_DEBUG "${FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_DEBUG "${FLAGS_DEBUG}")
