@@ -1,7 +1,6 @@
+#include "weight_system.h"
 #include <algorithm>
 #include <experimental/numeric>
-
-#include "weight_system.h"
 
 Long distance(const WeightSystem &ws, const Vector &x)
 {

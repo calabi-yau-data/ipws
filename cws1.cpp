@@ -1,6 +1,5 @@
 #include <iostream>
 #include <set>
-
 #include "config.h"
 #include "stl_utils.h"
 #include "stopwatch.h"

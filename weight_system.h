@@ -1,6 +1,7 @@
 #ifndef WEIGHT_SYSTEM_H
 #define WEIGHT_SYSTEM_H
 
+#include <array>
 #include "Global.h"
 #include "vector.h"
 #include "vector_like.h"

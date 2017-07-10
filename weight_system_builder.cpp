@@ -1,4 +1,7 @@
 #include "weight_system_builder.h"
+#include <algorithm>
+#include <experimental/numeric>
+#include "stl_utils.h"
 
 WeightSystemBuilder::WeightSystemBuilder() : iteration{0}
 {

@@ -2,9 +2,6 @@
 #define VECTOR_H
 
 #include <array>
-#include <cstddef>
-#include <iostream>
-
 #include "Global.h"
 #include "vector_like.h"
 

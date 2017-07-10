@@ -1,11 +1,9 @@
 #ifndef WEIGHT_SYSTEM_BUILDER
 #define WEIGHT_SYSTEM_BUILDER
 
-#include <algorithm>
 #include <bitset>
-#include <experimental/numeric>
+#include <utility>
 #include <vector>
-#include "stl_utils.h"
 #include "vector.h"
 #include "weight_system.h"
 
