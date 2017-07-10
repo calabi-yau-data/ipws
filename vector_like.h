@@ -1,6 +1,7 @@
 #ifndef VECTOR_LIKE_H
 #define VECTOR_LIKE_H
 
+#include <experimental/numeric>
 #include <iostream>
 
 template <class T, class Container, unsigned D>
@@ -8,6 +9,19 @@ class VectorLike {
     using R = typename Container::value_type;
 
 public:
+    friend R gcd(const T &a)
+    {
+        if (D == 0)
+            return 0;
+
+        R ret = std::abs(a.vector_container()[0]);
+
+        for (size_t i = 1; i < D; ++i)
+            ret = std::experimental::gcd(ret, a.vector_container()[i]);
+
+        return ret;
+    }
+
     friend int compare(const T &a, const T &b)
     {
         for (unsigned i = 0; i < D; ++i) {

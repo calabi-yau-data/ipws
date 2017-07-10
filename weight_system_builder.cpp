@@ -182,9 +182,7 @@ bool WeightSystemBuilder::allows(const Vector &x) const
     return true;
 }
 
-bool WeightSystemBuilder::leads_to_allowed_weightsystem(const Vector &x,
-                                                        Long r_numerator,
-                                                        Long r_denominator)
+bool WeightSystemBuilder::leads_to_allowed_weightsystem(const Vector &x)
 {
     Long xsum = 0, xmax = 0;
 

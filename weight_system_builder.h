@@ -23,8 +23,7 @@ public:
     bool average_if_nonzero(WeightSystem &q) const;
     bool allows(const Vector &x) const;
 
-    static bool leads_to_allowed_weightsystem(const Vector &x, Long r_numerator,
-                                              Long r_denominator);
+    static bool leads_to_allowed_weightsystem(const Vector &x);
 
     friend std::ostream &operator<<(std::ostream &os,
                                     const WeightSystemBuilder &rhs);

@@ -25,4 +25,11 @@ static const bool allow_weights_sum_one = false;
 
 static const bool debug_ignore_symmetries = false;
 
+static const bool disable_lex_lompare = true;
+
+// It is not economical to do this on the last two recursion levels
+static const int redundancy_check_skip_recursions = 2;
+
+static const bool defer_last_recursion = true;
+
 #endif
