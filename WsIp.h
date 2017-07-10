@@ -12,8 +12,7 @@ extern "C" {
  * Method:    hasIp
  * Signature: ([II)I
  */
-JNIEXPORT jint JNICALL Java_WsIp_hasIp
-  (JNIEnv *, jclass, jintArray, jint);
+JNIEXPORT jint JNICALL Java_WsIp_hasIp(JNIEnv *, jclass, jintArray, jint);
 
 #ifdef __cplusplus
 }

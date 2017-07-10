@@ -6,15 +6,16 @@
 #include <experimental/numeric>
 #include <vector>
 #include "stl_utils.h"
-#include "weight_system.h"
 #include "vector.h"
+#include "weight_system.h"
 
 class WeightSystemBuilder {
     struct Generator {
         WeightSystem eq;
         std::bitset<dim> incidences;
     };
-    std::vector<Generator> generators; // TODO: can there ever be more generators than dimensions?
+    std::vector<Generator>
+        generators; // TODO: can there ever be more generators than dimensions?
     unsigned iteration_;
 
 public:
@@ -31,7 +32,6 @@ public:
     // }
 
     // private
-
 
     // WeightSystemBuilder canonicalized() {
     //     using std::array;
@@ -53,7 +53,8 @@ public:
     //     return *this;
     // }
 
-    WeightSystemBuilder() : iteration_{0} {
+    WeightSystemBuilder() : iteration_{0}
+    {
         // num_symmetries = dim - 1;
         // for (int i = 0; i < dim - 1; ++i)
         //     symmetries[i] = {i, i + 1};
@@ -70,12 +71,13 @@ public:
     }
 
     unsigned iteration() const { return iteration_; }
-
-    unsigned generator_count() const {
+    unsigned generator_count() const
+    {
         return static_cast<unsigned>(generators.size());
     }
 
-    bool has_symmetry(unsigned idx1, unsigned idx2) const {
+    bool has_symmetry(unsigned idx1, unsigned idx2) const
+    {
         size_t size = generators.size();
         auto permuted = generators;
 
@@ -105,8 +107,9 @@ public:
     }
 
     // the indices in the pairs are in ascending orders
-    __attribute__ ((noinline))
-    std::vector<std::pair<unsigned, unsigned>> symmetries() const {
+    __attribute__((noinline)) std::vector<std::pair<unsigned, unsigned>>
+    symmetries() const
+    {
         std::vector<std::pair<unsigned, unsigned>> ret{};
 
         std::array<bool, dim> done{};
@@ -132,8 +135,9 @@ public:
         return ret;
     }
 
-    __attribute__ ((noinline))
-    WeightSystemBuilder restrict(const Vector &x) const {
+    __attribute__((noinline)) WeightSystemBuilder restrict(
+        const Vector &x) const
+    {
         WeightSystemBuilder ret{Noinit{}};
         ret.iteration_ = iteration_ + 1;
 
@@ -207,8 +211,8 @@ public:
     //     return true;
     // }
 
-    __attribute__ ((noinline))
-    bool average_if_nonzero(WeightSystem &q) const {
+    __attribute__((noinline)) bool average_if_nonzero(WeightSystem &q) const
+    {
         size_t size = generators.size();
         if (size == 0)
             return false;
@@ -238,22 +242,24 @@ public:
     }
 
     friend std::ostream &operator<<(std::ostream &os,
-                                    const WeightSystemBuilder &rhs) {
+                                    const WeightSystemBuilder &rhs)
+    {
         for (auto &generator : rhs.generators)
             os << generator.eq << std::endl;
         return os;
     }
 
-    bool allows(const Vector &x) const {
+    bool allows(const Vector &x) const
+    {
         for (const auto &gen : generators)
             if (distance(gen.eq, x) != 0)
                 return false;
         return true;
     }
 
-    __attribute__ ((noinline))
-    static bool leads_to_allowed_weightsystem(const Vector &x, Long r_numerator,
-                                              Long r_denominator) {
+    __attribute__((noinline)) static bool leads_to_allowed_weightsystem(
+        const Vector &x, Long r_numerator, Long r_denominator)
+    {
         Long xsum = 0, xmax = 0;
 
         for (int l = 0; l < dim; l++) {
@@ -279,7 +285,8 @@ public:
     }
 
 private:
-    struct Noinit {};
+    struct Noinit {
+    };
 
     WeightSystemBuilder(Noinit) {}
 };

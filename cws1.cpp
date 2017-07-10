@@ -4,9 +4,9 @@
 #include "config.h"
 #include "stl_utils.h"
 #include "stopwatch.h"
+#include "vector.h"
 #include "weight_system.h"
 #include "weight_system_builder.h"
-#include "vector.h"
 
 using std::array;
 using std::cout;
@@ -14,8 +14,9 @@ using std::endl;
 using std::set;
 using std::vector;
 
-__attribute__ ((noinline))
-bool is_sorted(const Vector &x, const std::vector<std::pair<unsigned, unsigned>> &checks) {
+__attribute__((noinline)) bool is_sorted(
+    const Vector &x, const std::vector<std::pair<unsigned, unsigned>> &checks)
+{
     for (const auto &check : checks)
         if (x.coords[check.first] < x.coords[check.second])
             return false;
@@ -25,21 +26,25 @@ bool is_sorted(const Vector &x, const std::vector<std::pair<unsigned, unsigned>>
 unsigned count = 0;
 set<WeightSystem> weight_systems{};
 
-void add_maybe(WeightSystem ws) {
+void add_maybe(WeightSystem ws)
+{
     Long n = norm(ws);
 
     for (unsigned i = 0; i < dim; ++i) {
-        if (!allow_weight_one_half && 2 * ws.weights[i] * r_numerator == n * r_denominator)
+        if (!allow_weight_one_half &&
+            2 * ws.weights[i] * r_numerator == n * r_denominator)
             return;
 
-        if (!allow_weight_one && ws.weights[i] * r_numerator == n * r_denominator)
+        if (!allow_weight_one &&
+            ws.weights[i] * r_numerator == n * r_denominator)
             return;
     }
 
     if (!allow_weights_sum_one)
         for (unsigned i = 0; i < dim - 1; ++i)
             for (unsigned j = i + 1; j < dim; ++j)
-                if ((ws.weights[i] + ws.weights[j]) * r_numerator == n * r_denominator)
+                if ((ws.weights[i] + ws.weights[j]) * r_numerator ==
+                    n * r_denominator)
                     return;
 
     ++count;
@@ -48,7 +53,8 @@ void add_maybe(WeightSystem ws) {
     weight_systems.insert(ws);
 }
 
-void rec(const WeightSystemBuilder &builder) {
+void rec(const WeightSystemBuilder &builder)
+{
     WeightSystem ws{};
     if (!builder.average_if_nonzero(ws))
         return;
@@ -97,8 +103,8 @@ void rec(const WeightSystemBuilder &builder) {
     while (points.find_next()) {
         const Vector &x = points.get();
 
-        if (!WeightSystemBuilder::leads_to_allowed_weightsystem(x, r_numerator,
-                                                                r_denominator) ||
+        if (!WeightSystemBuilder::leads_to_allowed_weightsystem(
+                x, r_numerator, r_denominator) ||
             (!debug_ignore_symmetries && !is_sorted(x, symmetries)))
             continue;
 
@@ -106,13 +112,14 @@ void rec(const WeightSystemBuilder &builder) {
     }
 }
 
-int main() {
+int main()
+{
     Stopwatch stopwatch{};
 
     rec(WeightSystemBuilder{});
 
-    cout << stopwatch.count() << ": "
-         << weight_systems.size() << "/" << count << endl;
+    cout << stopwatch.count() << ": " << weight_systems.size() << "/" << count
+         << endl;
 
     return 0;
 }

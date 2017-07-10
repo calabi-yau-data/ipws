@@ -6,6 +6,7 @@
 template <class T, class Container, unsigned D>
 class VectorLike {
     using R = typename Container::value_type;
+
 public:
     friend int compare(const T &a, const T &b)
     {

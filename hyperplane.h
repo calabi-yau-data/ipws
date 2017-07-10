@@ -13,7 +13,6 @@ struct Hyperplane {
 
     Hyperplane() {}
     Hyperplane(const Vector &a, Long c) : a(a), c(c) {}
-
     bool operator!=(const Hyperplane &rhs) const
     {
         if (c != rhs.c)

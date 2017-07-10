@@ -23,7 +23,8 @@ bool operator<(const std::bitset<N> &lhs, const std::bitset<N> &rhs)
 }
 
 template <class T>
-std::ostream &operator<<(std::ostream &os, const std::vector<T> &rhs) {
+std::ostream &operator<<(std::ostream &os, const std::vector<T> &rhs)
+{
     os << "{";
     if (rhs.size() != 0)
         os << rhs[0];
@@ -33,7 +34,8 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &rhs) {
 }
 
 template <class T1, class T2>
-std::ostream &operator<<(std::ostream &os, const std::pair<T1, T2> &rhs) {
+std::ostream &operator<<(std::ostream &os, const std::pair<T1, T2> &rhs)
+{
     return os << "(" << rhs.first << ", " << rhs.second << ")";
 }
 
