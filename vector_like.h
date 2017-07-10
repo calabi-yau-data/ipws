@@ -53,7 +53,7 @@ public:
     friend T &operator/=(T &lhs, const R &rhs)
     {
         for (unsigned i = 0; i < D; ++i)
-            lhs.vector_container()[i] *= rhs;
+            lhs.vector_container()[i] /= rhs;
         return lhs;
     }
 
