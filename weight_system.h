@@ -91,7 +91,6 @@ public:
         return x;
     }
 
-    __attribute__ ((noinline))
     bool find_next() {
         int k = dim - 1;
         while (ax[k] + q.weights[k] * r_numerator >= 0) {
@@ -127,7 +126,6 @@ public:
         return x;
     }
 
-    __attribute__ ((noinline))
     bool find_next() {
         while (true) {
             int k = dim - 1;
@@ -149,12 +147,10 @@ public:
     }
 };
 
-__attribute__ ((noinline))
 WeightSystemPointsBelow points_below(WeightSystem &q) {
     return WeightSystemPointsBelow{q};
 }
 
-__attribute__ ((noinline))
 WeightSystemPointsOn points_on(WeightSystem &q) {
     return WeightSystemPointsOn{q};
 }
