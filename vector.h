@@ -8,17 +8,13 @@
 #include "Global.h"
 #include "vector_like.h"
 
-struct VectorBase {
-    std::array<Long, dim> coords;
+struct Vector : VectorLike<Vector, std::array<Long, dim>, dim> {
+    using Container = std::array<Long, dim>;
 
-    Long &vector_like_data(unsigned i) { return coords[i]; }
-    const Long &vector_like_data(unsigned i) const { return coords[i]; }
-};
+    Container coords;
 
-struct Vector : VectorLike<VectorBase, Long, dim> {
-    Vector() {}
-    Vector(const Vector &v) { coords = v.coords; }
-    Vector(const VectorBase &v) { coords = v.coords; }
+    Container &vector_container() { return coords; }
+    const Container &vector_container() const { return coords; }
 };
 
 #endif

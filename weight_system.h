@@ -11,17 +11,13 @@
 
 #include "config.h"
 
-struct WeightSystemBase {
-    std::array<Long, dim> weights;
+struct WeightSystem : VectorLike<WeightSystem, std::array<Long, dim>, dim> {
+    using Container = std::array<Long, dim>;
 
-    Long &vector_like_data(unsigned i) { return weights[i]; }
-    const Long &vector_like_data(unsigned i) const { return weights[i]; }
-};
+    Container weights;
 
-struct WeightSystem : VectorLike<WeightSystemBase, Long, dim> {
-    WeightSystem() {}
-    WeightSystem(const WeightSystem &q) { weights = q.weights; }
-    WeightSystem(const WeightSystemBase &q) { weights = q.weights; }
+    Container &vector_container() { return weights; }
+    const Container &vector_container() const { return weights; }
 
     Long distance_from(const Vector &x) const {
         Long ret = 0;

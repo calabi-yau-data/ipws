@@ -3,103 +3,69 @@
 
 #include <iostream>
 
-template <class Base, class Ring, unsigned D>
-class VectorLike : public Base {
-    using Ret = VectorLike<Base, Ring, D>;
-
+template <class T, class Container, unsigned D>
+class VectorLike {
+    using R = typename Container::value_type;
 public:
-    int compare(const Base &rhs) const {
+    friend int compare(const T &a, const T &b)
+    {
         for (unsigned i = 0; i < D; ++i) {
-            if (Base::vector_like_data(i) < rhs.Base::vector_like_data(i))
+            if (a.vector_container()[i] < b.vector_container()[i])
                 return -1;
-            if (Base::vector_like_data(i) > rhs.Base::vector_like_data(i))
+            if (a.vector_container()[i] > b.vector_container()[i])
                 return 1;
         }
-
         return 0;
     }
 
-    bool operator==(const Base &rhs) const { return compare(rhs) == 0; }
-    bool operator!=(const Base &rhs) const { return compare(rhs) != 0; }
-    bool operator<(const Base &rhs) const { return compare(rhs) < 0; }
-    bool operator>(const Base &rhs) const { return compare(rhs) > 0; }
+    friend bool operator==(const T &lhs, const T &rhs)
+    {
+        return compare(lhs, rhs) == 0;
+    }
+    friend bool operator!=(const T &lhs, const T &rhs)
+    {
+        return compare(lhs, rhs) != 0;
+    }
+    friend bool operator<(const T &lhs, const T &rhs)
+    {
+        return compare(lhs, rhs) < 0;
+    }
+    friend bool operator>(const T &lhs, const T &rhs)
+    {
+        return compare(lhs, rhs) > 0;
+    }
 
-    Ret operator-() const {
-        Ret ret{};
+    friend T &operator/=(T &lhs, const R &rhs)
+    {
         for (unsigned i = 0; i < D; ++i)
-            ret.Base::vector_like_data(i) = -Base::vector_like_data(i);
+            lhs.vector_container()[i] *= rhs;
+        return lhs;
+    }
+
+    friend T operator-(const T &lhs, const T &rhs)
+    {
+        T ret{};
+        for (unsigned i = 0; i < D; ++i)
+            ret.vector_container()[i] =
+                lhs.vector_container()[i] - rhs.vector_container()[i];
         return ret;
     }
 
-    Ret operator+(const Base &rhs) const {
-        Ret ret{};
+    friend T operator*(const R &lhs, const T &rhs)
+    {
+        T ret{};
         for (unsigned i = 0; i < D; ++i)
-            ret.Base::vector_like_data(i) = Base::vector_like_data(i)
-                + rhs.Base::vector_like_data(i);
+            ret.vector_container()[i] = rhs.vector_container()[i] * lhs;
         return ret;
     }
 
-    Ret operator-(const Base &rhs) const {
-        Ret ret{};
-        for (unsigned i = 0; i < D; ++i)
-            ret.Base::vector_like_data(i) = Base::vector_like_data(i)
-                - rhs.Base::vector_like_data(i);
-        return ret;
-    }
-
-    Ret operator*(Ring rhs) const {
-        Ret ret{};
-        for (unsigned i = 0; i < D; ++i)
-            ret.Base::vector_like_data(i) = Base::vector_like_data(i) * rhs;
-        return ret;
-    }
-
-    friend Ret operator*(Ring lhs, const Base &rhs) {
-        Ret ret{};
-        for (unsigned i = 0; i < D; ++i)
-            ret.Base::vector_like_data(i) = rhs.vector_like_data(i) * lhs;
-        return ret;
-    }
-
-    Ret operator/(Ring rhs) const {
-        Ret ret{};
-        for (unsigned i = 0; i < D; ++i)
-            ret.Base::vector_like_data(i) = Base::vector_like_data(i) / rhs;
-        return ret;
-    }
-
-    Ret &operator+=(const Base &rhs) {
-        for (unsigned i = 0; i < D; ++i)
-            Base::vector_like_data(i) = Base::vector_like_data(i)
-                + rhs.Base::vector_like_data(i);
-        return *this;
-    }
-
-    Ret &operator-=(const Base &rhs) {
-        for (unsigned i = 0; i < D; ++i)
-            Base::vector_like_data(i) = Base::vector_like_data(i)
-                + rhs.Base::vector_like_data(i);
-        return *this;
-    }
-
-    Ret &operator*=(Ring rhs) {
-        for (unsigned i = 0; i < D; ++i)
-            Base::vector_like_data(i) *= rhs;
-        return *this;
-    }
-
-    Ret &operator/=(Ring rhs) {
-        for (unsigned i = 0; i < D; ++i)
-            Base::vector_like_data(i) /= rhs;
-        return *this;
-    }
-
-    friend std::ostream &operator<<(std::ostream &os, const Base &rhs) {
+    friend std::ostream &operator<<(std::ostream &os, const T &rhs)
+    {
         os << "(";
         if (D != 0)
-            os << rhs.vector_like_data(0);
+            os << rhs.vector_container()[0];
         for (unsigned i = 1; i < D; ++i)
-            os << ", " << rhs.vector_like_data(i);
+            os << ", " << rhs.vector_container()[i];
         return os << ")";
     }
 };
