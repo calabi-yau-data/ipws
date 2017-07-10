@@ -24,7 +24,7 @@ __attribute__((noinline)) bool is_sorted(
 }
 
 unsigned count = 0;
-set<WeightSystem> weight_systems{};
+set<WeightSystem> weight_systems{}; // TODO: unordered_set?
 
 void add_maybe(WeightSystem ws)
 {

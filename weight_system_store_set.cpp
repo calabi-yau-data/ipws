@@ -37,7 +37,7 @@ public:
     }
 };
 
-using Set = std::set<WeightSystem>;
+using Set = std::set<WeightSystem>; // TODO: unordered_set?
 
 struct weight_system_store {
     Set s;

@@ -283,10 +283,10 @@ struct FinalCone {
     }
 };
 
-std::set<FinalCone> deferred_cones;
+std::set<FinalCone> deferred_cones; // TODO: unordered_set?
 int deferred_cones_insertions = 0;
 
-std::set<RationalCone> sorted_q_cones;
+std::set<RationalCone> sorted_q_cones; // TODO: unordered_set?
 int sorted_q_cones_insertions = 0;
 
 class Stopwatch {
