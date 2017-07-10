@@ -17,7 +17,7 @@ using std::vector;
 __attribute__ ((noinline))
 bool is_sorted(const Vector &x, const std::vector<std::pair<unsigned, unsigned>> &checks) {
     for (const auto &check : checks)
-        if (x[check.first] < x[check.second])
+        if (x.coords[check.first] < x.coords[check.second])
             return false;
     return true;
 }

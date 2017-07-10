@@ -6,80 +6,19 @@
 #include <iostream>
 
 #include "Global.h"
+#include "vector_like.h"
 
-using Vector = std::array<Long, dim>;
+struct VectorBase {
+    std::array<Long, dim> coords;
 
-inline Vector operator+(const Vector &lhs, const Vector &rhs)
-{
-    Vector ret{};
-    for (size_t i = 0; i < dim; ++i)
-        ret[i] = lhs[i] + rhs[i];
-    return ret;
-}
+    Long &vector_like_data(unsigned i) { return coords[i]; }
+    const Long &vector_like_data(unsigned i) const { return coords[i]; }
+};
 
-inline Vector operator-(const Vector &lhs, const Vector &rhs)
-{
-    Vector ret{};
-    for (size_t i = 0; i < dim; ++i)
-        ret[i] = lhs[i] - rhs[i];
-    return ret;
-}
-
-inline Vector operator-(const Vector &rhs)
-{
-    Vector ret{};
-    for (size_t i = 0; i < dim; ++i)
-        ret[i] = -rhs[i];
-    return ret;
-}
-
-inline Long operator*(const Vector &lhs, const Vector &rhs)
-{
-    Long ret{};
-    for (size_t i = 0; i < dim; ++i)
-        ret += lhs[i] * rhs[i];
-    return ret;
-}
-
-inline Vector operator*(const Vector &lhs, Long rhs)
-{
-    Vector ret{};
-    for (size_t i = 0; i < dim; ++i)
-        ret[i] = lhs[i] * rhs;
-    return ret;
-}
-
-inline Vector operator/(const Vector &lhs, Long rhs)
-{
-    Vector ret{};
-    for (size_t i = 0; i < dim; ++i)
-        ret[i] = lhs[i] / rhs;
-    return ret;
-}
-
-inline Vector &operator/=(Vector &lhs, Long rhs)
-{
-    for (size_t i = 0; i < dim; ++i)
-        lhs[i] /= rhs;
-    return lhs;
-}
-
-inline Vector operator*(Long lhs, const Vector &rhs)
-{
-    Vector ret{};
-    for (size_t i = 0; i < dim; ++i)
-        ret[i] = rhs[i] * lhs;
-    return ret;
-}
-
-inline std::ostream &operator<<(std::ostream &os, const Vector &rhs)
-{
-    os << "(";
-    if (dim != 0)
-        os << rhs[0];
-    for (size_t i = 1; i < dim; ++i)
-        os << ", " << rhs[i];
-    return os << ")";
-}
+struct Vector : VectorLike<VectorBase, Long, dim> {
+    Vector() {}
+    Vector(const Vector &v) { coords = v.coords; }
+    Vector(const VectorBase &v) { coords = v.coords; }
+};
 
 #endif
