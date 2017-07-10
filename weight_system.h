@@ -23,10 +23,10 @@ struct WeightSystem : VectorLike<WeightSystemBase, Long, dim> {
     WeightSystem(const WeightSystem &q) { weights = q.weights; }
     WeightSystem(const WeightSystemBase &q) { weights = q.weights; }
 
-    Long distance_from(const Vector &v) const {
+    Long distance_from(const Vector &x) const {
         Long ret = 0;
         for (unsigned i = 0; i < dim; ++i)
-            ret += (v.coords[i] * r_numerator - r_denominator) * weights[i];
+            ret += (x.coords[i] * r_numerator - r_denominator) * weights[i];
         return ret;
     }
 
@@ -43,15 +43,19 @@ struct WeightSystem : VectorLike<WeightSystemBase, Long, dim> {
             *this /= gcd;
     }
 
-    // Returns the hyperplane through v and the intersection of q1 and q2.
+    // Returns the weight system q that is a linear combination of q1 and q2
+    // such that its distance to x is zero. Equivalently:
+    // 1) q.distance_from(x) == 0
+    // 2) q1.distance_from(y) == 0 && q2.distance_from(y) == 0 implies
+    //    q.distance_from(y) == 0 for all y
     friend WeightSystem intersect(const WeightSystem &q1,
-                                  const WeightSystem &q2, const Vector &v) {
-        Long e1 = q1.distance_from(v);
-        Long e2 = q2.distance_from(v);
+                                  const WeightSystem &q2, const Vector &x) {
+        Long e1 = q1.distance_from(x);
+        Long e2 = q2.distance_from(x);
 
-        Long gcd = std::experimental::gcd(e1, e2);
-        e1 /= gcd;
-        e2 /= gcd;
+        // Long gcd = std::experimental::gcd(e1, e2);
+        // e1 /= gcd;
+        // e2 /= gcd;
 
         WeightSystem ret{};
         if (e1 < 0)
