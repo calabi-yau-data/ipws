@@ -23,8 +23,6 @@ public:
     bool average_if_nonzero(WeightSystem &q) const;
     bool allows(const Vector &x) const;
 
-    static bool leads_to_allowed_weightsystem(const Vector &x);
-
     friend std::ostream &operator<<(std::ostream &os,
                                     const WeightSystemBuilder &rhs);
 
@@ -42,5 +40,7 @@ private:
 
     WeightSystemBuilder(NoInit) {}
 };
+
+bool leads_to_allowed_weightsystem(const Vector &x);
 
 #endif

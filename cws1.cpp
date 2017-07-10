@@ -175,7 +175,7 @@ void rec(WeightSystemCollection &weight_systems,
     while (points.find_next()) {
         const Vector &x = points.get();
 
-        if (!WeightSystemBuilder::leads_to_allowed_weightsystem(x) ||
+        if (!leads_to_allowed_weightsystem(x) ||
             (!debug_ignore_symmetries && !is_sorted(x, symmetries)))
             continue;
 
