@@ -14,7 +14,7 @@
 #include "Global.h"
 #include "Rat.h"
 #include "hyperplane.h"
-#include "vector.h"
+#include "vector_old.h"
 
 #include "weight_system_store.h"
 
