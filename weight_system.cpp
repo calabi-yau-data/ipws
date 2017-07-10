@@ -46,9 +46,9 @@ WeightSystem intersect(const WeightSystem &q1, const WeightSystem &q2,
 
     WeightSystem ret{};
     if (e1 < 0)
-        ret = e1 * q2 - e2 * q1;
-    else
         ret = e2 * q1 - e1 * q2;
+    else
+        ret = e1 * q2 - e2 * q1;
 
     cancel(ret);
     return ret;
