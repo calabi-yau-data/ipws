@@ -5,8 +5,6 @@
 #include "vector.h"
 #include "vector_like.h"
 
-#include "config.h"
-
 struct WeightSystem : VectorLike<WeightSystem, std::array<Long, dim>, dim> {
     using Container = std::array<Long, dim>;
 
