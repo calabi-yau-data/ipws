@@ -53,14 +53,14 @@ void add_maybe(WeightSystem ws)
     weight_systems.insert(ws);
 }
 
-void rec(const WeightSystemBuilder &builder)
+void rec(const WeightSystemBuilder &builder, int n)
 {
     WeightSystem ws{};
     if (!builder.average_if_nonzero(ws))
         return;
 
     // // it is not economical to do this on the last two recursion levels
-    // if (builder.iteration() < dim - 2) {
+    // if (n < dim - 2) {
     //     bool skip = false;
 
     //     auto points = points_on(ws);
@@ -87,7 +87,7 @@ void rec(const WeightSystemBuilder &builder)
 
     add_maybe(ws);
 
-    switch (builder.iteration()) {
+    switch (n) {
     case dim - 2:
         // The following happens when redundancies are not checked
         assert(builder.generator_count() == 2);
@@ -108,7 +108,7 @@ void rec(const WeightSystemBuilder &builder)
             (!debug_ignore_symmetries && !is_sorted(x, symmetries)))
             continue;
 
-        rec(builder.restrict(x));
+        rec(builder.restrict(x), n + 1);
     }
 }
 
@@ -116,7 +116,7 @@ int main()
 {
     Stopwatch stopwatch{};
 
-    rec(WeightSystemBuilder{});
+    rec(WeightSystemBuilder{}, 0);
 
     cout << stopwatch.count() << ": " << weight_systems.size() << "/" << count
          << endl;
