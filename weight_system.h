@@ -11,8 +11,6 @@
 
 #include "config.h"
 
-class WeightSystemPointsBelow;
-
 struct WeightSystemBase {
     std::array<Long, dim> weights;
 
@@ -146,13 +144,5 @@ public:
         }
     }
 };
-
-WeightSystemPointsBelow points_below(WeightSystem &q) {
-    return WeightSystemPointsBelow{q};
-}
-
-WeightSystemPointsOn points_on(WeightSystem &q) {
-    return WeightSystemPointsOn{q};
-}
 
 #endif

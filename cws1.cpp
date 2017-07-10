@@ -93,7 +93,7 @@ void rec(const WeightSystemBuilder &builder) {
 
     auto symmetries = builder.symmetries();
 
-    auto points = points_below(ws);
+    auto points = WeightSystemPointsBelow(ws);
     while (points.find_next()) {
         const Vector &x = points.get();
 
