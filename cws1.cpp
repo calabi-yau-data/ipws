@@ -26,25 +26,25 @@ unsigned count = 0;
 set<WeightSystem> weight_systems{};
 
 void add_maybe(WeightSystem ws) {
-    Long norm = ws.norm();
+    Long n = norm(ws);
 
     for (unsigned i = 0; i < dim; ++i) {
-        if (!allow_weight_one_half && 2 * ws.weights[i] * r_numerator == norm * r_denominator)
+        if (!allow_weight_one_half && 2 * ws.weights[i] * r_numerator == n * r_denominator)
             return;
 
-        if (!allow_weight_one && ws.weights[i] * r_numerator == norm * r_denominator)
+        if (!allow_weight_one && ws.weights[i] * r_numerator == n * r_denominator)
             return;
     }
 
     if (!allow_weights_sum_one)
         for (unsigned i = 0; i < dim - 1; ++i)
             for (unsigned j = i + 1; j < dim; ++j)
-                if ((ws.weights[i] + ws.weights[j]) * r_numerator == norm * r_denominator)
+                if ((ws.weights[i] + ws.weights[j]) * r_numerator == n * r_denominator)
                     return;
 
     ++count;
 
-    ws.sort();
+    sort(ws);
     weight_systems.insert(ws);
 }
 

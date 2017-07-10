@@ -42,7 +42,7 @@ target_link_libraries(mori common)
 add_executable(cws0 cws0.cpp weight_system_store_set.cpp)
 target_link_libraries(cws0 common)
 
-add_executable(cws1 cws1.cpp)
+add_executable(cws1 cws1.cpp weight_system.cpp)
 
 find_package(JNI)
 if (JNI_FOUND)

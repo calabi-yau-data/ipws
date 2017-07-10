@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <bitset>
+#include <experimental/numeric>
 #include <vector>
 #include "stl_utils.h"
 #include "weight_system.h"
@@ -149,7 +150,7 @@ public:
         xq.resize(generators.size());
 
         for (unsigned i = 0; i < generators.size(); i++) {
-            xq[i] = generators[i].eq.distance_from(x);
+            xq[i] = distance(generators[i].eq, x);
             if (xq[i] == 0)
                 ret.generators.push_back(generators[i]);
         }
@@ -216,7 +217,7 @@ public:
         norms.reserve(size);
 
         for (unsigned i = 0; i < size; ++i)
-            norms.push_back(generators[i].eq.norm());
+            norms.push_back(norm(generators[i].eq));
 
         Long lcm = norms[0];
         for (unsigned i = 1; i < size; ++i)
@@ -231,7 +232,7 @@ public:
                 return false;
         }
 
-        q.cancel();
+        cancel(q);
 
         return true;
     }
@@ -245,7 +246,7 @@ public:
 
     bool allows(const Vector &x) const {
         for (const auto &gen : generators)
-            if (gen.eq.distance_from(x) != 0)
+            if (distance(gen.eq, x) != 0)
                 return false;
         return true;
     }
