@@ -116,25 +116,22 @@ class WeightSystemPointsOn {
     std::array<Long, dim> ax;
 public:
     WeightSystemPointsOn(const WeightSystem &q) : q{q} {
-        assert(false); // TODO: not yet shifted
+        x.coords.fill(0);
+        ax.fill(-q.norm() * r_denominator);
 
-        std::fill_n(x.coords.begin(), dim - 1, 0);
-        std::fill_n(ax.begin(), dim - 1, 0);
-
-        x.coords[dim - 1] = -1;
-        ax[dim - 1] = -q.weights[dim - 1];
+        x.coords[dim - 1] -= 1;
+        ax[dim - 1] -= q.weights[dim - 1] * r_numerator;
     }
 
     const Vector &get() {
         return x;
     }
 
-    // this is just a quick adaptation and can probably be optimized
     __attribute__ ((noinline))
     bool find_next() {
         while (true) {
             int k = dim - 1;
-            while (ax[k] + q.weights[k] > 0) {
+            while (ax[k] + q.weights[k] * r_numerator > 0) {
                 if (k == 0)
                     return false;
                 x.coords[k] = 0;
@@ -142,13 +139,13 @@ public:
             }
 
             x.coords[k]++;
-            ax[k] += q.weights[k];
+            ax[k] += q.weights[k] * r_numerator;
             for (int i = k + 1; i < dim; ++i)
                 ax[i] = ax[k];
 
             if (ax[k] == 0)
                 return true;
-        };
+        }
     }
 };
 
