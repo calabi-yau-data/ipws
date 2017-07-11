@@ -6,10 +6,10 @@
 WeightSystemBuilder::WeightSystemBuilder() : iteration{0}
 {
     generators.resize(dim);
-    for (int generator_nr = 0; generator_nr < dim; ++generator_nr) {
+    for (unsigned generator_nr = 0; generator_nr < dim; ++generator_nr) {
         auto &generator = generators[generator_nr];
 
-        for (int i = 0; i < dim; ++i)
+        for (unsigned i = 0; i < dim; ++i)
             generator.eq.weights[i] = generator_nr == i ? 1 : 0;
 
         generator.incidences.set(generator_nr);
@@ -196,7 +196,7 @@ bool leads_to_allowed_weightsystem(const Point &x)
 {
     Long xsum = 0, xmax = 0;
 
-    for (int l = 0; l < dim; l++) {
+    for (unsigned l = 0; l < dim; l++) {
         xsum += x.coords[l];
         if (x.coords[l] > xmax)
             xmax = x.coords[l];

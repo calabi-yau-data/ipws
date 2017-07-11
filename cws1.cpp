@@ -171,7 +171,7 @@ bool last_point_redundant(int n, const History &history)
             x_diff /= v;
 
         bool all_positive = true;
-        for (int j = 0; j < dim; ++j) {
+        for (unsigned j = 0; j < dim; ++j) {
             if (x_other.coords[j] + x_diff.coords[j] < 0) {
                 all_positive = false;
                 break;
@@ -181,7 +181,7 @@ bool last_point_redundant(int n, const History &history)
             return true;
 
         all_positive = true;
-        for (int j = 0; j < dim; ++j) {
+        for (unsigned j = 0; j < dim; ++j) {
             if (x.coords[j] - x_diff.coords[j] < 0) {
                 all_positive = false;
                 break;
@@ -195,7 +195,7 @@ bool last_point_redundant(int n, const History &history)
 }
 
 void rec(WeightSystemCollection &weight_systems,
-         const WeightSystemBuilder &builder, int n, History &history,
+         const WeightSystemBuilder &builder, unsigned n, History &history,
          Statistics &statistics)
 {
     WeightSystem ws{};
@@ -241,7 +241,7 @@ void rec(WeightSystemCollection &weight_systems,
             continue;
 
         history.points[n] = x;
-        for (int i = 0; i < n + 1; ++i)
+        for (unsigned i = 0; i < n + 1; ++i)
             history.point_weight_system_distances[n][i] =
                 distance(history.weight_systems[i], x);
 
@@ -287,19 +287,19 @@ bool has_ip(const WeightSystem &ws)
     VertexNumList V;
     EqList E;
 
-    if (P->np <= dim) {
+    if (static_cast<unsigned>(P->np) <= dim) {
         free(P);
         return 0;
     }
     Find_Equations(P, &V, &E);
-    if (E.ne < dim) {
+    if (static_cast<unsigned>(E.ne) < dim) {
         free(P);
         return 0;
     }
     Long y[dim];
     for (unsigned k = 0; k < dim; k++)
         y[k] = 1;
-    for (unsigned k = 0; k < E.ne; k++)
+    for (unsigned k = 0; k < static_cast<unsigned>(E.ne); k++)
         if (Eval_Eq_on_V(&(E.e[k]), y, dim) <= 0)
             if (!E.e[k].c) {
                 free(P);
