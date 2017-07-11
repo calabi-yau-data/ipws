@@ -7,6 +7,7 @@
 #include "stopwatch.h"
 #include "weight_system.h"
 #include "weight_system_builder.h"
+#include "weight_system_pair.h"
 
 using gsl::span;
 using std::array;
@@ -17,6 +18,8 @@ using std::set;
 using std::setprecision;
 using std::vector;
 
+set<WeightSystemPair> pairs; // TODO: unordered_set? TODO: not global
+
 struct History {
     array<Point, dim - 1> points;
     array<WeightSystem, dim> weight_systems;
@@ -25,6 +28,7 @@ struct History {
 
 struct Statistics {
     unsigned weight_systems_found;
+    unsigned final_pairs_found;
 };
 
 __attribute__((noinline)) bool is_sorted(
@@ -77,7 +81,7 @@ vector<pair<unsigned, unsigned>> points_symmetries(span<Point> points)
     return ret;
 }
 
-bool add_maybe(WeightSystemCollection &weight_systems, WeightSystem ws)
+bool good_weight_system(const WeightSystem &ws)
 {
     Long n = norm(ws);
 
@@ -98,10 +102,18 @@ bool add_maybe(WeightSystemCollection &weight_systems, WeightSystem ws)
                     n * r_denominator)
                     return false;
 
+    return true;
+}
+
+void add_maybe(WeightSystemCollection &weight_systems, WeightSystem ws,
+               Statistics &statistics)
+{
+    if (!good_weight_system(ws))
+        return;
+
     sort(ws);
     weight_systems.insert(ws);
-
-    return true;
+    ++statistics.weight_systems_found;
 }
 
 // TODO: verify this function
@@ -192,8 +204,7 @@ void rec(WeightSystemCollection &weight_systems,
         last_point_redundant2(builder, n, history))
         return;
 
-    if (add_maybe(weight_systems, ws))
-        ++statistics.weight_systems_found;
+    add_maybe(weight_systems, ws, statistics);
 
     switch (n) {
     case dim - 2:
@@ -201,10 +212,10 @@ void rec(WeightSystemCollection &weight_systems,
         assert(builder.generator_count() == 2);
         // TODO: special case for last iteration brings a big performance boost
         if (defer_last_recursion) {
-            // builders.insert(builder.canonicalized());
-            // ++buildersAddedCount;
+            pairs.insert(canonicalize(builder.to_pair()));
+            ++statistics.final_pairs_found;
 
-            // if (buildersAddedCount % 10000 == 0)
+            // if (final_pairs_found % 10000 == 0)
             //     System.out.printf("%7.2f: builders: %d, unique: %d\n",
             //                       stopwatch.count(), buildersAddedCount,
             //                       builders.size());
@@ -248,31 +259,32 @@ int main()
     rec(weight_systems, WeightSystemBuilder{}, 0, history, statistics);
 
     if (defer_last_recursion) {
-        // System.out.printf("%7.2f: builders: %d, unique: %d\n",
-        //                   stopwatch.count(), buildersAddedCount,
-        //                   builders.size());
-        // System.out.printf("%7.2f: candidates: %d, unique: %d\n",
-        //                   stopwatch.count(), weightSystemsAddedCount,
-        //                   weightSystems.size());
+        cout << stopwatch
+             << " - weight systems: " << statistics.weight_systems_found
+             << ", unique: " << weight_systems.size() << endl;
+        cout << stopwatch
+             << " - pairs: " << statistics.final_pairs_found
+             << ", unique: " << pairs.size() << endl;
 
-        // for (WeightSystemBuilder builder : builders) {
-        //     WeightSystem ws = builder.averageIfNonzero();
+        for (const auto &pair : pairs) {
+            WeightSystem ws = average(pair);
 
-        //     WeightSystemBuilder.Symmetries symmetries = builder.symmetries();
+            // auto symmetries = points_symmetries(span<Point>(history.points.data(), n));
 
-        //     WeightSystem.PointsBelow points = ws.pointsBelow();
-        //     while (points.findNext()) {
-        //         Point x = points.get();
+            auto points = WeightSystemPointsBelow(ws);
+            while (points.find_next()) {
+                const Point &x = points.get();
 
-        //         if (!WeightSystemBuilder.leadsToAllowedWeightsystem(x) ||
-        //             (!debugIgnoreSymmetries && !symmetries.isSorted(x)))
-        //             continue;
+                if (!leads_to_allowed_weightsystem(x)
+                    // || (!debug_ignore_symmetries && !is_sorted(x, symmetries))
+                    )
+                    continue;
 
-        //         WeightSystem ws2 = builder.restrict(x).averageIfNonzero();
-        //         if (ws2 != null)
-        //             addMaybe(ws2);
-        //     }
-        // }
+                WeightSystem final_ws{};
+                if (restrict(pair, x, final_ws))
+                    add_maybe(weight_systems, final_ws, statistics);
+            }
+        }
     }
 
     cout << stopwatch

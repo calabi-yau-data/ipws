@@ -40,3 +40,40 @@ WeightSystemPair canonicalize(const WeightSystemPair &pair)
 
     return ret;
 }
+
+WeightSystem average(const WeightSystemPair &pair)
+{
+    Long norm1 = norm(pair.first);
+    Long norm2 = norm(pair.second);
+
+    WeightSystem ret{};
+
+    for (unsigned i = 0; i < dim; ++i)
+        ret.weights[i] = pair.first.weights[i] * norm2
+            + pair.second.weights[i] * norm1;
+
+    cancel(ret);
+    return ret;
+}
+
+bool restrict(const WeightSystemPair &pair, const Point &x, WeightSystem &ws)
+{
+    Long e1 = distance(pair.first, x);
+    Long e2 = distance(pair.second, x);
+
+    if (e1 < 0) {
+        if (e2 <= 0)
+            return false;
+        ws = e2 * pair.first - e1 * pair.second;
+    } else if (e1 > 0) {
+        if (e2 >= 0)
+            return false;
+        ws = e1 * pair.second - e2 * pair.first;
+    } else {
+        return false;
+    }
+
+    cancel(ws);
+
+    return true;
+}
