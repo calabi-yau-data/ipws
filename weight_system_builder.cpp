@@ -92,7 +92,7 @@ std::vector<std::pair<unsigned, unsigned>> WeightSystemBuilder::symmetries()
     return ret;
 }
 
-WeightSystemBuilder WeightSystemBuilder::restrict(const Vector &x) const
+WeightSystemBuilder WeightSystemBuilder::restrict(const Point &x) const
 {
     WeightSystemBuilder ret{NoInit{}};
     ret.iteration = iteration + 1;
@@ -174,7 +174,7 @@ std::ostream &operator<<(std::ostream &os, const WeightSystemBuilder &rhs)
     return os;
 }
 
-bool WeightSystemBuilder::allows(const Vector &x) const
+bool WeightSystemBuilder::allows(const Point &x) const
 {
     for (const auto &gen : generators)
         if (distance(gen.eq, x) != 0)
@@ -182,7 +182,7 @@ bool WeightSystemBuilder::allows(const Vector &x) const
     return true;
 }
 
-bool leads_to_allowed_weightsystem(const Vector &x)
+bool leads_to_allowed_weightsystem(const Point &x)
 {
     Long xsum = 0, xmax = 0;
 

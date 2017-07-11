@@ -5,7 +5,7 @@
 #include <iostream>
 
 template <class T, class Container, unsigned D>
-class VectorLike {
+class VectorMixin {
     using R = typename Container::value_type;
 
 public:

@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <experimental/numeric>
 
-Long distance(const WeightSystem &ws, const Vector &x)
+Long distance(const WeightSystem &ws, const Point &x)
 {
     Long ret = 0;
     for (unsigned i = 0; i < dim; ++i)
@@ -35,7 +35,7 @@ Long norm(const WeightSystem &ws)
 }
 
 WeightSystem intersect(const WeightSystem &q1, const WeightSystem &q2,
-                       const Vector &x)
+                       const Point &x)
 {
     Long e1 = distance(q1, x);
     Long e2 = distance(q2, x);

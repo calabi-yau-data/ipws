@@ -1,9 +1,9 @@
 #include <iostream>
 #include <set>
 #include "config.h"
+#include "point.h"
 #include "stl_utils.h"
 #include "stopwatch.h"
-#include "vector.h"
 #include "weight_system.h"
 #include "weight_system_builder.h"
 
@@ -15,7 +15,7 @@ using std::setprecision;
 using std::vector;
 
 struct History {
-    array<Vector, dim - 1> points;
+    array<Point, dim - 1> points;
     array<WeightSystem, dim> weight_systems;
     array<array<Long, dim - 1>, dim - 1> point_weight_system_distances;
 };
@@ -25,7 +25,7 @@ struct Statistics {
 };
 
 __attribute__((noinline)) bool is_sorted(
-    const Vector &x, const std::vector<std::pair<unsigned, unsigned>> &checks)
+    const Point &x, const std::vector<std::pair<unsigned, unsigned>> &checks)
 {
     for (const auto &check : checks)
         if (x.coords[check.first] < x.coords[check.second])
@@ -93,7 +93,7 @@ bool last_point_redundant2(const WeightSystemBuilder &builder, int n,
 // TODO: verify this function
 bool last_point_redundant(int n, const History &history)
 {
-    Vector x = history.points[n];
+    Point x = history.points[n];
 
     for (int i = 0; i < n; ++i) {
         Long rel = history.point_weight_system_distances[i][i] -
@@ -105,8 +105,8 @@ bool last_point_redundant(int n, const History &history)
     }
 
     for (int i = 0; i < n; ++i) {
-        Vector x_other = history.points[i];
-        Vector x_diff = x_other - x;
+        Point x_other = history.points[i];
+        Point x_diff = x_other - x;
 
         Long v = gcd(x_diff);
         if (v != 1)
@@ -177,7 +177,7 @@ void rec(WeightSystemCollection &weight_systems,
 
     auto points = WeightSystemPointsBelow(ws);
     while (points.find_next()) {
-        const Vector &x = points.get();
+        const Point &x = points.get();
 
         if (!leads_to_allowed_weightsystem(x) ||
             (!debug_ignore_symmetries && !is_sorted(x, symmetries)))
@@ -220,7 +220,7 @@ int main()
 
         //     WeightSystem.PointsBelow points = ws.pointsBelow();
         //     while (points.findNext()) {
-        //         Vector x = points.get();
+        //         Point x = points.get();
 
         //         if (!WeightSystemBuilder.leadsToAllowedWeightsystem(x) ||
         //             (!debugIgnoreSymmetries && !symmetries.isSorted(x)))

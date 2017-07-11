@@ -4,7 +4,7 @@
 #include <bitset>
 #include <utility>
 #include <vector>
-#include "vector.h"
+#include "point.h"
 #include "weight_system.h"
 
 class WeightSystemBuilder {
@@ -19,9 +19,9 @@ public:
     std::vector<std::pair<unsigned, unsigned>> symmetries() const;
     bool has_symmetry(unsigned idx1, unsigned idx2) const;
 
-    WeightSystemBuilder restrict(const Vector &x) const;
+    WeightSystemBuilder restrict(const Point &x) const;
     bool average_if_nonzero(WeightSystem &q) const;
-    bool allows(const Vector &x) const;
+    bool allows(const Point &x) const;
 
     friend std::ostream &operator<<(std::ostream &os,
                                     const WeightSystemBuilder &rhs);
@@ -41,6 +41,6 @@ private:
     WeightSystemBuilder(NoInit) {}
 };
 
-bool leads_to_allowed_weightsystem(const Vector &x);
+bool leads_to_allowed_weightsystem(const Point &x);
 
 #endif
