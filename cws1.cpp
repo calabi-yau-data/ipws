@@ -29,6 +29,7 @@ struct History {
 struct Statistics {
     unsigned weight_systems_found;
     unsigned final_pairs_found;
+    unsigned ip_weight_systems;
 };
 
 __attribute__((noinline)) bool is_sorted(
@@ -248,6 +249,78 @@ void rec(WeightSystemCollection &weight_systems,
     }
 }
 
+void add_point(Long *y, PolyPointList *P)
+{
+    assert(P->np < POINT_Nmax);
+    int i;
+    for (i = 0; i < P->n; i++)
+        P->x[P->np][i] = y[i];
+    P->np++;
+}
+
+bool has_ip(const WeightSystem &ws)
+{
+    Equation eq;
+    eq.c = 0;
+    for (unsigned i = 0; i < dim; ++i) {
+        eq.c += ws.weights[i];
+        eq.a[i] = ws.weights[i] * r_numerator;
+    }
+    eq.c = - eq.c * r_denominator;
+
+    int k, l;
+    PolyPointList *P = (PolyPointList *)malloc(sizeof(PolyPointList));
+    assert(P != NULL);
+    VertexNumList V;
+    EqList E;
+    Long y[POLY_Dmax];
+    Long yq[POLY_Dmax];
+    P->n = dim;
+    P->np = 0;
+    for (k = 0; k < dim; k++) {
+        y[k] = 0;
+        yq[k] = 0;
+    }
+    k = dim - 1;
+    add_point(y, P);
+    y[k] = -1; // starting point just outside
+    yq[k] = -eq.a[k];
+    while (k >= 0) {
+        y[k]++;
+        yq[k] += eq.a[k];
+        for (l = k + 1; l < dim; l++)
+            yq[l] = yq[k];
+        if (yq[k] == -eq.c)
+            add_point(y, P);
+        for (k = dim - 1; (k >= 0 ? (yq[k] + eq.a[k] > -eq.c) : 0); k--)
+            y[k] = 0;
+    }
+    if (P->np <= dim) {
+        free(P);
+        return 0;
+    }
+    Find_Equations(P, &V, &E);
+    if (E.ne < dim) {
+        free(P);
+        return 0;
+    }
+    for (k = 0; k < dim; k++)
+        y[k] = 1;
+    for (k = 0; k < E.ne; k++)
+        if (Eval_Eq_on_V(&(E.e[k]), y, dim) <= 0)
+            if (!E.e[k].c) {
+                free(P);
+                return 0;
+            }
+
+    bool ret = P->np != 1;
+    free(P);
+    return ret;
+}
+
+FILE *inFILE;
+FILE *outFILE;
+
 int main()
 {
     Stopwatch stopwatch{};
@@ -290,6 +363,16 @@ int main()
     cout << stopwatch
          << " - weight systems: " << statistics.weight_systems_found
          << ", unique: " << weight_systems.size() << endl;
+
+    for (const auto &ws : weight_systems) {
+        if (has_ip(ws))
+            ++statistics.ip_weight_systems;
+    }
+
+    cout << stopwatch
+         << " - weight systems: " << statistics.weight_systems_found
+         << ", unique: " << weight_systems.size()
+         << ", ip: " << statistics.ip_weight_systems << endl;
 
     return 0;
 }
