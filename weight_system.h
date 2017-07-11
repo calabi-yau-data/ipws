@@ -12,7 +12,6 @@ struct WeightSystem : VectorLike<WeightSystem, std::array<Long, dim>, dim> {
     Container weights;
 
     WeightSystem() { weights.fill(0); }
-
     Container &vector_container() { return weights; }
     const Container &vector_container() const { return weights; }
 };

@@ -1,4 +1,3 @@
-#include <iomanip>
 #include <iostream>
 #include <set>
 #include "config.h"
@@ -21,6 +20,10 @@ struct History {
     array<array<Long, dim - 1>, dim - 1> point_weight_system_distances;
 };
 
+struct Statistics {
+    unsigned weight_systems_found;
+};
+
 __attribute__((noinline)) bool is_sorted(
     const Vector &x, const std::vector<std::pair<unsigned, unsigned>> &checks)
 {
@@ -30,21 +33,20 @@ __attribute__((noinline)) bool is_sorted(
     return true;
 }
 
-unsigned count = 0;
 using WeightSystemCollection = set<WeightSystem>; // TODO: unordered_set?
 
-void add_maybe(WeightSystemCollection &weight_systems, WeightSystem ws)
+bool add_maybe(WeightSystemCollection &weight_systems, WeightSystem ws)
 {
     Long n = norm(ws);
 
     for (unsigned i = 0; i < dim; ++i) {
         if (!allow_weight_one_half &&
             2 * ws.weights[i] * r_numerator == n * r_denominator)
-            return;
+            return false;
 
         if (!allow_weight_one &&
             ws.weights[i] * r_numerator == n * r_denominator)
-            return;
+            return false;
     }
 
     if (!allow_weights_sum_one)
@@ -52,12 +54,12 @@ void add_maybe(WeightSystemCollection &weight_systems, WeightSystem ws)
             for (unsigned j = i + 1; j < dim; ++j)
                 if ((ws.weights[i] + ws.weights[j]) * r_numerator ==
                     n * r_denominator)
-                    return;
-
-    ++count;
+                    return false;
 
     sort(ws);
     weight_systems.insert(ws);
+
+    return true;
 }
 
 // TODO: verify this function
@@ -89,7 +91,7 @@ bool last_point_redundant2(const WeightSystemBuilder &builder, int n,
 }
 
 // TODO: verify this function
-bool lastPointRedundant(int n, const History &history)
+bool last_point_redundant(int n, const History &history)
 {
     Vector x = history.points[n];
 
@@ -135,7 +137,8 @@ bool lastPointRedundant(int n, const History &history)
 }
 
 void rec(WeightSystemCollection &weight_systems,
-         const WeightSystemBuilder &builder, int n, History &history)
+         const WeightSystemBuilder &builder, int n, History &history,
+         Statistics &statistics)
 {
     WeightSystem ws{};
     if (!builder.average_if_nonzero(ws))
@@ -147,7 +150,8 @@ void rec(WeightSystemCollection &weight_systems,
         last_point_redundant2(builder, n, history))
         return;
 
-    add_maybe(weight_systems, ws);
+    if (add_maybe(weight_systems, ws))
+        ++statistics.weight_systems_found;
 
     switch (n) {
     case dim - 2:
@@ -184,10 +188,10 @@ void rec(WeightSystemCollection &weight_systems,
             history.point_weight_system_distances[n][i] =
                 distance(history.weight_systems[i], x);
 
-        if (lastPointRedundant(n, history))
+        if (last_point_redundant(n, history))
             continue;
 
-        rec(weight_systems, builder.restrict(x), n + 1, history);
+        rec(weight_systems, builder.restrict(x), n + 1, history, statistics);
     }
 }
 
@@ -197,49 +201,41 @@ int main()
 
     History history{};
     WeightSystemCollection weight_systems{};
+    Statistics statistics{};
 
-    rec(weight_systems, WeightSystemBuilder{}, 0, history);
+    rec(weight_systems, WeightSystemBuilder{}, 0, history, statistics);
 
-    // if (defer_last_recursion) {
-    //     System.out.printf("%7.2f: builders: %d, unique: %d\n",
-    //                       stopwatch.count(), buildersAddedCount,
-    //                       builders.size());
-    //     System.out.printf("%7.2f: candidates: %d, unique: %d\n",
-    //                       stopwatch.count(), weightSystemsAddedCount,
-    //                       weightSystems.size());
+    if (defer_last_recursion) {
+        // System.out.printf("%7.2f: builders: %d, unique: %d\n",
+        //                   stopwatch.count(), buildersAddedCount,
+        //                   builders.size());
+        // System.out.printf("%7.2f: candidates: %d, unique: %d\n",
+        //                   stopwatch.count(), weightSystemsAddedCount,
+        //                   weightSystems.size());
 
-    //     for (WeightSystemBuilder builder : builders) {
-    //         WeightSystem ws = builder.averageIfNonzero();
+        // for (WeightSystemBuilder builder : builders) {
+        //     WeightSystem ws = builder.averageIfNonzero();
 
-    //         WeightSystemBuilder.Symmetries symmetries = builder.symmetries();
+        //     WeightSystemBuilder.Symmetries symmetries = builder.symmetries();
 
-    //         WeightSystem.PointsBelow points = ws.pointsBelow();
-    //         while (points.findNext()) {
-    //             Vector x = points.get();
+        //     WeightSystem.PointsBelow points = ws.pointsBelow();
+        //     while (points.findNext()) {
+        //         Vector x = points.get();
 
-    //             if (!WeightSystemBuilder.leadsToAllowedWeightsystem(x) ||
-    //                 (!debugIgnoreSymmetries && !symmetries.isSorted(x)))
-    //                 continue;
+        //         if (!WeightSystemBuilder.leadsToAllowedWeightsystem(x) ||
+        //             (!debugIgnoreSymmetries && !symmetries.isSorted(x)))
+        //             continue;
 
-    //             WeightSystem ws2 = builder.restrict(x).averageIfNonzero();
-    //             if (ws2 != null)
-    //                 addMaybe(ws2);
-    //         }
-    //     }
-    // }
-
-    cout << stopwatch.count() << ": " << weight_systems.size() << "/" << count
-         << endl;
-
-    int ipCount = 0;
-    for (WeightSystem ws : weight_systems) {
+        //         WeightSystem ws2 = builder.restrict(x).averageIfNonzero();
+        //         if (ws2 != null)
+        //             addMaybe(ws2);
+        //     }
+        // }
     }
 
-    // System.out.printf("%7.2f: candidates: %d, unique: %d, ip: %d\n",
-    //                   stopwatch.count(), weightSystemsAddedCount,
-    //                   weightSystems.size(), ipCount);
+    cout << stopwatch
+         << " - weight systems: " << statistics.weight_systems_found
+         << " unique: " << weight_systems.size() << endl;
 
     return 0;
 }
-
-// TODO: Acknowledge Roman

@@ -2,6 +2,8 @@
 #define STOPWATCH_H
 
 #include <chrono>
+#include <iomanip>
+#include <iostream>
 
 class Stopwatch {
     std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
@@ -14,6 +16,11 @@ public:
         auto now = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> duration = now - start_time;
         return duration.count();
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, const Stopwatch &rhs)
+    {
+        return os << std::setprecision(2) << rhs.count();
     }
 };
 
