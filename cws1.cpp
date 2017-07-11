@@ -252,12 +252,12 @@ void rec(WeightSystemCollection &weight_systems,
     }
 }
 
-void add_point(Long *y, PolyPointList *P)
+void add_point(span<const Long> x, PolyPointList *P)
 {
     assert(P->np < POINT_Nmax);
     int i;
     for (i = 0; i < P->n; i++)
-        P->x[P->np][i] = y[i];
+        P->x[P->np][i] = x[i];
     P->np++;
 }
 
@@ -265,33 +265,16 @@ __attribute__ ((noinline))
 PolyPointList *new_point_list(const WeightSystem &ws)
 {
     PolyPointList *P = (PolyPointList *)malloc(sizeof(PolyPointList));
-    assert(P != NULL);
+    assert(P != nullptr);
 
-    Long y[POLY_Dmax];
-    Long yq[POLY_Dmax];
     P->n = dim;
     P->np = 0;
 
-    Long n = norm(ws);
-    for (unsigned k = 0; k < dim; k++) {
-        y[k] = 0;
-        yq[k] = - n * r_denominator;
-    }
+    add_point(Point().coords, P);
 
-    add_point(y, P);
-    y[dim - 1] = -1; // starting point just outside
-    yq[dim - 1] -= ws.weights[dim - 1] * r_numerator;
-
-    int k = dim - 1;
-    while (k >= 0) {
-        y[k]++;
-        yq[k] += ws.weights[k] * r_numerator;
-        for (unsigned l = k + 1; l < dim; l++)
-            yq[l] = yq[k];
-        if (yq[k] == 0)
-            add_point(y, P);
-        for (k = dim - 1; (k >= 0 ? (yq[k] + ws.weights[k] * r_numerator > 0) : 0); k--)
-            y[k] = 0;
+    auto gen = WeightSystemPointsOn(ws);
+    while (gen.find_next()) {
+        add_point(gen.get().coords, P);
     }
 
     return P;
