@@ -311,9 +311,6 @@ bool has_ip(const WeightSystem &ws)
     return ret;
 }
 
-FILE *inFILE;
-FILE *outFILE;
-
 int main()
 {
     Stopwatch stopwatch{};

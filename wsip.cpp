@@ -690,7 +690,7 @@ int Find_Equations(PolyPointList *_P, VertexNumList *_V, EqList *_F)
     _F->ne = 0;
     for (i = 0; i < CEq->ne; i++)
         if (INCI_abs(CEq_I[i] = Eq_To_INCI(&(CEq->e[i]), _P, _V)) < _P->n) {
-            fprintf(outFILE, "Bad CEq in Find_Equations");
+            fprintf(stderr, "Bad CEq in Find_Equations");
             exit(0);
         }
     i = Finish_Find_Equations(_P, _V, _F, CEq, F_I, CEq_I);
