@@ -20,7 +20,7 @@ public:
 
     friend std::ostream &operator<<(std::ostream &os, const Stopwatch &rhs)
     {
-        return os << std::setprecision(2) << rhs.count();
+        return os << std::fixed << std::setprecision(2) << rhs.count();
     }
 };
 

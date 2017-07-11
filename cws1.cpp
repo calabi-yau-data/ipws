@@ -234,8 +234,8 @@ int main()
     }
 
     cout << stopwatch
-         << " -  weight systems: " << statistics.weight_systems_found
-         << " unique: " << weight_systems.size() << endl;
+         << " - weight systems: " << statistics.weight_systems_found
+         << ", unique: " << weight_systems.size() << endl;
 
     return 0;
 }
