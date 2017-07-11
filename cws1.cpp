@@ -42,7 +42,7 @@ __attribute__((noinline)) bool is_sorted(
 
 using WeightSystemCollection = set<WeightSystem>; // TODO: unordered_set?
 
-bool points_have_symmetry(span<Point> points, unsigned idx1, unsigned idx2)
+bool points_have_symmetry(span<const Point> points, unsigned idx1, unsigned idx2)
 {
     // We could probably also consider symmetries that rely on changing the
     // order of points, but this is not done here.
@@ -54,7 +54,7 @@ bool points_have_symmetry(span<Point> points, unsigned idx1, unsigned idx2)
 }
 
 // the indices in the pairs are in ascending orders
-vector<pair<unsigned, unsigned>> points_symmetries(span<Point> points)
+vector<pair<unsigned, unsigned>> points_symmetries(span<const Point> points)
 {
     vector<pair<unsigned, unsigned>> ret{};
 
@@ -226,7 +226,7 @@ void rec(WeightSystemCollection &weight_systems,
         return;
     }
 
-    auto symmetries = points_symmetries(span<Point>(history.points.data(), n));
+    auto symmetries = points_symmetries(span<const Point>(history.points.data(), n));
 
     auto points = WeightSystemPointsBelow(ws);
     while (points.find_next()) {
