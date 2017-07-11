@@ -105,31 +105,31 @@ bool last_point_redundant(int n, const History &history)
     }
 
     for (int i = 0; i < n; ++i) {
-        Vector xOther = history.points[i];
-        Vector xDiff = xOther - x;
+        Vector x_other = history.points[i];
+        Vector x_diff = x_other - x;
 
-        Long v = gcd(xDiff);
+        Long v = gcd(x_diff);
         if (v != 1)
-            xDiff /= v;
+            x_diff /= v;
 
-        bool allPositive = true;
+        bool all_positive = true;
         for (int j = 0; j < dim; ++j) {
-            if (xOther.coords[j] + xDiff.coords[j] < 0) {
-                allPositive = false;
+            if (x_other.coords[j] + x_diff.coords[j] < 0) {
+                all_positive = false;
                 break;
             }
         }
-        if (allPositive)
+        if (all_positive)
             return true;
 
-        allPositive = true;
+        all_positive = true;
         for (int j = 0; j < dim; ++j) {
-            if (x.coords[j] - xDiff.coords[j] < 0) {
-                allPositive = false;
+            if (x.coords[j] - x_diff.coords[j] < 0) {
+                all_positive = false;
                 break;
             }
         }
-        if (allPositive)
+        if (all_positive)
             return true;
     }
 
@@ -234,7 +234,7 @@ int main()
     }
 
     cout << stopwatch
-         << " - weight systems: " << statistics.weight_systems_found
+         << " -  weight systems: " << statistics.weight_systems_found
          << " unique: " << weight_systems.size() << endl;
 
     return 0;
