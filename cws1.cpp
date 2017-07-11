@@ -261,7 +261,6 @@ void add_point(span<const Long> x, PolyPointList *P)
     P->np++;
 }
 
-__attribute__ ((noinline))
 PolyPointList *new_point_list(const WeightSystem &ws)
 {
     PolyPointList *P = (PolyPointList *)malloc(sizeof(PolyPointList));
