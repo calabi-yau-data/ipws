@@ -9,6 +9,9 @@
 #include "weight_system_builder.h"
 #include "weight_system_pair.h"
 
+int  Find_Equations(PolyPointList *P, VertexNumList *VNL, EqList *EL);
+Long Eval_Eq_on_V(Equation *E, Long *V, int i);
+
 using gsl::span;
 using std::array;
 using std::cout;
@@ -258,43 +261,50 @@ void add_point(Long *y, PolyPointList *P)
     P->np++;
 }
 
-bool has_ip(const WeightSystem &ws)
+__attribute__ ((noinline))
+PolyPointList *new_point_list(const WeightSystem &ws)
 {
-    Equation eq;
-    eq.c = 0;
-    for (unsigned i = 0; i < dim; ++i) {
-        eq.c += ws.weights[i];
-        eq.a[i] = ws.weights[i] * r_numerator;
-    }
-    eq.c = - eq.c * r_denominator;
-
-    int k, l;
     PolyPointList *P = (PolyPointList *)malloc(sizeof(PolyPointList));
     assert(P != NULL);
-    VertexNumList V;
-    EqList E;
+
     Long y[POLY_Dmax];
     Long yq[POLY_Dmax];
     P->n = dim;
     P->np = 0;
-    for (k = 0; k < dim; k++) {
+
+    Long n = norm(ws);
+    for (unsigned k = 0; k < dim; k++) {
         y[k] = 0;
-        yq[k] = 0;
+        yq[k] = - n * r_denominator;
     }
-    k = dim - 1;
+
     add_point(y, P);
-    y[k] = -1; // starting point just outside
-    yq[k] = -eq.a[k];
+    y[dim - 1] = -1; // starting point just outside
+    yq[dim - 1] -= ws.weights[dim - 1] * r_numerator;
+
+    int k = dim - 1;
     while (k >= 0) {
         y[k]++;
-        yq[k] += eq.a[k];
-        for (l = k + 1; l < dim; l++)
+        yq[k] += ws.weights[k] * r_numerator;
+        for (unsigned l = k + 1; l < dim; l++)
             yq[l] = yq[k];
-        if (yq[k] == -eq.c)
+        if (yq[k] == 0)
             add_point(y, P);
-        for (k = dim - 1; (k >= 0 ? (yq[k] + eq.a[k] > -eq.c) : 0); k--)
+        for (k = dim - 1; (k >= 0 ? (yq[k] + ws.weights[k] * r_numerator > 0) : 0); k--)
             y[k] = 0;
     }
+
+    return P;
+}
+
+bool has_ip(const WeightSystem &ws)
+{
+    // static auto poly_point_list = std::make_unique<PolyPointList>();
+    PolyPointList *P = new_point_list(ws);
+
+    VertexNumList V;
+    EqList E;
+
     if (P->np <= dim) {
         free(P);
         return 0;
@@ -304,9 +314,10 @@ bool has_ip(const WeightSystem &ws)
         free(P);
         return 0;
     }
-    for (k = 0; k < dim; k++)
+    Long y[dim];
+    for (unsigned k = 0; k < dim; k++)
         y[k] = 1;
-    for (k = 0; k < E.ne; k++)
+    for (unsigned k = 0; k < E.ne; k++)
         if (Eval_Eq_on_V(&(E.e[k]), y, dim) <= 0)
             if (!E.e[k].c) {
                 free(P);

@@ -2,7 +2,7 @@
 #define VECTOR_H
 
 #include <array>
-#include "Global.h"
+#include "global2.h"
 #include "vector_mixin.h"
 
 struct Point : VectorMixin<Point, std::array<Long, dim>, dim> {
