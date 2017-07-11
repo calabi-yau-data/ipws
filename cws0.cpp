@@ -241,8 +241,10 @@ struct FinalCone {
 
         bool which = true;
         for (int i = 0; i < dim; ++i)
-            if (blub1[i][0] != blub2[i][0])
+            if (blub1[i][0] != blub2[i][0]) {
                 which = blub1[i][0] > blub2[i][0];
+                break;
+            }
 
         auto &blub = which ? blub1 : blub2;
 
