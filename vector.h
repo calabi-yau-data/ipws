@@ -10,6 +10,8 @@ struct Vector : VectorLike<Vector, std::array<Long, dim>, dim> {
 
     Container coords;
 
+    Vector() { coords.fill(0); }
+
     Container &vector_container() { return coords; }
     const Container &vector_container() const { return coords; }
 };
