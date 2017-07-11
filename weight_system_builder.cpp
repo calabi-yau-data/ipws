@@ -33,64 +33,64 @@ unsigned WeightSystemBuilder::generator_count() const
     return static_cast<unsigned>(generators.size());
 }
 
-bool WeightSystemBuilder::has_symmetry(unsigned idx1, unsigned idx2) const
-{
-    size_t size = generators.size();
-    auto permuted = generators;
+// bool WeightSystemBuilder::has_symmetry(unsigned idx1, unsigned idx2) const
+// {
+//     size_t size = generators.size();
+//     auto permuted = generators;
 
-    for (auto &gen : permuted)
-        std::swap(gen.eq.weights[idx1], gen.eq.weights[idx2]);
+//     for (auto &gen : permuted)
+//         std::swap(gen.eq.weights[idx1], gen.eq.weights[idx2]);
 
-    std::vector<bool> has_partner(size, false);
-    unsigned partner_count = 0;
+//     std::vector<bool> has_partner(size, false);
+//     unsigned partner_count = 0;
 
-    for (const auto &gen : generators) {
-        unsigned i;
-        for (i = 0; i < size; ++i) {
-            if (has_partner[i])
-                continue;
+//     for (const auto &gen : generators) {
+//         unsigned i;
+//         for (i = 0; i < size; ++i) {
+//             if (has_partner[i])
+//                 continue;
 
-            if (gen.eq == permuted[i].eq) {
-                has_partner[i] = true;
-                ++partner_count;
-                break;
-            }
-        }
-        if (i == size)
-            return false;
-    }
+//             if (gen.eq == permuted[i].eq) {
+//                 has_partner[i] = true;
+//                 ++partner_count;
+//                 break;
+//             }
+//         }
+//         if (i == size)
+//             return false;
+//     }
 
-    return partner_count == size;
-}
+//     return partner_count == size;
+// }
 
-// the indices in the pairs are in ascending orders
-std::vector<std::pair<unsigned, unsigned>> WeightSystemBuilder::symmetries()
-    const
-{
-    std::vector<std::pair<unsigned, unsigned>> ret{};
+// // the indices in the pairs are in ascending orders
+// std::vector<std::pair<unsigned, unsigned>> WeightSystemBuilder::symmetries()
+//     const
+// {
+//     std::vector<std::pair<unsigned, unsigned>> ret{};
 
-    std::array<bool, dim> done{};
-    done.fill(false);
+//     std::array<bool, dim> done{};
+//     done.fill(false);
 
-    for (unsigned i = 0; i < dim - 1; ++i) {
-        if (done[i])
-            continue;
+//     for (unsigned i = 0; i < dim - 1; ++i) {
+//         if (done[i])
+//             continue;
 
-        unsigned k = i;
-        for (unsigned j = i + 1; j < dim; ++j) {
-            if (done[j])
-                continue;
+//         unsigned k = i;
+//         for (unsigned j = i + 1; j < dim; ++j) {
+//             if (done[j])
+//                 continue;
 
-            if (has_symmetry(i, j)) {
-                ret.push_back(std::pair<unsigned, unsigned>(k, j));
-                k = j;
-                done[j] = true;
-            }
-        }
-    }
+//             if (has_symmetry(i, j)) {
+//                 ret.push_back(std::pair<unsigned, unsigned>(k, j));
+//                 k = j;
+//                 done[j] = true;
+//             }
+//         }
+//     }
 
-    return ret;
-}
+//     return ret;
+// }
 
 WeightSystemBuilder WeightSystemBuilder::restrict(const Point &x) const
 {

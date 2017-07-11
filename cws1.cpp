@@ -1,3 +1,4 @@
+#include <gsl/gsl>
 #include <iostream>
 #include <set>
 #include "config.h"
@@ -7,9 +8,11 @@
 #include "weight_system.h"
 #include "weight_system_builder.h"
 
+using gsl::span;
 using std::array;
 using std::cout;
 using std::endl;
+using std::pair;
 using std::set;
 using std::setprecision;
 using std::vector;
@@ -34,6 +37,45 @@ __attribute__((noinline)) bool is_sorted(
 }
 
 using WeightSystemCollection = set<WeightSystem>; // TODO: unordered_set?
+
+bool points_have_symmetry(span<Point> points, unsigned idx1, unsigned idx2)
+{
+    // We could probably also consider symmetries that rely on changing the
+    // order of points, but this is not done here.
+
+    for (const auto &p : points)
+        if (p.coords[idx1] != p.coords[idx2])
+            return false;
+    return true;
+}
+
+// the indices in the pairs are in ascending orders
+vector<pair<unsigned, unsigned>> points_symmetries(span<Point> points)
+{
+    vector<pair<unsigned, unsigned>> ret{};
+
+    array<bool, dim> done{};
+    done.fill(false);
+
+    for (unsigned i = 0; i < dim - 1; ++i) {
+        if (done[i])
+            continue;
+
+        unsigned k = i;
+        for (unsigned j = i + 1; j < dim; ++j) {
+            if (done[j])
+                continue;
+
+            if (points_have_symmetry(points, i, j)) {
+                ret.push_back(pair<unsigned, unsigned>(k, j));
+                k = j;
+                done[j] = true;
+            }
+        }
+    }
+
+    return ret;
+}
 
 bool add_maybe(WeightSystemCollection &weight_systems, WeightSystem ws)
 {
@@ -173,7 +215,7 @@ void rec(WeightSystemCollection &weight_systems,
         return;
     }
 
-    auto symmetries = builder.symmetries();
+    auto symmetries = points_symmetries(span<Point>(history.points.data(), n));
 
     auto points = WeightSystemPointsBelow(ws);
     while (points.find_next()) {

@@ -15,10 +15,6 @@ public:
 
     unsigned generator_count() const;
 
-    // The indices appear in ascending orders
-    std::vector<std::pair<unsigned, unsigned>> symmetries() const;
-    bool has_symmetry(unsigned idx1, unsigned idx2) const;
-
     WeightSystemBuilder restrict(const Point &x) const;
     bool average_if_nonzero(WeightSystem &q) const;
     bool allows(const Point &x) const;

@@ -43,6 +43,7 @@ add_executable(cws0 cws0.cpp weight_system_store_set.cpp)
 target_link_libraries(cws0 common)
 
 add_executable(cws1 cws1.cpp weight_system.cpp weight_system_builder.cpp)
+target_include_directories(cws1 PRIVATE "${PROJECT_SOURCE_DIR}/include")
 
 find_package(JNI)
 if (JNI_FOUND)
