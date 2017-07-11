@@ -22,7 +22,7 @@ public:
         return ret;
     }
 
-    friend int compare(const T &a, const T &b)
+    friend int compare(const T &a, const T &b) // TODO const return type?
     {
         for (unsigned i = 0; i < D; ++i) {
             if (a.vector_container()[i] < b.vector_container()[i])
