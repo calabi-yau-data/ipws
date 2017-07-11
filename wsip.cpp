@@ -116,7 +116,10 @@ int INCI_abs(INCI X)
     return abs;
 }
 
-int  INCI_lex_GT(INCI *x, INCI *y){ return (*x > *y) ? 1 : 0 ; }
+int INCI_lex_GT(INCI *x, INCI *y)
+{
+    return (*x > *y) ? 1 : 0;
+}
 
 INCI Eq_To_INCI(Equation *_Eq, PolyPointList *_P, VertexNumList *_V)
 {

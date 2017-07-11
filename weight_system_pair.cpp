@@ -49,8 +49,8 @@ WeightSystem average(const WeightSystemPair &pair)
     WeightSystem ret{};
 
     for (unsigned i = 0; i < dim; ++i)
-        ret.weights[i] = pair.first.weights[i] * norm2
-            + pair.second.weights[i] * norm1;
+        ret.weights[i] =
+            pair.first.weights[i] * norm2 + pair.second.weights[i] * norm1;
 
     cancel(ret);
     return ret;

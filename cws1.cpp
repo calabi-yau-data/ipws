@@ -9,7 +9,7 @@
 #include "weight_system_builder.h"
 #include "weight_system_pair.h"
 
-int  Find_Equations(PolyPointList *P, VertexNumList *VNL, EqList *EL);
+int Find_Equations(PolyPointList *P, VertexNumList *VNL, EqList *EL);
 Long Eval_Eq_on_V(Equation *E, Long *V, int i);
 
 using gsl::span;
@@ -46,7 +46,8 @@ __attribute__((noinline)) bool is_sorted(
 
 using WeightSystemCollection = set<WeightSystem>; // TODO: unordered_set?
 
-bool points_have_symmetry(span<const Point> points, unsigned idx1, unsigned idx2)
+bool points_have_symmetry(span<const Point> points, unsigned idx1,
+                          unsigned idx2)
 {
     // We could probably also consider symmetries that rely on changing the
     // order of points, but this is not done here.
@@ -230,7 +231,8 @@ void rec(WeightSystemCollection &weight_systems,
         return;
     }
 
-    auto symmetries = points_symmetries(span<const Point>(history.points.data(), n));
+    auto symmetries =
+        points_symmetries(span<const Point>(history.points.data(), n));
 
     auto points = WeightSystemPointsBelow(ws);
     while (points.find_next()) {
@@ -325,8 +327,7 @@ int main()
         cout << stopwatch
              << " - weight systems: " << statistics.weight_systems_found
              << ", unique: " << weight_systems.size() << endl;
-        cout << stopwatch
-             << " - pairs: " << statistics.final_pairs_found
+        cout << stopwatch << " - pairs: " << statistics.final_pairs_found
              << ", unique: " << pairs.size() << endl;
 
         for (const auto &pair : pairs) {

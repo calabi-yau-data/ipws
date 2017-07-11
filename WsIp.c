@@ -1,9 +1,10 @@
-#include "Global.h"
 #include "WsIp.h"
+#include "Global.h"
 
 FILE *inFILE, *outFILE;
 
-static void AddPointToPoly(Long *y, PolyPointList *P) {
+static void AddPointToPoly(Long *y, PolyPointList *P)
+{
     assert(P->np < POINT_Nmax);
     int i;
     for (i = 0; i < P->n; i++)
@@ -11,7 +12,8 @@ static void AddPointToPoly(Long *y, PolyPointList *P) {
     P->np++;
 }
 
-static bool WsIpCheck(Equation *q, int d) {
+static bool WsIpCheck(Equation *q, int d)
+{
     int k, l;
     PolyPointList *P = (PolyPointList *)malloc(sizeof(PolyPointList));
     assert(P != NULL);
@@ -62,10 +64,9 @@ static bool WsIpCheck(Equation *q, int d) {
     return ret;
 }
 
-JNIEXPORT jint JNICALL
-Java_WsIp_hasIp(JNIEnv *env, jclass UNUSED(cl), jintArray weightsArray,
-                jint divisor) {
-
+JNIEXPORT jint JNICALL Java_WsIp_hasIp(JNIEnv *env, jclass UNUSED(cl),
+                                       jintArray weightsArray, jint divisor)
+{
     int d = (*env)->GetArrayLength(env, weightsArray);
     int *weights = (*env)->GetIntArrayElements(env, weightsArray, 0);
 
@@ -76,7 +77,7 @@ Java_WsIp_hasIp(JNIEnv *env, jclass UNUSED(cl), jintArray weightsArray,
 
     for (int i = 0; i < d; ++i)
         eq.a[i] = weights[i];
-    eq.c = - divisor;
+    eq.c = -divisor;
 
     return WsIpCheck(&eq, d);
 }
