@@ -182,6 +182,16 @@ bool WeightSystemBuilder::allows(const Point &x) const
     return true;
 }
 
+WeightSystemPair WeightSystemBuilder::to_pair() const
+{
+    assert(generators.size() == 2);
+
+    WeightSystemPair ret{};
+    ret.first = generators[0].eq;
+    ret.second = generators[1].eq;
+    return ret;
+}
+
 bool leads_to_allowed_weightsystem(const Point &x)
 {
     Long xsum = 0, xmax = 0;

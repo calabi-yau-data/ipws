@@ -6,6 +6,7 @@
 #include <vector>
 #include "point.h"
 #include "weight_system.h"
+#include "weight_system_pair.h"
 
 class WeightSystemBuilder {
 public:
@@ -21,6 +22,8 @@ public:
 
     friend std::ostream &operator<<(std::ostream &os,
                                     const WeightSystemBuilder &rhs);
+
+    WeightSystemPair to_pair() const;
 
 private:
     struct Generator {
