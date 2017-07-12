@@ -103,7 +103,7 @@ default to stdin and stdout, respectively.
 /*  ==========         Global typedefs           		==========  */
 
 typedef struct {
-    int n, np;
+    int np;
     Long x[POINT_Nmax][POLY_Dmax];
 } PolyPointList;
 /*

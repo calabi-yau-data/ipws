@@ -257,8 +257,7 @@ void rec(WeightSystemCollection &weight_systems,
 void add_point(span<const Long> x, PolyPointList *P)
 {
     assert(P->np < POINT_Nmax);
-    int i;
-    for (i = 0; i < P->n; i++)
+    for (unsigned i = 0; i < dim; i++)
         P->x[P->np][i] = x[i];
     P->np++;
 }
@@ -268,7 +267,6 @@ PolyPointList *new_point_list(const WeightSystem &ws)
     PolyPointList *P = (PolyPointList *)malloc(sizeof(PolyPointList));
     assert(P != nullptr);
 
-    P->n = dim;
     P->np = 0;
 
     add_point(Point().coords, P);
