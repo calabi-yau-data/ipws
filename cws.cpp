@@ -306,7 +306,7 @@ void process_pair(WeightSystemCollection &weight_systems,
                     current_weight_systems.insert(final_ws);
                 }
 
-                if (statistics.weight_systems_found % 10000 == 0)
+                if (statistics.weight_systems_found % 1000000 == 0)
                     cerr << stopwatch << " - weight systems: "
                          << statistics.weight_systems_found
                          << ", unique: " << weight_systems.size() << endl;
@@ -334,7 +334,7 @@ int main()
 
         srand(1234);
         while (cones_in) {
-            // cones_in.seekg((rand() % 46890549) * 20);
+            // cones_in.seekg((rand() % 46739902) * 20);
             WeightSystemPair pair;
 
             for (int i = 0; i < dim; ++i) {
