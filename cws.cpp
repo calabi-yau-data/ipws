@@ -22,8 +22,6 @@ using std::set;
 using std::setprecision;
 using std::vector;
 
-set<WeightSystemPair> pairs; // TODO: unordered_set? TODO: not global
-
 struct History {
     array<Point, dim - 1> points;
     array<WeightSystem, dim> weight_systems;
@@ -158,8 +156,9 @@ bool last_point_redundant(int n, const History &history)
     return false;
 }
 
-void rec(WeightSystemCollection &weight_systems,
-         const WeightSystemBuilder &builder, unsigned n, History &history,
+void rec(const WeightSystemBuilder &builder,
+         WeightSystemCollection &weight_systems,
+         set<WeightSystemPair> &final_pairs, unsigned n, History &history,
          Statistics &statistics, const Stopwatch &stopwatch)
 {
     WeightSystem ws{};
@@ -180,13 +179,13 @@ void rec(WeightSystemCollection &weight_systems,
         assert(builder.generator_count() == 2);
         // TODO: special case for last iteration brings a big performance boost
         if (defer_last_recursion || write_weight_system_pairs) {
-            pairs.insert(canonicalize(builder.to_pair()));
+            final_pairs.insert(canonicalize(builder.to_pair()));
             ++statistics.final_pairs_found;
 
             if (statistics.final_pairs_found % 10000 == 0)
-                cerr << stopwatch
-                     << " - pairs: " << statistics.final_pairs_found
-                     << ", unique: " << pairs.size() << endl;
+                cerr << stopwatch << " - weight system pairs: "
+                     << statistics.final_pairs_found
+                     << ", unique: " << final_pairs.size() << endl;
 
             return;
         }
@@ -213,8 +212,8 @@ void rec(WeightSystemCollection &weight_systems,
         if (last_point_redundant(n, history))
             continue;
 
-        rec(weight_systems, builder.restrict(x), n + 1, history, statistics,
-            stopwatch);
+        rec(builder.restrict(x), weight_systems, final_pairs, n + 1, history,
+            statistics, stopwatch);
     }
 }
 
@@ -267,6 +266,7 @@ int main()
 
     History history{};
     WeightSystemCollection weight_systems{};
+    set<WeightSystemPair> final_pairs; // TODO: unordered_set?
     Statistics statistics{};
 
     if (read_weight_system_pairs) {
@@ -295,15 +295,15 @@ int main()
             process_pair(weight_systems, pair, statistics, stopwatch);
         }
     } else {
-        rec(weight_systems, WeightSystemBuilder{}, 0, history, statistics,
-            stopwatch);
+        rec(WeightSystemBuilder{}, weight_systems, final_pairs, 0, history,
+            statistics, stopwatch);
     }
 
     if (write_weight_system_pairs) {
         cerr << stopwatch << " - writing\n";
 
         std::ofstream pairs_out{"pairs", std::ofstream::binary};
-        for (auto &pair : pairs) {
+        for (auto &pair : final_pairs) {
             for (unsigned i = 0; i < dim; ++i) {
                 auto v = pair.first.weights[i];
                 assert(v >= 0 && v <= UINT16_MAX);
@@ -325,10 +325,11 @@ int main()
         cerr << stopwatch
              << " - weight systems: " << statistics.weight_systems_found
              << ", unique: " << weight_systems.size() << endl;
-        cerr << stopwatch << " - pairs: " << statistics.final_pairs_found
-             << ", unique: " << pairs.size() << endl;
+        cerr << stopwatch
+             << " - weight system pairs: " << statistics.final_pairs_found
+             << ", unique: " << final_pairs.size() << endl;
 
-        for (const auto &pair : pairs)
+        for (const auto &pair : final_pairs)
             process_pair(weight_systems, pair, statistics, stopwatch);
     }
 
