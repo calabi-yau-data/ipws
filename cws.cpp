@@ -300,10 +300,16 @@ void process_pair(WeightSystemCollection &weight_systems,
 
         WeightSystem final_ws{};
         if (restrict(pair, x, final_ws)) {
-            if (add_maybe(weight_systems, final_ws, statistics) &&
-                print_last_recursion_statistics) {
-                ++candidate_count;
-                current_weight_systems.insert(final_ws);
+            if (add_maybe(weight_systems, final_ws, statistics)) {
+                if (print_last_recursion_statistics) {
+                    ++candidate_count;
+                    current_weight_systems.insert(final_ws);
+                }
+
+                if (statistics.weight_systems_found % 10000 == 0)
+                    cerr << stopwatch << " - weight systems: "
+                         << statistics.weight_systems_found
+                         << ", unique: " << weight_systems.size() << endl;
             }
         }
     }
@@ -343,6 +349,9 @@ int main()
                 pair.second.weights[i] = ntohs(v16);
             }
 
+            if (!cones_in)
+                break;
+
             process_pair(weight_systems, pair, statistics, stopwatch);
         }
     } else {
@@ -373,8 +382,6 @@ int main()
     }
 
     if (defer_last_recursion) {
-        weight_systems.clear();
-
         cerr << stopwatch
              << " - weight systems: " << statistics.weight_systems_found
              << ", unique: " << weight_systems.size() << endl;
