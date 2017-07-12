@@ -20,5 +20,5 @@ set(CMAKE_CXX_FLAGS_RELEASE "${FLAGS_RELEASE}")
 set(CMAKE_CXX_STANDARD_REQUIRED 14)
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(cws cws.cpp weight_system.cpp weight_system_builder.cpp weight_system_pair.cpp wsip.cpp)
+add_executable(cws cws.cpp point.cpp weight_system.cpp weight_system_builder.cpp weight_system_pair.cpp wsip.cpp)
 target_include_directories(cws PRIVATE "${PROJECT_SOURCE_DIR}/include")
