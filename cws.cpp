@@ -35,15 +35,6 @@ struct Statistics {
     unsigned ip_weight_systems;
 };
 
-__attribute__((noinline)) bool is_sorted(
-    const Point &x, const std::vector<std::pair<unsigned, unsigned>> &checks)
-{
-    for (const auto &check : checks)
-        if (x.coords[check.first] < x.coords[check.second])
-            return false;
-    return true;
-}
-
 using WeightSystemCollection = set<WeightSystem>; // TODO: unordered_set?
 
 bool points_have_symmetry(span<const Point> points, unsigned idx1,
