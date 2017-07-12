@@ -5,7 +5,7 @@
 #include <gsl/gsl>
 #include <utility>
 #include <vector>
-#include "global.h"
+#include "config.h"
 #include "vector_mixin.h"
 
 struct Point : VectorMixin<Point, std::array<Ring, dim>, dim> {

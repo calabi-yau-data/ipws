@@ -11,9 +11,6 @@
 #include "weight_system_builder.h"
 #include "weight_system_pair.h"
 
-int Find_Equations(PolyPointList *P, VertexNumList *VNL, EqList *EL);
-Ring Eval_Eq_on_V(Equation *E, Ring *V, int i);
-
 using gsl::span;
 using std::array;
 using std::cerr;
@@ -219,63 +216,6 @@ void rec(WeightSystemCollection &weight_systems,
         rec(weight_systems, builder.restrict(x), n + 1, history, statistics,
             stopwatch);
     }
-}
-
-void add_point(span<const Ring> x, PolyPointList *P)
-{
-    assert(P->np < POINT_Nmax);
-    for (unsigned i = 0; i < dim; i++)
-        P->x[P->np][i] = x[i];
-    P->np++;
-}
-
-PolyPointList *new_point_list(const WeightSystem &ws)
-{
-    PolyPointList *P = (PolyPointList *)malloc(sizeof(PolyPointList));
-    assert(P != nullptr);
-
-    P->np = 0;
-
-    add_point(Point().coords, P);
-
-    auto gen = WeightSystemPointsOn(ws);
-    while (gen.find_next()) {
-        add_point(gen.get().coords, P);
-    }
-
-    return P;
-}
-
-bool has_ip(const WeightSystem &ws)
-{
-    // static auto poly_point_list = std::make_unique<PolyPointList>();
-    PolyPointList *P = new_point_list(ws);
-
-    VertexNumList V;
-    EqList E;
-
-    if (static_cast<unsigned>(P->np) <= dim) {
-        free(P);
-        return 0;
-    }
-    Find_Equations(P, &V, &E);
-    if (static_cast<unsigned>(E.ne) < dim) {
-        free(P);
-        return 0;
-    }
-    Ring y[dim];
-    for (unsigned k = 0; k < dim; k++)
-        y[k] = 1;
-    for (unsigned k = 0; k < static_cast<unsigned>(E.ne); k++)
-        if (Eval_Eq_on_V(&(E.e[k]), y, dim) <= 0)
-            if (!E.e[k].c) {
-                free(P);
-                return 0;
-            }
-
-    bool ret = P->np != 1;
-    free(P);
-    return ret;
 }
 
 void process_pair(WeightSystemCollection &weight_systems,

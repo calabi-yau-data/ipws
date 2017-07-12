@@ -1,6 +1,14 @@
 #include "weight_system.h"
 #include <algorithm>
 #include <experimental/numeric>
+#include <gsl/gsl>
+
+extern "C" {
+#include "palp/Global.h"
+}
+
+using gsl::span;
+using std::array;
 
 Ring distance(const WeightSystem &ws, const Point &x)
 {
@@ -110,4 +118,61 @@ bool WeightSystemPointsOn::find_next()
         if (ax[k] == 0)
             return true;
     }
+}
+
+static void add_point(span<const Long> x, PolyPointList *P)
+{
+    assert(P->np < POINT_Nmax);
+    for (unsigned i = 0; i < dim; i++)
+        P->x[P->np][i] = x[i];
+    P->np++;
+}
+
+static PolyPointList *new_point_list(const WeightSystem &ws)
+{
+    PolyPointList *P = (PolyPointList *)malloc(sizeof(PolyPointList));
+    assert(P != nullptr);
+
+    P->np = 0;
+    P->n = dim;
+
+    add_point(Point().coords, P);
+
+    auto gen = WeightSystemPointsOn(ws);
+    while (gen.find_next()) {
+        add_point(gen.get().coords, P);
+    }
+
+    return P;
+}
+
+bool has_ip(const WeightSystem &ws)
+{
+    PolyPointList *P = new_point_list(ws);
+
+    VertexNumList V;
+    EqList E;
+
+    if (static_cast<unsigned>(P->np) <= dim) {
+        free(P);
+        return 0;
+    }
+    Find_Equations(P, &V, &E);
+    if (static_cast<unsigned>(E.ne) < dim) {
+        free(P);
+        return 0;
+    }
+    Long y[dim];
+    for (unsigned k = 0; k < dim; k++)
+        y[k] = 1;
+    for (unsigned k = 0; k < static_cast<unsigned>(E.ne); k++)
+        if (Eval_Eq_on_V(&(E.e[k]), y, dim) <= 0)
+            if (!E.e[k].c) {
+                free(P);
+                return 0;
+            }
+
+    bool ret = P->np != 1;
+    free(P);
+    return ret;
 }

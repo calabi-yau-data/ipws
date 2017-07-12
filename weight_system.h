@@ -2,7 +2,7 @@
 #define WEIGHT_SYSTEM_H
 
 #include <array>
-#include "global.h"
+#include "config.h"
 #include "point.h"
 #include "vector_mixin.h"
 
@@ -62,5 +62,7 @@ Ring norm(const WeightSystem &ws);
 //    q.distance_from(y) == 0 for all y
 WeightSystem intersect(const WeightSystem &q1, const WeightSystem &q2,
                        const Point &x);
+
+bool has_ip(const WeightSystem &ws);
 
 #endif

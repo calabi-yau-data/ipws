@@ -20,5 +20,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "${FLAGS_RELEASE}")
 set(CMAKE_CXX_STANDARD_REQUIRED 14)
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(cws cws.cpp point.cpp weight_system.cpp weight_system_builder.cpp weight_system_pair.cpp wsip.cpp)
+add_library(wsip wsip.c palp/Polynf.c palp/Coord.c palp/Rat.c palp/Vertex.c)
+target_compile_options(wsip PRIVATE -Wno-conversion -Wno-misleading-indentation -Wno-unused-but-set-variable)
+
+add_executable(cws cws.cpp point.cpp weight_system.cpp weight_system_builder.cpp weight_system_pair.cpp)
 target_include_directories(cws PRIVATE "${PROJECT_SOURCE_DIR}/include")
+target_link_libraries(cws wsip)

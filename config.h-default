@@ -1,17 +1,11 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <stdbool.h>
+using Ring = long;
 
-#define DIMENSION 5
-#define TWO_TIMES_R 3
-
-#define Ring long
-#define LLong long long
-
-const int dim = DIMENSION;
-const Long r_numerator = TWO_TIMES_R;
-const Long r_denominator = 2;
+const unsigned dim = 5;
+const Ring r_numerator = 1;
+const Ring r_denominator = 1;
 
 // Allow weight systems containing a weight of 1
 const bool allow_weight_one = false;
@@ -24,7 +18,7 @@ const bool allow_weights_sum_one = false;
 
 const bool debug_ignore_symmetries = false;
 
-const bool disable_lex_lompare = true;
+const bool disable_lex_compare = false;
 
 // It is not economical to do this on the last two recursion levels
 const int redundancy_check_skip_recursions = 2;
