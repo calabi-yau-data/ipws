@@ -34,4 +34,6 @@ const bool defer_last_recursion = true;
 
 const bool print_last_recursion_statistics = false;
 
+const bool print_candidates = false;
+
 #endif

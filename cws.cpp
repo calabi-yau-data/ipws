@@ -37,6 +37,15 @@ struct Statistics {
 
 using WeightSystemCollection = set<WeightSystem>; // TODO: unordered_set?
 
+void print_with_denominator(const WeightSystem &ws)
+{
+    int n = norm(ws);
+    cout << n * r_denominator;
+    for (const auto &w : ws.weights)
+        cout << " " << w * r_numerator;
+    cout << endl;
+}
+
 bool good_weight_system(const WeightSystem &ws)
 {
     Long n = norm(ws);
@@ -321,6 +330,8 @@ int main()
          << ", unique: " << weight_systems.size() << endl;
 
     for (const auto &ws : weight_systems) {
+        if (print_candidates)
+            print_with_denominator(ws);
         if (has_ip(ws))
             ++statistics.ip_weight_systems;
     }
