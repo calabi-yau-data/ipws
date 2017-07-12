@@ -14,6 +14,7 @@ Long Eval_Eq_on_V(Equation *E, Long *V, int i);
 
 using gsl::span;
 using std::array;
+using std::cerr;
 using std::cout;
 using std::endl;
 using std::pair;
@@ -313,10 +314,10 @@ int main()
     rec(weight_systems, WeightSystemBuilder{}, 0, history, statistics);
 
     if (defer_last_recursion) {
-        cout << stopwatch
+        cerr << stopwatch
              << " - weight systems: " << statistics.weight_systems_found
              << ", unique: " << weight_systems.size() << endl;
-        cout << stopwatch << " - pairs: " << statistics.final_pairs_found
+        cerr << stopwatch << " - pairs: " << statistics.final_pairs_found
              << ", unique: " << pairs.size() << endl;
 
         for (const auto &pair : pairs) {
@@ -340,7 +341,7 @@ int main()
         }
     }
 
-    cout << stopwatch
+    cerr << stopwatch
          << " - weight systems: " << statistics.weight_systems_found
          << ", unique: " << weight_systems.size() << endl;
 
@@ -349,7 +350,7 @@ int main()
             ++statistics.ip_weight_systems;
     }
 
-    cout << stopwatch
+    cerr << stopwatch
          << " - weight systems: " << statistics.weight_systems_found
          << ", unique: " << weight_systems.size()
          << ", ip: " << statistics.ip_weight_systems << endl;
