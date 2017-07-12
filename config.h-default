@@ -7,6 +7,15 @@ const unsigned dim = 5;
 const Ring r_numerator = 1;
 const Ring r_denominator = 1;
 
+// It is not economical to do this on the last two recursion levels
+const int redundancy_check_skip_recursions = 2;
+
+const bool defer_last_recursion = true;
+const bool write_weight_system_pairs = false;
+const bool read_weight_system_pairs = false;
+
+/* === Restrictions === */
+
 // Allow weight systems containing a weight of 1
 const bool allow_weight_one = false;
 
@@ -16,20 +25,14 @@ const bool allow_weight_one_half = false;
 // Allow weight systems containing two weights with a sum of 1
 const bool allow_weights_sum_one = false;
 
-const bool debug_ignore_symmetries = false;
-
-const bool disable_lex_compare = false;
-
-// It is not economical to do this on the last two recursion levels
-const int redundancy_check_skip_recursions = 2;
-
-const bool defer_last_recursion = true;
+/* === Printing === */
 
 const bool print_last_recursion_statistics = false;
-
 const bool print_candidates = false;
 
-const bool write_weight_system_pairs = false;
-const bool read_weight_system_pairs = false;
+/* === Debug === */
+
+const bool debug_ignore_symmetries = false;
+const bool debug_disable_lex_compare = false;
 
 #endif
