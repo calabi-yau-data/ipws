@@ -119,11 +119,11 @@ bool WeightSystemPointsOn::find_next()
     }
 }
 
-static void add_point(span<const Long> x, PolyPointList *P)
+static void add_point(const Point &x, PolyPointList *P)
 {
     assert(P->np < POINT_Nmax);
     for (unsigned i = 0; i < dim; i++)
-        P->x[P->np][i] = x[i];
+        P->x[P->np][i] = x.coords[i];
     P->np++;
 }
 
@@ -135,11 +135,11 @@ static PolyPointList *new_point_list(const WeightSystem &ws)
     P->np = 0;
     P->n = dim;
 
-    add_point(Point().coords, P);
+    add_point(Point{}, P);
 
     auto gen = WeightSystemPointsOn(ws);
     while (gen.find_next()) {
-        add_point(gen.get().coords, P);
+        add_point(gen.get(), P);
     }
 
     return P;
@@ -156,11 +156,13 @@ bool has_ip(const WeightSystem &ws)
         free(P);
         return 0;
     }
+
     Find_Equations(P, &V, &E);
     if (static_cast<unsigned>(E.ne) < dim) {
         free(P);
         return 0;
     }
+
     Long y[dim];
     for (unsigned k = 0; k < dim; k++)
         y[k] = 1;
