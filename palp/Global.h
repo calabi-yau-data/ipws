@@ -40,7 +40,7 @@ be considerably slowed down.
 
 #else
 #define POINT_Nmax 2000000
-#define VERT_Nmax 64    /* !! use optimal value !!  */
+#define VERT_Nmax 128    /* !! use optimal value !!  */
 #define FACE_Nmax 10000 /* max number of faces      */
 #define SYM_Nmax 46080  /* symmetry (P_1)^6: 2^6*6! */
 #define EQUA_Nmax 1280  /* up to 20000 without alloc */

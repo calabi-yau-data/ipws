@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-using Ring = long;
+using Ring = int;
 
 const unsigned dim = 5;
 const Ring r_numerator = 1;
