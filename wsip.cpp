@@ -116,11 +116,6 @@ int INCI_abs(INCI X)
     return abs;
 }
 
-int INCI_lex_GT(INCI *x, INCI *y)
-{
-    return (*x > *y) ? 1 : 0;
-}
-
 INCI Eq_To_INCI(Equation *_Eq, PolyPointList *_P, VertexNumList *_V)
 {
     int j;
@@ -601,6 +596,11 @@ void Make_New_CEqs(PolyPointList *_P, VertexNumList *_V, CEqList *_C,
 }
 
 #if MAX_BAD_EQ
+
+int INCI_lex_GT(INCI *x, INCI *y)
+{
+    return (*x > *y) ? 1 : 0;
+}
 
 int FE_Search_Bad_Eq(CEqList *_C, EqList *_F, INCI *CEq_I, INCI *F_I,
                      PolyPointList *_P, int *_IP)
