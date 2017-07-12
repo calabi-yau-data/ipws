@@ -1,8 +1,8 @@
 #include <arpa/inet.h>
-#include <iostream>
 #include <fstream>
-#include <unordered_set>
+#include <iostream>
 #include <set>
+#include <unordered_set>
 #include "config.h"
 #include "point.h"
 #include "stl_utils.h"
@@ -163,7 +163,7 @@ bool last_point_redundant(int n, const History &history)
 
 void rec(WeightSystemCollection &weight_systems,
          const WeightSystemBuilder &builder, unsigned n, History &history,
-         Statistics &statistics)
+         Statistics &statistics, const Stopwatch &stopwatch)
 {
     WeightSystem ws{};
     if (!builder.average_if_nonzero(ws))
@@ -186,10 +186,11 @@ void rec(WeightSystemCollection &weight_systems,
             pairs.insert(canonicalize(builder.to_pair()));
             ++statistics.final_pairs_found;
 
-            // if (final_pairs_found % 10000 == 0)
-            //     System.out.printf("%7.2f: builders: %d, unique: %d\n",
-            //                       stopwatch.count(), buildersAddedCount,
-            //                       builders.size());
+            if (statistics.final_pairs_found % 10000 == 0)
+                cerr << stopwatch
+                     << " - pairs: " << statistics.final_pairs_found
+                     << ", unique: " << pairs.size() << endl;
+
             return;
         }
         break;
@@ -215,7 +216,8 @@ void rec(WeightSystemCollection &weight_systems,
         if (last_point_redundant(n, history))
             continue;
 
-        rec(weight_systems, builder.restrict(x), n + 1, history, statistics);
+        rec(weight_systems, builder.restrict(x), n + 1, history, statistics,
+            stopwatch);
     }
 }
 
@@ -284,7 +286,8 @@ int main()
     WeightSystemCollection weight_systems{};
     Statistics statistics{};
 
-    rec(weight_systems, WeightSystemBuilder{}, 0, history, statistics);
+    rec(weight_systems, WeightSystemBuilder{}, 0, history, statistics,
+        stopwatch);
 
     if (write_weight_system_pairs) {
         cerr << stopwatch << " - writing\n";
@@ -309,6 +312,8 @@ int main()
     }
 
     if (defer_last_recursion) {
+        weight_systems.clear();
+
         cerr << stopwatch
              << " - weight systems: " << statistics.weight_systems_found
              << ", unique: " << weight_systems.size() << endl;

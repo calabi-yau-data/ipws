@@ -10,7 +10,6 @@
 #define LLong long long
 
 const int dim = DIMENSION;
-const int two_times_r = TWO_TIMES_R;
 const Long r_numerator = TWO_TIMES_R;
 const Long r_denominator = 2;
 
