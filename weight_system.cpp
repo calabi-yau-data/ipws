@@ -71,7 +71,6 @@ WeightSystemPointsBelow::WeightSystemPointsBelow(const WeightSystem &q) : q{q}
     ax[dim - 1] -= q.weights[dim - 1] * r_numerator;
 }
 
-// TODO: Why ist this still slower?
 bool WeightSystemPointsBelow::find_next()
 {
     unsigned k = dim - 1;

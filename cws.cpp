@@ -177,7 +177,7 @@ void rec(const WeightSystemBuilder &builder,
     case dim - 2:
         // The following happens when redundancies are not checked
         assert(builder.generator_count() == 2);
-        // TODO: special case for last iteration brings a big performance boost
+
         if (defer_last_recursion || write_weight_system_pairs) {
             final_pairs.insert(canonicalize(builder.to_pair()));
             ++statistics.final_pairs_found;
