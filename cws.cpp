@@ -353,7 +353,7 @@ int main()
     if (write_weight_system_pairs) {
         cerr << stopwatch << " - writing\n";
 
-        std::ofstream pairs_out{"pairs5", std::ofstream::binary};
+        std::ofstream pairs_out{"pairs", std::ofstream::binary};
         for (auto &pair : pairs) {
             for (int i = 0; i < dim; ++i) {
                 auto v = pair.first.weights[i];

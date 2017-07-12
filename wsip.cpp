@@ -284,8 +284,7 @@ Long VZ_to_Base(Long *V, int *d, Long M[dim][dim]) /* 0 iff V=0 */
     return g;
 }
 
-int OrthBase_red_by_V(Long *V, Long A[][dim], int *r,
-                      Long B[][dim])
+int OrthBase_red_by_V(Long *V, Long A[][dim], int *r, Long B[][dim])
 {
     int i, j, k;
     Long W[dim], G[dim][dim];
@@ -557,9 +556,8 @@ void Make_New_CEqs(PolyPointList *_P, VertexNumList *_V, CEqList *_C,
                     continue;
                 assert(_C->ne < CEQ_Nmax);
                 CEq_I[_C->ne] = INCI_PN(INCI_D2(New_Face), 0);
-                _C->e[_C->ne] =
-                    EEV_To_Equation(&(Bad_C.e[i]), &(_F->e[j]),
-                                    _P->x[_V->v[_V->nv - 1]], dim);
+                _C->e[_C->ne] = EEV_To_Equation(&(Bad_C.e[i]), &(_F->e[j]),
+                                                _P->x[_V->v[_V->nv - 1]], dim);
                 assert(IsGoodCEq(&(_C->e[_C->ne++]), _P, _V));
             }
     for (j = 0; j < Old_C_ne; j++)
@@ -588,9 +586,8 @@ void Make_New_CEqs(PolyPointList *_P, VertexNumList *_V, CEqList *_C,
                     continue;
                 assert(_C->ne < CEQ_Nmax);
                 CEq_I[_C->ne] = INCI_PN(INCI_D2(New_Face), 0);
-                _C->e[_C->ne] =
-                    EEV_To_Equation(&(Bad_C.e[i]), &(_C->e[j]),
-                                    _P->x[_V->v[_V->nv - 1]], dim);
+                _C->e[_C->ne] = EEV_To_Equation(&(Bad_C.e[i]), &(_C->e[j]),
+                                                _P->x[_V->v[_V->nv - 1]], dim);
                 assert(IsGoodCEq(&(_C->e[_C->ne++]), _P, _V));
             }
 }
