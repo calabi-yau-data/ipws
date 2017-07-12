@@ -286,14 +286,14 @@ int main()
             unsigned old_unique_count = weight_systems.size();
             set<WeightSystem> current_weight_systems{}; // TODO: unordered_set?
 
-            // auto symmetries = points_symmetries(span<Point>(history.points.data(), n));
+            // auto sym = symmetries(pair);
 
             auto points = WeightSystemPointsBelow(ws);
             while (points.find_next()) {
                 const Point &x = points.get();
 
                 if (!leads_to_allowed_weightsystem(x)
-                    // || (!debug_ignore_symmetries && !is_sorted(x, symmetries))
+                    // || (!debug_ignore_symmetries && !is_sorted(x, sym)))
                     )
                     continue;
 

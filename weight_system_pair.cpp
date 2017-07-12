@@ -1,5 +1,11 @@
 #include "weight_system_pair.h"
 
+#include <array>
+
+using std::array;
+using std::pair;
+using std::vector;
+
 WeightSystemPair canonicalize(const WeightSystemPair &pair)
 {
     WeightSystemPair ret{};
@@ -77,3 +83,41 @@ bool restrict(const WeightSystemPair &pair, const Point &x, WeightSystem &ws)
 
     return true;
 }
+
+// namespace {
+// bool has_symmetry(const WeightSystemPair &pair, unsigned idx1,
+//                   unsigned idx2, bool permuted)
+// {
+
+// }
+// }
+
+// std::vector<std::pair<unsigned, unsigned>> symmetries(
+//     const WeightSystemPair &pair)
+// {
+//     vector<std::pair<unsigned, unsigned>> ret{};
+//     return ret;
+
+//     array<bool, dim> done{};
+//     done.fill(false);
+
+//     for (unsigned i = 0; i < dim - 1; ++i) {
+//         if (done[i])
+//             continue;
+
+//         unsigned k = i;
+//         for (unsigned j = i + 1; j < dim; ++j) {
+//             if (done[j])
+//                 continue;
+
+//             if (has_symmetry(pair, i, j, false) ||
+//                 has_symmetry(pair, i, j, true)) {
+//                 ret.push_back(std::pair<unsigned, unsigned>(k, j));
+//                 k = j;
+//                 done[j] = true;
+//             }
+//         }
+//     }
+
+//     return ret;
+// }
