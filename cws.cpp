@@ -1,4 +1,6 @@
+#include <arpa/inet.h>
 #include <iostream>
+#include <fstream>
 #include <unordered_set>
 #include <set>
 #include "config.h"
@@ -180,7 +182,7 @@ void rec(WeightSystemCollection &weight_systems,
         // The following happens when redundancies are not checked
         assert(builder.generator_count() == 2);
         // TODO: special case for last iteration brings a big performance boost
-        if (defer_last_recursion) {
+        if (defer_last_recursion || write_weight_system_pairs) {
             pairs.insert(canonicalize(builder.to_pair()));
             ++statistics.final_pairs_found;
 
@@ -283,6 +285,28 @@ int main()
     Statistics statistics{};
 
     rec(weight_systems, WeightSystemBuilder{}, 0, history, statistics);
+
+    if (write_weight_system_pairs) {
+        cerr << stopwatch << " - writing\n";
+
+        std::ofstream pairs_out{"pairs", std::ofstream::binary};
+        for (auto &pair : pairs) {
+            for (int i = 0; i < dim; ++i) {
+                auto v = pair.first.weights[i];
+                assert(v >= 0 && v <= UINT16_MAX);
+                uint16_t v16 = htons(static_cast<uint16_t>(v));
+                pairs_out.write(reinterpret_cast<const char *>(&v16),
+                                sizeof(v16));
+            }
+            for (int i = 0; i < dim; ++i) {
+                auto v = pair.second.weights[i];
+                assert(v >= 0 && v <= UINT16_MAX);
+                uint16_t v16 = htons(static_cast<uint16_t>(v));
+                pairs_out.write(reinterpret_cast<const char *>(&v16),
+                                sizeof(v16));
+            }
+        }
+    }
 
     if (defer_last_recursion) {
         cerr << stopwatch

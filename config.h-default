@@ -36,4 +36,6 @@ const bool print_last_recursion_statistics = false;
 
 const bool print_candidates = false;
 
+const bool write_weight_system_pairs = false;
+
 #endif
