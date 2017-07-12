@@ -278,6 +278,43 @@ bool has_ip(const WeightSystem &ws)
     return ret;
 }
 
+void process_pair(WeightSystemCollection &weight_systems,
+                  const WeightSystemPair &pair, Statistics &statistics,
+                  const Stopwatch &stopwatch)
+{
+    WeightSystem ws = average(pair);
+    unsigned candidate_count = 0;
+    unsigned old_unique_count = weight_systems.size();
+    unordered_set<WeightSystem> current_weight_systems{};
+
+    // auto sym = symmetries(pair);
+
+    auto points = WeightSystemPointsBelow(ws);
+    while (points.find_next()) {
+        const Point &x = points.get();
+
+        if (!leads_to_allowed_weightsystem(x)
+            // || (!debug_ignore_symmetries && !is_sorted(x, sym)))
+            )
+            continue;
+
+        WeightSystem final_ws{};
+        if (restrict(pair, x, final_ws)) {
+            if (add_maybe(weight_systems, final_ws, statistics) &&
+                print_last_recursion_statistics) {
+                ++candidate_count;
+                current_weight_systems.insert(final_ws);
+            }
+        }
+    }
+
+    if (print_last_recursion_statistics) {
+        unsigned unique_count = weight_systems.size() - old_unique_count;
+        cout << candidate_count << " " << current_weight_systems.size() << " "
+             << unique_count << endl;
+    }
+}
+
 int main()
 {
     Stopwatch stopwatch{};
@@ -286,13 +323,37 @@ int main()
     WeightSystemCollection weight_systems{};
     Statistics statistics{};
 
-    rec(weight_systems, WeightSystemBuilder{}, 0, history, statistics,
-        stopwatch);
+    if (read_weight_system_pairs) {
+        std::ifstream cones_in{"pairs", std::ifstream::binary};
+
+        srand(1234);
+        while (cones_in) {
+            // cones_in.seekg((rand() % 46890549) * 20);
+            WeightSystemPair pair;
+
+            for (int i = 0; i < dim; ++i) {
+                uint16_t v16;
+                cones_in.read(reinterpret_cast<char *>(&v16), sizeof(v16));
+                pair.first.weights[i] = ntohs(v16);
+            }
+
+            for (int i = 0; i < dim; ++i) {
+                uint16_t v16;
+                cones_in.read(reinterpret_cast<char *>(&v16), sizeof(v16));
+                pair.second.weights[i] = ntohs(v16);
+            }
+
+            process_pair(weight_systems, pair, statistics, stopwatch);
+        }
+    } else {
+        rec(weight_systems, WeightSystemBuilder{}, 0, history, statistics,
+            stopwatch);
+    }
 
     if (write_weight_system_pairs) {
         cerr << stopwatch << " - writing\n";
 
-        std::ofstream pairs_out{"pairs", std::ofstream::binary};
+        std::ofstream pairs_out{"pairs5", std::ofstream::binary};
         for (auto &pair : pairs) {
             for (int i = 0; i < dim; ++i) {
                 auto v = pair.first.weights[i];
@@ -320,40 +381,8 @@ int main()
         cerr << stopwatch << " - pairs: " << statistics.final_pairs_found
              << ", unique: " << pairs.size() << endl;
 
-        for (const auto &pair : pairs) {
-            WeightSystem ws = average(pair);
-            unsigned candidate_count = 0;
-            unsigned old_unique_count = weight_systems.size();
-            unordered_set<WeightSystem> current_weight_systems{};
-
-            // auto sym = symmetries(pair);
-
-            auto points = WeightSystemPointsBelow(ws);
-            while (points.find_next()) {
-                const Point &x = points.get();
-
-                if (!leads_to_allowed_weightsystem(x)
-                    // || (!debug_ignore_symmetries && !is_sorted(x, sym)))
-                    )
-                    continue;
-
-                WeightSystem final_ws{};
-                if (restrict(pair, x, final_ws)) {
-                    if (add_maybe(weight_systems, final_ws, statistics) &&
-                        print_last_recursion_statistics) {
-                        ++candidate_count;
-                        current_weight_systems.insert(final_ws);
-                    }
-                }
-            }
-
-            if (print_last_recursion_statistics) {
-                unsigned unique_count =
-                    weight_systems.size() - old_unique_count;
-                cout << candidate_count << " " << current_weight_systems.size()
-                     << " " << unique_count << endl;
-            }
-        }
+        for (const auto &pair : pairs)
+            process_pair(weight_systems, pair, statistics, stopwatch);
     }
 
     cerr << stopwatch
