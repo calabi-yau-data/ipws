@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unordered_set>
 #include <set>
 #include "config.h"
 #include "point.h"
@@ -17,6 +18,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::pair;
+using std::unordered_set;
 using std::set;
 using std::setprecision;
 using std::vector;
@@ -35,7 +37,7 @@ struct Statistics {
     unsigned ip_weight_systems;
 };
 
-using WeightSystemCollection = set<WeightSystem>; // TODO: unordered_set?
+using WeightSystemCollection = unordered_set<WeightSystem>;
 
 void print_with_denominator(const WeightSystem &ws)
 {
@@ -293,7 +295,7 @@ int main()
             WeightSystem ws = average(pair);
             unsigned candidate_count = 0;
             unsigned old_unique_count = weight_systems.size();
-            set<WeightSystem> current_weight_systems{}; // TODO: unordered_set?
+            unordered_set<WeightSystem> current_weight_systems{};
 
             // auto sym = symmetries(pair);
 

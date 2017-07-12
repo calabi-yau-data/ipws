@@ -15,6 +15,20 @@ struct WeightSystem : VectorMixin<WeightSystem, std::array<Long, dim>, dim> {
     const Container &vector_container() const { return weights; }
 };
 
+namespace std
+{
+    template<> struct hash<WeightSystem>
+    {
+        size_t operator()(WeightSystem const &ws) const
+        {
+            size_t ret = 237037;
+            for (const auto &w : ws.weights)
+                ret = ret * 92647 + std::hash<Long>{}(w);
+            return ret;
+        }
+    };
+}
+
 class WeightSystemPointsBelow {
     WeightSystem q;
     Point x;
