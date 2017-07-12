@@ -8,8 +8,8 @@
 #include "global.h"
 #include "vector_mixin.h"
 
-struct Point : VectorMixin<Point, std::array<Long, dim>, dim> {
-    using Container = std::array<Long, dim>;
+struct Point : VectorMixin<Point, std::array<Ring, dim>, dim> {
+    using Container = std::array<Ring, dim>;
 
     Container coords{};
 

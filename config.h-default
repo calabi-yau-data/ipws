@@ -6,7 +6,7 @@
 #define DIMENSION 5
 #define TWO_TIMES_R 3
 
-#define Long long
+#define Ring long
 #define LLong long long
 
 const int dim = DIMENSION;

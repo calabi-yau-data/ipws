@@ -23,6 +23,7 @@ For higher dimensional or complicated non-reflexive polytopes it may be
 necessary to set even Long to 64 bits.
 */
 
+#define Long Ring
 #define POLY_Dmax DIMENSION
 
 /*

@@ -10,7 +10,7 @@ WeightSystemPair canonicalize(const WeightSystemPair &pair)
 {
     WeightSystemPair ret{};
 
-    std::array<std::array<Long, 2>, dim> option0, option1;
+    std::array<std::array<Ring, 2>, dim> option0, option1;
 
     for (unsigned i = 0; i < dim; ++i) {
         option0[i][0] = pair.first.weights[i];
@@ -35,8 +35,8 @@ WeightSystemPair canonicalize(const WeightSystemPair &pair)
 
 WeightSystem average(const WeightSystemPair &pair)
 {
-    Long norm1 = norm(pair.first);
-    Long norm2 = norm(pair.second);
+    Ring norm1 = norm(pair.first);
+    Ring norm2 = norm(pair.second);
 
     WeightSystem ret{};
 
@@ -50,8 +50,8 @@ WeightSystem average(const WeightSystemPair &pair)
 
 bool restrict(const WeightSystemPair &pair, const Point &x, WeightSystem &ws)
 {
-    Long e1 = distance(pair.first, x);
-    Long e2 = distance(pair.second, x);
+    Ring e1 = distance(pair.first, x);
+    Ring e2 = distance(pair.second, x);
 
     if (e1 < 0) {
         if (e2 <= 0)

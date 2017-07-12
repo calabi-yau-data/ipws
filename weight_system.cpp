@@ -2,9 +2,9 @@
 #include <algorithm>
 #include <experimental/numeric>
 
-Long distance(const WeightSystem &ws, const Point &x)
+Ring distance(const WeightSystem &ws, const Point &x)
 {
-    Long ret = 0;
+    Ring ret = 0;
     for (unsigned i = 0; i < dim; ++i)
         ret += (x.coords[i] * r_numerator - r_denominator) * ws.weights[i];
     return ret;
@@ -15,7 +15,7 @@ void cancel(WeightSystem &ws)
     if (dim == 0)
         return;
 
-    Long gcd = std::abs(ws.weights[0]);
+    Ring gcd = std::abs(ws.weights[0]);
 
     for (unsigned i = 1; i < dim; ++i)
         gcd = std::experimental::gcd(gcd, ws.weights[i]);
@@ -29,7 +29,7 @@ void sort(WeightSystem &ws)
     std::sort(ws.weights.begin(), ws.weights.end());
 }
 
-Long norm(const WeightSystem &ws)
+Ring norm(const WeightSystem &ws)
 {
     return std::accumulate(ws.weights.begin(), ws.weights.end(), 0);
 }
@@ -37,10 +37,10 @@ Long norm(const WeightSystem &ws)
 WeightSystem intersect(const WeightSystem &q1, const WeightSystem &q2,
                        const Point &x)
 {
-    Long e1 = distance(q1, x);
-    Long e2 = distance(q2, x);
+    Ring e1 = distance(q1, x);
+    Ring e2 = distance(q2, x);
 
-    // Long gcd = std::experimental::gcd(e1, e2);
+    // Ring gcd = std::experimental::gcd(e1, e2);
     // e1 /= gcd;
     // e2 /= gcd;
 

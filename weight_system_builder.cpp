@@ -97,7 +97,7 @@ WeightSystemBuilder WeightSystemBuilder::restrict(const Point &x) const
     WeightSystemBuilder ret{NoInit{}};
     ret.iteration = iteration + 1;
 
-    std::vector<Long> xq;
+    std::vector<Ring> xq;
     xq.resize(generators.size());
 
     for (unsigned i = 0; i < generators.size(); i++) {
@@ -143,13 +143,13 @@ bool WeightSystemBuilder::average_if_nonzero(WeightSystem &q) const
     if (size == 0)
         return false;
 
-    std::vector<Long> norms;
+    std::vector<Ring> norms;
     norms.reserve(size);
 
     for (const auto &gen : generators)
         norms.push_back(norm(gen.eq));
 
-    Long lcm = norms[0];
+    Ring lcm = norms[0];
     for (unsigned i = 1; i < size; ++i)
         lcm = std::experimental::lcm(lcm, norms[i]);
 
@@ -194,7 +194,7 @@ WeightSystemPair WeightSystemBuilder::to_pair() const
 
 bool leads_to_allowed_weightsystem(const Point &x)
 {
-    Long xsum = 0, xmax = 0;
+    Ring xsum = 0, xmax = 0;
 
     for (unsigned l = 0; l < dim; l++) {
         xsum += x.coords[l];

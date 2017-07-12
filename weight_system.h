@@ -6,8 +6,8 @@
 #include "point.h"
 #include "vector_mixin.h"
 
-struct WeightSystem : VectorMixin<WeightSystem, std::array<Long, dim>, dim> {
-    using Container = std::array<Long, dim>;
+struct WeightSystem : VectorMixin<WeightSystem, std::array<Ring, dim>, dim> {
+    using Container = std::array<Ring, dim>;
 
     Container weights{};
 
@@ -22,7 +22,7 @@ struct hash<WeightSystem> {
     {
         size_t ret = 237037;
         for (const auto &w : ws.weights)
-            ret = ret * 92647 + std::hash<Long>{}(w);
+            ret = ret * 92647 + std::hash<Ring>{}(w);
         return ret;
     }
 };
@@ -31,7 +31,7 @@ struct hash<WeightSystem> {
 class WeightSystemPointsBelow {
     WeightSystem q;
     Point x;
-    std::array<Long, dim> ax;
+    std::array<Ring, dim> ax;
 
 public:
     WeightSystemPointsBelow(const WeightSystem &q);
@@ -42,7 +42,7 @@ public:
 class WeightSystemPointsOn {
     WeightSystem q;
     Point x;
-    std::array<Long, dim> ax;
+    std::array<Ring, dim> ax;
 
 public:
     WeightSystemPointsOn(const WeightSystem &q);
@@ -50,10 +50,10 @@ public:
     bool find_next();
 };
 
-Long distance(const WeightSystem &ws, const Point &x);
+Ring distance(const WeightSystem &ws, const Point &x);
 void cancel(WeightSystem &ws);
 void sort(WeightSystem &ws);
-Long norm(const WeightSystem &ws);
+Ring norm(const WeightSystem &ws);
 
 // Returns the weight system q that is a linear combination of q1 and q2
 // such that its distance to x is zero. Equivalently:

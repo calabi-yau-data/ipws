@@ -12,7 +12,7 @@
 #include "weight_system_pair.h"
 
 int Find_Equations(PolyPointList *P, VertexNumList *VNL, EqList *EL);
-Long Eval_Eq_on_V(Equation *E, Long *V, int i);
+Ring Eval_Eq_on_V(Equation *E, Ring *V, int i);
 
 using gsl::span;
 using std::array;
@@ -30,7 +30,7 @@ set<WeightSystemPair> pairs; // TODO: unordered_set? TODO: not global
 struct History {
     array<Point, dim - 1> points;
     array<WeightSystem, dim> weight_systems;
-    array<array<Long, dim - 1>, dim - 1> point_weight_system_distances;
+    array<array<Ring, dim - 1>, dim - 1> point_weight_system_distances;
 };
 
 struct Statistics {
@@ -43,7 +43,7 @@ using WeightSystemCollection = unordered_set<WeightSystem>;
 
 void print_with_denominator(const WeightSystem &ws)
 {
-    Long n = norm(ws);
+    Ring n = norm(ws);
     cout << n * r_denominator;
     for (const auto &w : ws.weights)
         cout << " " << w * r_numerator;
@@ -52,7 +52,7 @@ void print_with_denominator(const WeightSystem &ws)
 
 bool good_weight_system(const WeightSystem &ws)
 {
-    Long n = norm(ws);
+    Ring n = norm(ws);
 
     for (unsigned i = 0; i < dim; ++i) {
         if (!allow_weight_one_half &&
@@ -104,7 +104,7 @@ bool last_point_redundant2(const WeightSystemBuilder &builder, int n,
         // other points?
 
         for (int i = 0; i < n; ++i) {
-            Long diff = history.point_weight_system_distances[i][i] -
+            Ring diff = history.point_weight_system_distances[i][i] -
                         distance(history.weight_systems[i], x);
             if (diff > 0 ||
                 (!disable_lex_compare && diff == 0 && x > history.points[i]))
@@ -121,7 +121,7 @@ bool last_point_redundant(int n, const History &history)
     Point x = history.points[n];
 
     for (int i = 0; i < n; ++i) {
-        Long rel = history.point_weight_system_distances[i][i] -
+        Ring rel = history.point_weight_system_distances[i][i] -
                    history.point_weight_system_distances[n][i];
         if (rel > 0)
             return true;
@@ -133,7 +133,7 @@ bool last_point_redundant(int n, const History &history)
         Point x_other = history.points[i];
         Point x_diff = x_other - x;
 
-        Long v = gcd(x_diff);
+        Ring v = gcd(x_diff);
         if (v != 1)
             x_diff /= v;
 
@@ -221,7 +221,7 @@ void rec(WeightSystemCollection &weight_systems,
     }
 }
 
-void add_point(span<const Long> x, PolyPointList *P)
+void add_point(span<const Ring> x, PolyPointList *P)
 {
     assert(P->np < POINT_Nmax);
     for (unsigned i = 0; i < dim; i++)
@@ -263,7 +263,7 @@ bool has_ip(const WeightSystem &ws)
         free(P);
         return 0;
     }
-    Long y[dim];
+    Ring y[dim];
     for (unsigned k = 0; k < dim; k++)
         y[k] = 1;
     for (unsigned k = 0; k < static_cast<unsigned>(E.ne); k++)
