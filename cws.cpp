@@ -102,15 +102,17 @@ bool good_weight_system(const WeightSystem &ws)
     return true;
 }
 
-void add_maybe(WeightSystemCollection &weight_systems, WeightSystem ws,
+bool add_maybe(WeightSystemCollection &weight_systems, WeightSystem ws,
                Statistics &statistics)
 {
     if (!good_weight_system(ws))
-        return;
+        return false;
 
     sort(ws);
     weight_systems.insert(ws);
     ++statistics.weight_systems_found;
+
+    return true;
 }
 
 // TODO: verify this function
@@ -322,6 +324,9 @@ int main()
 
         for (const auto &pair : pairs) {
             WeightSystem ws = average(pair);
+            unsigned candidate_count = 0;
+            unsigned old_unique_count = weight_systems.size();
+            set<WeightSystem> current_weight_systems{}; // TODO: unordered_set?
 
             // auto symmetries = points_symmetries(span<Point>(history.points.data(), n));
 
@@ -335,8 +340,20 @@ int main()
                     continue;
 
                 WeightSystem final_ws{};
-                if (restrict(pair, x, final_ws))
-                    add_maybe(weight_systems, final_ws, statistics);
+                if (restrict(pair, x, final_ws)) {
+                    if (add_maybe(weight_systems, final_ws, statistics) &&
+                        print_last_recursion_statistics) {
+                        ++candidate_count;
+                        current_weight_systems.insert(final_ws);
+                    }
+                }
+            }
+
+            if (print_last_recursion_statistics) {
+                unsigned unique_count =
+                    weight_systems.size() - old_unique_count;
+                cout << candidate_count << " " << current_weight_systems.size()
+                     << " " << unique_count << endl;
             }
         }
     }

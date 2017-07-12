@@ -32,4 +32,6 @@ const int redundancy_check_skip_recursions = 2;
 
 const bool defer_last_recursion = true;
 
+const bool print_last_recursion_statistics = false;
+
 #endif
