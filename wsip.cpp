@@ -1,4 +1,4 @@
-#include "global2.h"
+#include "global.h"
 
 int Find_Equations(PolyPointList *P, VertexNumList *VNL, EqList *EL);
 

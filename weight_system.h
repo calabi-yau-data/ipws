@@ -2,7 +2,7 @@
 #define WEIGHT_SYSTEM_H
 
 #include <array>
-#include "global2.h"
+#include "global.h"
 #include "point.h"
 #include "vector_mixin.h"
 
