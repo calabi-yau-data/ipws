@@ -43,7 +43,7 @@ using WeightSystemCollection = unordered_set<WeightSystem>;
 
 void print_with_denominator(const WeightSystem &ws)
 {
-    int n = norm(ws);
+    Long n = norm(ws);
     cout << n * r_denominator;
     for (const auto &w : ws.weights)
         cout << " " << w * r_numerator;
@@ -284,7 +284,7 @@ void process_pair(WeightSystemCollection &weight_systems,
 {
     WeightSystem ws = average(pair);
     unsigned candidate_count = 0;
-    unsigned old_unique_count = weight_systems.size();
+    size_t old_unique_count = weight_systems.size();
     unordered_set<WeightSystem> current_weight_systems{};
 
     // auto sym = symmetries(pair);
@@ -315,7 +315,7 @@ void process_pair(WeightSystemCollection &weight_systems,
     }
 
     if (print_last_recursion_statistics) {
-        unsigned unique_count = weight_systems.size() - old_unique_count;
+        size_t unique_count = weight_systems.size() - old_unique_count;
         cout << candidate_count << " " << current_weight_systems.size() << " "
              << unique_count << endl;
     }
@@ -337,13 +337,13 @@ int main()
             // cones_in.seekg((rand() % 46739902) * 20);
             WeightSystemPair pair;
 
-            for (int i = 0; i < dim; ++i) {
+            for (unsigned i = 0; i < dim; ++i) {
                 uint16_t v16;
                 cones_in.read(reinterpret_cast<char *>(&v16), sizeof(v16));
                 pair.first.weights[i] = ntohs(v16);
             }
 
-            for (int i = 0; i < dim; ++i) {
+            for (unsigned i = 0; i < dim; ++i) {
                 uint16_t v16;
                 cones_in.read(reinterpret_cast<char *>(&v16), sizeof(v16));
                 pair.second.weights[i] = ntohs(v16);
@@ -364,14 +364,14 @@ int main()
 
         std::ofstream pairs_out{"pairs", std::ofstream::binary};
         for (auto &pair : pairs) {
-            for (int i = 0; i < dim; ++i) {
+            for (unsigned i = 0; i < dim; ++i) {
                 auto v = pair.first.weights[i];
                 assert(v >= 0 && v <= UINT16_MAX);
                 uint16_t v16 = htons(static_cast<uint16_t>(v));
                 pairs_out.write(reinterpret_cast<const char *>(&v16),
                                 sizeof(v16));
             }
-            for (int i = 0; i < dim; ++i) {
+            for (unsigned i = 0; i < dim; ++i) {
                 auto v = pair.second.weights[i];
                 assert(v >= 0 && v <= UINT16_MAX);
                 uint16_t v16 = htons(static_cast<uint16_t>(v));
