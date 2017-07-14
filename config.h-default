@@ -11,8 +11,6 @@ const Ring r_denominator = 1;
 const int redundancy_check_skip_recursions = 2;
 
 const bool defer_last_recursion = true;
-const bool write_weight_system_pairs = false;
-const bool read_weight_system_pairs = false;
 
 /* === Restrictions === */
 

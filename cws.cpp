@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <argagg/argagg.hpp>
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -20,6 +21,7 @@ using std::pair;
 using std::unordered_set;
 using std::set;
 using std::setprecision;
+using std::string;
 using std::vector;
 
 struct History {
@@ -178,7 +180,7 @@ void rec(const WeightSystemBuilder &builder,
         // The following happens when redundancies are not checked
         assert(builder.generator_count() == 2);
 
-        if (defer_last_recursion || write_weight_system_pairs) {
+        if (defer_last_recursion) {
             final_pairs.insert(canonicalize(builder.to_pair()));
             ++statistics.final_pairs_found;
 
@@ -260,36 +262,93 @@ void process_pair(WeightSystemCollection &weight_systems,
     }
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-    Stopwatch stopwatch{};
+    using std::ifstream;
+    using std::ofstream;
 
+    argagg::parser argparser{{
+        {"help", {"-h", "--help"}, "Show this help message", 0},
+        {
+            "read-pairs",
+            {"--read-pairs"},
+            "Read weight system pairs from given file",
+            1,
+        },
+        {
+            "write-pairs",
+            {"--write-pairs"},
+            "Write weight system pairs to given file",
+            1,
+        },
+    }};
+
+    argagg::parser_results args{};
+    try {
+        args = argparser.parse(argc, argv);
+    } catch (const std::exception &e) {
+        cerr << e.what() << endl;
+        return EXIT_FAILURE;
+    }
+
+    if (args["help"]) {
+        cerr << "Classify weight systems with d=" << dim
+             << ", r=" << r_numerator << "/" << r_denominator << "." << endl
+             << argparser;
+        return EXIT_SUCCESS;
+    }
+
+    auto read_pairs_path = args["read-pairs"].as<string>("");
+    auto write_pairs_path = args["write-pairs"].as<string>("");
+
+    ifstream pairs_in{};
+    if (!read_pairs_path.empty()) {
+        pairs_in = ifstream{read_pairs_path, std::ifstream::binary};
+        if (!pairs_in) {
+            cerr << "Could not open file " << read_pairs_path << endl;
+            return EXIT_FAILURE;
+        }
+    }
+
+    ofstream pairs_out{};
+    if (!write_pairs_path.empty()) {
+        if (!defer_last_recursion) {
+            cerr << "Compile with defer_last_recursion = true!\n";
+            return EXIT_FAILURE;
+        }
+
+        pairs_out = ofstream{write_pairs_path, std::ofstream::binary};
+        if (!pairs_out) {
+            cerr << "Could not open file " << write_pairs_path << endl;
+            return EXIT_FAILURE;
+        }
+    }
+
+    Stopwatch stopwatch{};
     History history{};
     WeightSystemCollection weight_systems{};
-    set<WeightSystemPair> final_pairs; // TODO: unordered_set?
+    set<WeightSystemPair> final_pairs{}; // TODO: unordered_set?
     Statistics statistics{};
 
-    if (read_weight_system_pairs) {
-        std::ifstream cones_in{"pairs", std::ifstream::binary};
-
+    if (pairs_in) {
         srand(1234);
-        while (cones_in) {
-            // cones_in.seekg((rand() % 46739902) * 20);
+        while (pairs_in) {
+            // pairs_in.seekg((rand() % 46739902) * 20);
             WeightSystemPair pair;
 
             for (unsigned i = 0; i < dim; ++i) {
                 uint16_t v16;
-                cones_in.read(reinterpret_cast<char *>(&v16), sizeof(v16));
+                pairs_in.read(reinterpret_cast<char *>(&v16), sizeof(v16));
                 pair.first.weights[i] = ntohs(v16);
             }
 
             for (unsigned i = 0; i < dim; ++i) {
                 uint16_t v16;
-                cones_in.read(reinterpret_cast<char *>(&v16), sizeof(v16));
+                pairs_in.read(reinterpret_cast<char *>(&v16), sizeof(v16));
                 pair.second.weights[i] = ntohs(v16);
             }
 
-            if (!cones_in)
+            if (!pairs_in)
                 break;
 
             process_pair(weight_systems, pair, statistics, stopwatch);
@@ -299,10 +358,9 @@ int main()
             statistics, stopwatch);
     }
 
-    if (write_weight_system_pairs) {
+    if (pairs_out) {
         cerr << stopwatch << " - writing\n";
 
-        std::ofstream pairs_out{"pairs", std::ofstream::binary};
         for (auto &pair : final_pairs) {
             for (unsigned i = 0; i < dim; ++i) {
                 auto v = pair.first.weights[i];
