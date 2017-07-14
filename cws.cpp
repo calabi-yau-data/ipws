@@ -407,5 +407,5 @@ int main(int argc, char *argv[])
          << ", unique: " << weight_systems.size()
          << ", ip: " << statistics.ip_weight_systems << endl;
 
-    return 0;
+    return EXIT_SUCCESS;
 }
