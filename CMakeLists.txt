@@ -1,8 +1,7 @@
 cmake_minimum_required (VERSION 3.1)
 project (cws)
 
-# set(CMAKE_C_COMPILER clang)
-# set(CMAKE_CXX_COMPILER clang++)
+option(LINK_STATICALLY "Link statically" OFF)
 
 # Signed integer overflow check for the types 'int' and 'long'.
 set(FLAGS "${FLAGS} -fsanitize=signed-integer-overflow -fsanitize-undefined-trap-on-error")
@@ -28,3 +27,7 @@ target_compile_options(wsip PRIVATE -Wno-conversion -Wno-misleading-indentation 
 add_executable(cws cws.cpp point.cpp weight_system.cpp weight_system_builder.cpp weight_system_pair.cpp)
 target_include_directories(cws PRIVATE "${PROJECT_SOURCE_DIR}/include")
 target_link_libraries(cws wsip)
+
+if(LINK_STATICALLY)
+  target_link_libraries(cws -static) # requires: glibc-static libstdc++-static
+endif(LINK_STATICALLY)
