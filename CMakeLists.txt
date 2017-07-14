@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.1)
 project (cws)
 
 # set(CMAKE_C_COMPILER clang)
@@ -18,7 +18,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${FLAGS_DEBUG}")
 set(CMAKE_C_FLAGS_RELEASE "${FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS_RELEASE "${FLAGS_RELEASE}")
 
-set(CMAKE_CXX_STANDARD_REQUIRED 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 14)
 
 add_library(wsip wsip.c palp/Polynf.c palp/Coord.c palp/Rat.c palp/Vertex.c)
