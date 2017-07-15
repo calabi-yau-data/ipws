@@ -3,34 +3,34 @@
 
 using Ring = int;
 
-const unsigned dim = 5;
-const Ring r_numerator = 1;
-const Ring r_denominator = 1;
+constexpr unsigned dim = 5;
+constexpr Ring r_numerator = 1;
+constexpr Ring r_denominator = 1;
 
 // It is not economical to do this on the last two recursion levels
-const int redundancy_check_skip_recursions = 2;
+constexpr int redundancy_check_skip_recursions = 2;
 
-const bool defer_last_recursion = true;
+constexpr bool defer_last_recursion = true;
 
 /* === Restrictions === */
 
 // Allow weight systems containing a weight of 1
-const bool allow_weight_one = false;
+constexpr bool allow_weight_one = false;
 
 // Allow weight systems containing a weight of 1/2
-const bool allow_weight_one_half = false;
+constexpr bool allow_weight_one_half = false;
 
 // Allow weight systems containing two weights with a sum of 1
-const bool allow_weights_sum_one = false;
+constexpr bool allow_weights_sum_one = false;
 
 /* === Printing === */
 
-const bool print_last_recursion_statistics = false;
-const bool print_candidates = false;
+constexpr bool print_last_recursion_statistics = false;
+constexpr bool print_candidates = false;
 
 /* === Debug === */
 
-const bool debug_ignore_symmetries = false;
-const bool debug_disable_lex_compare = false;
+constexpr bool debug_ignore_symmetries = false;
+constexpr bool debug_disable_lex_compare = false;
 
 #endif
