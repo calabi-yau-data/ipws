@@ -1,10 +1,10 @@
-#include <arpa/inet.h>
 #include <argagg/argagg.hpp>
-#include <fstream>
+#include <experimental/optional>
 #include <iostream>
 #include <set>
 #include <unordered_set>
 #include "config.h"
+#include "file.h"
 #include "point.h"
 #include "stl_utils.h"
 #include "stopwatch.h"
@@ -17,6 +17,7 @@ using std::array;
 using std::cerr;
 using std::cout;
 using std::endl;
+using std::experimental::optional;
 using std::pair;
 using std::unordered_set;
 using std::set;
@@ -264,9 +265,6 @@ void process_pair(WeightSystemCollection &weight_systems,
 
 int main(int argc, char *argv[])
 {
-    using std::ifstream;
-    using std::ofstream;
-
     argagg::parser argparser{{
         {"help", {"-h", "--help"}, "Show this help message", 0},
         {
@@ -301,25 +299,25 @@ int main(int argc, char *argv[])
     auto read_pairs_path = args["read-pairs"].as<string>("");
     auto write_pairs_path = args["write-pairs"].as<string>("");
 
-    ifstream pairs_in{};
+    optional<File> pairs_in{};
     if (!read_pairs_path.empty()) {
-        pairs_in = ifstream{read_pairs_path, std::ifstream::binary};
+        pairs_in = File::open(read_pairs_path);
         if (!pairs_in) {
-            cerr << "Could not open file " << read_pairs_path << endl;
+            cerr << "Could not open file '" << read_pairs_path << "'\n";
             return EXIT_FAILURE;
         }
     }
 
-    ofstream pairs_out{};
+    optional<File> pairs_out{};
     if (!write_pairs_path.empty()) {
         if (!defer_last_recursion) {
             cerr << "Compile with defer_last_recursion = true!\n";
             return EXIT_FAILURE;
         }
 
-        pairs_out = ofstream{write_pairs_path, std::ofstream::binary};
+        pairs_out = File::create_new(write_pairs_path);
         if (!pairs_out) {
-            cerr << "Could not open file " << write_pairs_path << endl;
+            cerr << "Could not create new file '" << write_pairs_path << "'\n";
             return EXIT_FAILURE;
         }
     }
@@ -331,27 +329,30 @@ int main(int argc, char *argv[])
     Statistics statistics{};
 
     if (pairs_in) {
-        srand(1234);
-        while (pairs_in) {
-            // pairs_in.seekg((rand() % 46739902) * 20);
-            WeightSystemPair pair;
+        try {
+            uint32_t size;
+            pairs_in->read(size);
 
-            for (unsigned i = 0; i < dim; ++i) {
-                uint16_t v16;
-                pairs_in.read(reinterpret_cast<char *>(&v16), sizeof(v16));
-                pair.first.weights[i] = ntohs(v16);
+            srand(1234);
+            for (unsigned i = 0; i < size; ++i) {
+                // unsigned ws_size = 2 * dim * (sizeof uint16_t);
+                // pairs_in.seek((rand() % (size / ws_size)) * ws_size);
+                WeightSystemPair pair;
+                array<uint16_t, dim> data;
+
+                pairs_in->read(span<uint16_t>(data));
+                for (unsigned i = 0; i < dim; ++i)
+                    pair.first.weights[i] = data[i];
+
+                pairs_in->read(span<uint16_t>(data));
+                for (unsigned i = 0; i < dim; ++i)
+                    pair.second.weights[i] = data[i];
+
+                process_pair(weight_systems, pair, statistics, stopwatch);
             }
-
-            for (unsigned i = 0; i < dim; ++i) {
-                uint16_t v16;
-                pairs_in.read(reinterpret_cast<char *>(&v16), sizeof(v16));
-                pair.second.weights[i] = ntohs(v16);
-            }
-
-            if (!pairs_in)
-                break;
-
-            process_pair(weight_systems, pair, statistics, stopwatch);
+        } catch (File::Error) {
+            cerr << "Read error\n";
+            return EXIT_FAILURE;
         }
     } else {
         rec(WeightSystemBuilder{}, weight_systems, final_pairs, 0, history,
@@ -359,23 +360,31 @@ int main(int argc, char *argv[])
     }
 
     if (pairs_out) {
-        cerr << stopwatch << " - writing\n";
+        try {
+            cerr << stopwatch << " - writing\n";
 
-        for (auto &pair : final_pairs) {
-            for (unsigned i = 0; i < dim; ++i) {
-                auto v = pair.first.weights[i];
-                assert(v >= 0 && v <= UINT16_MAX);
-                uint16_t v16 = htons(static_cast<uint16_t>(v));
-                pairs_out.write(reinterpret_cast<const char *>(&v16),
-                                sizeof(v16));
+            pairs_out->write(static_cast<uint32_t>(final_pairs.size()));
+
+            for (auto &pair : final_pairs) {
+                array<uint16_t, dim> data;
+
+                for (unsigned i = 0; i < dim; ++i) {
+                    auto v = pair.first.weights[i];
+                    assert(v >= 0 && v <= UINT16_MAX);
+                    data[i] = static_cast<uint16_t>(v);
+                }
+                pairs_out->write(span<uint16_t>(data));
+
+                for (unsigned i = 0; i < dim; ++i) {
+                    auto v = pair.second.weights[i];
+                    assert(v >= 0 && v <= UINT16_MAX);
+                    data[i] = static_cast<uint16_t>(v);
+                }
+                pairs_out->write(span<uint16_t>(data));
             }
-            for (unsigned i = 0; i < dim; ++i) {
-                auto v = pair.second.weights[i];
-                assert(v >= 0 && v <= UINT16_MAX);
-                uint16_t v16 = htons(static_cast<uint16_t>(v));
-                pairs_out.write(reinterpret_cast<const char *>(&v16),
-                                sizeof(v16));
-            }
+        } catch (File::Error) {
+            cerr << "Write error\n";
+            return EXIT_FAILURE;
         }
     }
 
