@@ -34,7 +34,7 @@ endif(${GIT_CHANGES} STREQUAL CLEAN)
 add_library(wsip wsip.c palp/Polynf.c palp/Coord.c palp/Rat.c palp/Vertex.c)
 target_compile_options(wsip PRIVATE -Wno-conversion -Wno-misleading-indentation -Wno-unused-but-set-variable -Wno-unused-parameter)
 
-add_executable(cws cws.cpp file.cpp point.cpp weight_system.cpp weight_system_builder.cpp weight_system_pair.cpp)
+add_executable(cws cws.cpp file.cpp point.cpp settings.cpp weight_system.cpp weight_system_builder.cpp weight_system_pair.cpp)
 target_include_directories(cws PRIVATE "${PROJECT_SOURCE_DIR}/include")
 target_link_libraries(cws wsip)
 

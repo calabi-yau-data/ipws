@@ -6,6 +6,7 @@
 #include "config.h"
 #include "file.h"
 #include "point.h"
+#include "settings.h"
 #include "stl_utils.h"
 #include "stopwatch.h"
 #include "weight_system.h"
@@ -37,10 +38,6 @@ struct Statistics {
     unsigned ip_weight_systems;
 };
 
-struct Settings {
-    unsigned redundancy_check_skip_recursions;
-};
-
 using WeightSystemCollection = unordered_set<WeightSystem>;
 
 void print_with_denominator(const WeightSystem &ws)
@@ -57,16 +54,16 @@ bool good_weight_system(const WeightSystem &ws)
     Ring n = norm(ws);
 
     for (unsigned i = 0; i < dim; ++i) {
-        if (!allow_weight_one_half &&
+        if (!g_settings.allow_weight_one_half &&
             2 * ws.weights[i] * r_numerator == n * r_denominator)
             return false;
 
-        if (!allow_weight_one &&
+        if (!g_settings.allow_weight_one &&
             ws.weights[i] * r_numerator == n * r_denominator)
             return false;
     }
 
-    if (!allow_weights_sum_one)
+    if (!g_settings.allow_weights_sum_one)
         for (unsigned i = 0; i < dim - 1; ++i)
             for (unsigned j = i + 1; j < dim; ++j)
                 if ((ws.weights[i] + ws.weights[j]) * r_numerator ==
@@ -108,7 +105,7 @@ bool last_point_redundant2(const WeightSystemBuilder &builder, int n,
         for (int i = 0; i < n; ++i) {
             Ring diff = history.point_weight_system_distances[i][i] -
                         distance(history.weight_systems[i], x);
-            if (diff > 0 || (!debug_disable_lex_compare && diff == 0 &&
+            if (diff > 0 || (!g_settings.debug_disable_lex_order && diff == 0 &&
                              x > history.points[i]))
                 return true;
         }
@@ -127,7 +124,8 @@ bool last_point_redundant(int n, const History &history)
                    history.point_weight_system_distances[n][i];
         if (rel > 0)
             return true;
-        if (!debug_disable_lex_compare && rel == 0 && history.points[i] < x)
+        if (!g_settings.debug_disable_lex_order && rel == 0 &&
+            history.points[i] < x)
             return true;
     }
 
@@ -166,8 +164,7 @@ bool last_point_redundant(int n, const History &history)
 void rec(const WeightSystemBuilder &builder,
          WeightSystemCollection &weight_systems,
          set<WeightSystemPair> &final_pairs, unsigned n, History &history,
-         Statistics &statistics, const Stopwatch &stopwatch,
-         const Settings &settings)
+         Statistics &statistics, const Stopwatch &stopwatch)
 {
     WeightSystem ws{};
     if (!builder.average_if_nonzero(ws))
@@ -175,7 +172,7 @@ void rec(const WeightSystemBuilder &builder,
 
     history.weight_systems[n] = ws;
 
-    if (n < dim - settings.redundancy_check_skip_recursions &&
+    if (n < dim - g_settings.redundancy_check_skip_recursions &&
         last_point_redundant2(builder, n, history))
         return;
 
@@ -186,7 +183,7 @@ void rec(const WeightSystemBuilder &builder,
         // The following happens when redundancies are not checked
         assert(builder.generator_count() == 2);
 
-        if (defer_last_recursion) {
+        /* if (defer_last_recursion) */ {
             final_pairs.insert(canonicalize(builder.to_pair()));
             ++statistics.final_pairs_found;
 
@@ -209,7 +206,7 @@ void rec(const WeightSystemBuilder &builder,
         const Point &x = points.get();
 
         if (!leads_to_allowed_weightsystem(x) ||
-            (!debug_ignore_symmetries && !is_sorted(x, sym)))
+            (!g_settings.debug_ignore_symmetries && !is_sorted(x, sym)))
             continue;
 
         history.points[n] = x;
@@ -221,7 +218,7 @@ void rec(const WeightSystemBuilder &builder,
             continue;
 
         rec(builder.restrict(x), weight_systems, final_pairs, n + 1, history,
-            statistics, stopwatch, settings);
+            statistics, stopwatch);
     }
 }
 
@@ -248,7 +245,7 @@ void process_pair(WeightSystemCollection &weight_systems,
         WeightSystem final_ws{};
         if (restrict(pair, x, final_ws)) {
             if (add_maybe(weight_systems, final_ws, statistics)) {
-                if (print_last_recursion_statistics) {
+                if (g_settings.print_last_recursion_statistics) {
                     ++candidate_count;
                     current_weight_systems.insert(final_ws);
                 }
@@ -261,15 +258,14 @@ void process_pair(WeightSystemCollection &weight_systems,
         }
     }
 
-    if (print_last_recursion_statistics) {
+    if (g_settings.print_last_recursion_statistics) {
         size_t unique_count = weight_systems.size() - old_unique_count;
         cout << candidate_count << " " << current_weight_systems.size() << " "
              << unique_count << endl;
     }
 }
 
-bool classify(optional<File> &pairs_in, optional<File> &pairs_out,
-              const Settings &settings)
+bool classify(optional<File> &pairs_in, optional<File> &pairs_out)
 {
     Stopwatch stopwatch{};
     History history{};
@@ -305,7 +301,7 @@ bool classify(optional<File> &pairs_in, optional<File> &pairs_out,
         }
     } else {
         rec(WeightSystemBuilder{}, weight_systems, final_pairs, 0, history,
-            statistics, stopwatch, settings);
+            statistics, stopwatch);
     }
 
     if (pairs_out) {
@@ -337,24 +333,22 @@ bool classify(optional<File> &pairs_in, optional<File> &pairs_out,
         }
     }
 
-    if (defer_last_recursion) {
-        cerr << stopwatch
-             << " - weight systems: " << statistics.weight_systems_found
-             << ", unique: " << weight_systems.size() << endl;
-        cerr << stopwatch
-             << " - weight system pairs: " << statistics.final_pairs_found
-             << ", unique: " << final_pairs.size() << endl;
+    cerr << stopwatch
+         << " - weight systems: " << statistics.weight_systems_found
+         << ", unique: " << weight_systems.size() << endl;
+    cerr << stopwatch
+         << " - weight system pairs: " << statistics.final_pairs_found
+         << ", unique: " << final_pairs.size() << endl;
 
-        for (const auto &pair : final_pairs)
-            process_pair(weight_systems, pair, statistics, stopwatch);
-    }
+    for (const auto &pair : final_pairs)
+        process_pair(weight_systems, pair, statistics, stopwatch);
 
     cerr << stopwatch
          << " - weight systems: " << statistics.weight_systems_found
          << ", unique: " << weight_systems.size() << endl;
 
     for (const auto &ws : weight_systems) {
-        if (print_candidates)
+        if (g_settings.print_candidates)
             print_with_denominator(ws);
         if (has_ip(ws))
             ++statistics.ip_weight_systems;
@@ -391,19 +385,66 @@ int main(int argc, char *argv[])
             "(default 2)",
             1,
         },
+        {
+            "allow-weight-one",
+            {"--allow-weight-one"},
+            "Allow weight systems containing a weight of 1",
+            0,
+        },
+        {
+            "allow-weight-one-half",
+            {"--allow-weight-one-half"},
+            "Allow weight systems containing a weight of 1/2",
+            0,
+        },
+        {
+            "allow-weights-sum-one",
+            {"--allow-weights-sum-one"},
+            "Allow weight systems containing two weights with a sum of 1",
+            0,
+        },
+        {
+            "print-stats",
+            {"--print-stats"},
+            "Print statistics during the last recursion",
+            0,
+        },
+        {
+            "print-candidates",
+            {"--print-candidates"},
+            "Print weight system candidates",
+            0,
+        },
+        {
+            "ignore-symmetries",
+            {"--ignore-symmetries"},
+            "Ignore symmetries (for debugging)",
+            0,
+        },
+        {
+            "no-lex-order",
+            {"--no-lex-order"},
+            "Disable lexicographic order (for debugging)",
+            0,
+        },
     }};
 
-    Settings settings{};
-    settings.redundancy_check_skip_recursions = 2;
+    g_settings.redundancy_check_skip_recursions = 2;
 
     argagg::parser_results args{};
     try {
         args = argparser.parse(argc, argv);
 
         if (args["skip-redundancy-check"])
-            settings.redundancy_check_skip_recursions =
+            g_settings.redundancy_check_skip_recursions =
                 args["skip-redundancy-check"];
-
+        g_settings.allow_weight_one = args["allow-weight-one"];
+        g_settings.allow_weight_one_half = args["allow-weight-one-half"];
+        g_settings.allow_weights_sum_one = args["allow-weights-sum-one"];
+        g_settings.print_last_recursion_statistics = args["print-stats"];
+        g_settings.print_candidates = args["print-candidates"];
+        g_settings.debug_ignore_symmetries = args["ignore-symmetries"];
+        g_settings.debug_disable_lex_order = args["no-lex-order"];
     } catch (const std::exception &e) {
         cerr << e.what() << endl;
         return EXIT_FAILURE;
@@ -413,15 +454,6 @@ int main(int argc, char *argv[])
         cerr << "Classify weight systems with d=" << dim
              << ", r=" << r_numerator << "/" << r_denominator << endl
              << "Revision: " << GIT_REVISION << endl;
-
-        if (defer_last_recursion)
-            cerr << "Last recursion is deferred\n";
-
-        if (allow_weight_one || allow_weight_one_half || allow_weights_sum_one)
-            cerr << "### Additional weight systems are classified ###\n";
-
-        if (debug_ignore_symmetries || debug_disable_lex_compare)
-            cerr << "### Some features are disabled ### \n";
 
         cerr << argparser;
         return EXIT_SUCCESS;
@@ -441,11 +473,6 @@ int main(int argc, char *argv[])
 
     optional<File> pairs_out{};
     if (!write_pairs_path.empty()) {
-        if (!defer_last_recursion) {
-            cerr << "Compile with defer_last_recursion = true!\n";
-            return EXIT_FAILURE;
-        }
-
         pairs_out = File::create_new(write_pairs_path);
         if (!pairs_out) {
             cerr << "Could not create new file '" << write_pairs_path << "'\n";
@@ -453,6 +480,5 @@ int main(int argc, char *argv[])
         }
     }
 
-    return classify(pairs_in, pairs_out, settings) ? EXIT_SUCCESS
-                                                   : EXIT_FAILURE;
+    return classify(pairs_in, pairs_out) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
