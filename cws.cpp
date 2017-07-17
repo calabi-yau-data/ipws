@@ -37,6 +37,10 @@ struct Statistics {
     unsigned ip_weight_systems;
 };
 
+struct Settings {
+    unsigned redundancy_check_skip_recursions;
+};
+
 using WeightSystemCollection = unordered_set<WeightSystem>;
 
 void print_with_denominator(const WeightSystem &ws)
@@ -162,7 +166,8 @@ bool last_point_redundant(int n, const History &history)
 void rec(const WeightSystemBuilder &builder,
          WeightSystemCollection &weight_systems,
          set<WeightSystemPair> &final_pairs, unsigned n, History &history,
-         Statistics &statistics, const Stopwatch &stopwatch)
+         Statistics &statistics, const Stopwatch &stopwatch,
+         const Settings &settings)
 {
     WeightSystem ws{};
     if (!builder.average_if_nonzero(ws))
@@ -170,7 +175,7 @@ void rec(const WeightSystemBuilder &builder,
 
     history.weight_systems[n] = ws;
 
-    if (n < dim - redundancy_check_skip_recursions &&
+    if (n < dim - settings.redundancy_check_skip_recursions &&
         last_point_redundant2(builder, n, history))
         return;
 
@@ -216,7 +221,7 @@ void rec(const WeightSystemBuilder &builder,
             continue;
 
         rec(builder.restrict(x), weight_systems, final_pairs, n + 1, history,
-            statistics, stopwatch);
+            statistics, stopwatch, settings);
     }
 }
 
@@ -263,7 +268,8 @@ void process_pair(WeightSystemCollection &weight_systems,
     }
 }
 
-bool classify(optional<File> &pairs_in, optional<File> &pairs_out)
+bool classify(optional<File> &pairs_in, optional<File> &pairs_out,
+              const Settings &settings)
 {
     Stopwatch stopwatch{};
     History history{};
@@ -299,7 +305,7 @@ bool classify(optional<File> &pairs_in, optional<File> &pairs_out)
         }
     } else {
         rec(WeightSystemBuilder{}, weight_systems, final_pairs, 0, history,
-            statistics, stopwatch);
+            statistics, stopwatch, settings);
     }
 
     if (pairs_out) {
@@ -378,11 +384,26 @@ int main(int argc, char *argv[])
             "Write weight system pairs to given file",
             1,
         },
+        {
+            "skip-redundancy-check",
+            {"--skip-redundancy-check"},
+            "Skip redundancy check on the number of recursions given "
+            "(default 2)",
+            1,
+        },
     }};
+
+    Settings settings{};
+    settings.redundancy_check_skip_recursions = 2;
 
     argagg::parser_results args{};
     try {
         args = argparser.parse(argc, argv);
+
+        if (args["skip-redundancy-check"])
+            settings.redundancy_check_skip_recursions =
+                args["skip-redundancy-check"];
+
     } catch (const std::exception &e) {
         cerr << e.what() << endl;
         return EXIT_FAILURE;
@@ -392,9 +413,6 @@ int main(int argc, char *argv[])
         cerr << "Classify weight systems with d=" << dim
              << ", r=" << r_numerator << "/" << r_denominator << endl
              << "Revision: " << GIT_REVISION << endl;
-
-        cerr << "Redundancy check is skipped on the last "
-             << redundancy_check_skip_recursions << " recursions\n";
 
         if (defer_last_recursion)
             cerr << "Last recursion is deferred\n";
@@ -435,5 +453,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    return classify(pairs_in, pairs_out) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return classify(pairs_in, pairs_out, settings) ? EXIT_SUCCESS
+                                                   : EXIT_FAILURE;
 }

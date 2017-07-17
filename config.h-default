@@ -7,9 +7,6 @@ constexpr unsigned dim = 5;
 constexpr Ring r_numerator = 1;
 constexpr Ring r_denominator = 1;
 
-// It is not economical to do this on the last two recursion levels
-constexpr int redundancy_check_skip_recursions = 2;
-
 constexpr bool defer_last_recursion = true;
 
 /* === Restrictions === */
