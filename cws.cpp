@@ -263,6 +263,105 @@ void process_pair(WeightSystemCollection &weight_systems,
     }
 }
 
+bool classify(optional<File> &pairs_in, optional<File> &pairs_out)
+{
+    Stopwatch stopwatch{};
+    History history{};
+    WeightSystemCollection weight_systems{};
+    set<WeightSystemPair> final_pairs{}; // TODO: unordered_set?
+    Statistics statistics{};
+
+    if (pairs_in) {
+        try {
+            uint32_t size;
+            pairs_in->read(size);
+
+            srand(1234);
+            for (unsigned i = 0; i < size; ++i) {
+                // unsigned ws_size = 2 * dim * (sizeof uint16_t);
+                // pairs_in.seek((rand() % (size / ws_size)) * ws_size);
+                WeightSystemPair pair;
+                array<uint16_t, dim> data;
+
+                pairs_in->read(span<uint16_t>(data));
+                for (unsigned i = 0; i < dim; ++i)
+                    pair.first.weights[i] = data[i];
+
+                pairs_in->read(span<uint16_t>(data));
+                for (unsigned i = 0; i < dim; ++i)
+                    pair.second.weights[i] = data[i];
+
+                process_pair(weight_systems, pair, statistics, stopwatch);
+            }
+        } catch (File::Error) {
+            cerr << "Read error\n";
+            return false;
+        }
+    } else {
+        rec(WeightSystemBuilder{}, weight_systems, final_pairs, 0, history,
+            statistics, stopwatch);
+    }
+
+    if (pairs_out) {
+        try {
+            cerr << stopwatch << " - writing\n";
+
+            pairs_out->write(static_cast<uint32_t>(final_pairs.size()));
+
+            for (auto &pair : final_pairs) {
+                array<uint16_t, dim> data;
+
+                for (unsigned i = 0; i < dim; ++i) {
+                    auto v = pair.first.weights[i];
+                    assert(v >= 0 && v <= UINT16_MAX);
+                    data[i] = static_cast<uint16_t>(v);
+                }
+                pairs_out->write(span<uint16_t>(data));
+
+                for (unsigned i = 0; i < dim; ++i) {
+                    auto v = pair.second.weights[i];
+                    assert(v >= 0 && v <= UINT16_MAX);
+                    data[i] = static_cast<uint16_t>(v);
+                }
+                pairs_out->write(span<uint16_t>(data));
+            }
+        } catch (File::Error) {
+            cerr << "Write error\n";
+            return false;
+        }
+    }
+
+    if (defer_last_recursion) {
+        cerr << stopwatch
+             << " - weight systems: " << statistics.weight_systems_found
+             << ", unique: " << weight_systems.size() << endl;
+        cerr << stopwatch
+             << " - weight system pairs: " << statistics.final_pairs_found
+             << ", unique: " << final_pairs.size() << endl;
+
+        for (const auto &pair : final_pairs)
+            process_pair(weight_systems, pair, statistics, stopwatch);
+    }
+
+    cerr << stopwatch
+         << " - weight systems: " << statistics.weight_systems_found
+         << ", unique: " << weight_systems.size() << endl;
+
+    for (const auto &ws : weight_systems) {
+        if (print_candidates)
+            print_with_denominator(ws);
+        if (has_ip(ws))
+            ++statistics.ip_weight_systems;
+    }
+
+    cerr << stopwatch
+         << " - weight systems: " << statistics.weight_systems_found
+         << ", unique: " << weight_systems.size()
+         << ", ip: " << statistics.ip_weight_systems << endl;
+
+    return true;
+}
+
 int main(int argc, char *argv[])
 {
     argagg::parser argparser{{
@@ -323,99 +422,5 @@ int main(int argc, char *argv[])
         }
     }
 
-    Stopwatch stopwatch{};
-    History history{};
-    WeightSystemCollection weight_systems{};
-    set<WeightSystemPair> final_pairs{}; // TODO: unordered_set?
-    Statistics statistics{};
-
-    if (pairs_in) {
-        try {
-            uint32_t size;
-            pairs_in->read(size);
-
-            srand(1234);
-            for (unsigned i = 0; i < size; ++i) {
-                // unsigned ws_size = 2 * dim * (sizeof uint16_t);
-                // pairs_in.seek((rand() % (size / ws_size)) * ws_size);
-                WeightSystemPair pair;
-                array<uint16_t, dim> data;
-
-                pairs_in->read(span<uint16_t>(data));
-                for (unsigned i = 0; i < dim; ++i)
-                    pair.first.weights[i] = data[i];
-
-                pairs_in->read(span<uint16_t>(data));
-                for (unsigned i = 0; i < dim; ++i)
-                    pair.second.weights[i] = data[i];
-
-                process_pair(weight_systems, pair, statistics, stopwatch);
-            }
-        } catch (File::Error) {
-            cerr << "Read error\n";
-            return EXIT_FAILURE;
-        }
-    } else {
-        rec(WeightSystemBuilder{}, weight_systems, final_pairs, 0, history,
-            statistics, stopwatch);
-    }
-
-    if (pairs_out) {
-        try {
-            cerr << stopwatch << " - writing\n";
-
-            pairs_out->write(static_cast<uint32_t>(final_pairs.size()));
-
-            for (auto &pair : final_pairs) {
-                array<uint16_t, dim> data;
-
-                for (unsigned i = 0; i < dim; ++i) {
-                    auto v = pair.first.weights[i];
-                    assert(v >= 0 && v <= UINT16_MAX);
-                    data[i] = static_cast<uint16_t>(v);
-                }
-                pairs_out->write(span<uint16_t>(data));
-
-                for (unsigned i = 0; i < dim; ++i) {
-                    auto v = pair.second.weights[i];
-                    assert(v >= 0 && v <= UINT16_MAX);
-                    data[i] = static_cast<uint16_t>(v);
-                }
-                pairs_out->write(span<uint16_t>(data));
-            }
-        } catch (File::Error) {
-            cerr << "Write error\n";
-            return EXIT_FAILURE;
-        }
-    }
-
-    if (defer_last_recursion) {
-        cerr << stopwatch
-             << " - weight systems: " << statistics.weight_systems_found
-             << ", unique: " << weight_systems.size() << endl;
-        cerr << stopwatch
-             << " - weight system pairs: " << statistics.final_pairs_found
-             << ", unique: " << final_pairs.size() << endl;
-
-        for (const auto &pair : final_pairs)
-            process_pair(weight_systems, pair, statistics, stopwatch);
-    }
-
-    cerr << stopwatch
-         << " - weight systems: " << statistics.weight_systems_found
-         << ", unique: " << weight_systems.size() << endl;
-
-    for (const auto &ws : weight_systems) {
-        if (print_candidates)
-            print_with_denominator(ws);
-        if (has_ip(ws))
-            ++statistics.ip_weight_systems;
-    }
-
-    cerr << stopwatch
-         << " - weight systems: " << statistics.weight_systems_found
-         << ", unique: " << weight_systems.size()
-         << ", ip: " << statistics.ip_weight_systems << endl;
-
-    return EXIT_SUCCESS;
+    return classify(pairs_in, pairs_out) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

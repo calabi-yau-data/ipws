@@ -49,7 +49,8 @@ optional<File> File::create_new(const std::string &path)
     return File{fd};
 }
 
-void File::seek(unsigned pos) {
+void File::seek(unsigned pos)
+{
     lseek(fd, pos, SEEK_SET);
 }
 
