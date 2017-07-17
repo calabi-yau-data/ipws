@@ -21,6 +21,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+include(GetGitRevisionDescription)
+get_git_head_revision(GIT_REFSPEC GIT_HASH)
+git_local_changes(GIT_CHANGES)
+if(${GIT_CHANGES} STREQUAL CLEAN)
+  add_definitions("-DGIT_REVISION=\"${GIT_HASH}\"")
+else(${GIT_CHANGES} STREQUAL CLEAN)
+  add_definitions("-DGIT_REVISION=\"${GIT_HASH}(dirty)\"")
+endif(${GIT_CHANGES} STREQUAL CLEAN)
+
 add_library(wsip wsip.c palp/Polynf.c palp/Coord.c palp/Rat.c palp/Vertex.c)
 target_compile_options(wsip PRIVATE -Wno-conversion -Wno-misleading-indentation -Wno-unused-but-set-variable -Wno-unused-parameter)
 

@@ -291,7 +291,8 @@ int main(int argc, char *argv[])
 
     if (args["help"]) {
         cerr << "Classify weight systems with d=" << dim
-             << ", r=" << r_numerator << "/" << r_denominator << "." << endl
+             << ", r=" << r_numerator << "/" << r_denominator << endl
+             << "Revision: " << GIT_REVISION << endl
              << argparser;
         return EXIT_SUCCESS;
     }
