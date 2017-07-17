@@ -391,8 +391,21 @@ int main(int argc, char *argv[])
     if (args["help"]) {
         cerr << "Classify weight systems with d=" << dim
              << ", r=" << r_numerator << "/" << r_denominator << endl
-             << "Revision: " << GIT_REVISION << endl
-             << argparser;
+             << "Revision: " << GIT_REVISION << endl;
+
+        cerr << "Redundancy check is skipped on the last "
+             << redundancy_check_skip_recursions << " recursions\n";
+
+        if (defer_last_recursion)
+            cerr << "Last recursion is deferred\n";
+
+        if (allow_weight_one || allow_weight_one_half || allow_weights_sum_one)
+            cerr << "### Additional weight systems are classified ###\n";
+
+        if (debug_ignore_symmetries || debug_disable_lex_compare)
+            cerr << "### Some features are disabled ### \n";
+
+        cerr << argparser;
         return EXIT_SUCCESS;
     }
 
