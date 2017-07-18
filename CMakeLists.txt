@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.1)
-project (cws)
+project (ipws)
 
 option(LINK_STATICALLY "Link statically" OFF)
 set(LATTICE_RING "int" CACHE STRING "Lattice ring")
@@ -35,8 +35,8 @@ else(${GIT_CHANGES} STREQUAL CLEAN)
   add_definitions("-DGIT_REVISION=\"${GIT_HASH}(dirty)\"")
 endif(${GIT_CHANGES} STREQUAL CLEAN)
 
-add_library(wsip wsip.c palp/Polynf.c palp/Coord.c palp/Rat.c palp/Vertex.c)
-target_compile_options(wsip PRIVATE -Wno-conversion -Wno-misleading-indentation -Wno-unused-but-set-variable -Wno-unused-parameter)
+add_library(ip_check ip_check.c palp/Polynf.c palp/Coord.c palp/Rat.c palp/Vertex.c)
+target_compile_options(ip_check PRIVATE -Wno-conversion -Wno-misleading-indentation -Wno-unused-but-set-variable -Wno-unused-parameter)
 
 configure_file(
   "${PROJECT_SOURCE_DIR}/config.h.in"
@@ -44,10 +44,10 @@ configure_file(
   )
 include_directories("${PROJECT_BINARY_DIR}")
 
-add_executable(cws cws.cpp file.cpp history.cpp point.cpp settings.cpp weight_system.cpp weight_system_builder.cpp weight_system_pair.cpp)
-target_include_directories(cws PRIVATE "${PROJECT_SOURCE_DIR}/include")
-target_link_libraries(cws wsip)
+add_executable(ipws ipws.cpp file.cpp history.cpp point.cpp settings.cpp weight_system.cpp weight_system_builder.cpp weight_system_pair.cpp)
+target_include_directories(ipws PRIVATE "${PROJECT_SOURCE_DIR}/include")
+target_link_libraries(ipws ip_check)
 
 if(LINK_STATICALLY)
-  target_link_libraries(cws -static) # requires: glibc-static libstdc++-static
+  target_link_libraries(ipws -static) # requires: glibc-static libstdc++-static
 endif(LINK_STATICALLY)
