@@ -156,7 +156,7 @@ void process_pair(unordered_set<WeightSystem> &weight_systems,
 }
 
 bool classify(optional<File> &pairs_in, optional<File> &pairs_out,
-              optional<File> &candidates_out)
+              optional<File> &intermediate_ws_out)
 {
     Stopwatch stopwatch{};
     History history{};
@@ -192,7 +192,7 @@ bool classify(optional<File> &pairs_in, optional<File> &pairs_out,
          << " - weight system pairs: " << statistics.final_pairs_found
          << ", unique: " << final_pairs.size() << endl;
 
-    if (candidates_out) {
+    if (intermediate_ws_out) {
         cerr << stopwatch << " - sorting candidates\n";
 
         vector<WeightSystem> ws_list{};
@@ -202,9 +202,10 @@ bool classify(optional<File> &pairs_in, optional<File> &pairs_out,
 
         cerr << stopwatch << " - writing candidates\n";
 
-        candidates_out->write(static_cast<uint32_t>(weight_systems.size()));
+        intermediate_ws_out->write(
+            static_cast<uint32_t>(weight_systems.size()));
         for (const auto &ws : ws_list)
-            write(*candidates_out, ws);
+            write(*intermediate_ws_out, ws);
 
         cerr << stopwatch << " - writing done\n";
     }
@@ -316,13 +317,13 @@ int main(int argc, char *argv[])
         }
     }
 
-    optional<File> candidates_out{};
+    optional<File> intermediate_ws_out{};
     g_settings.generate_intermediate_weight_systems =
         write_intermediate_weight_systems_arg.isSet();
     if (g_settings.generate_intermediate_weight_systems) {
-        candidates_out =
+        intermediate_ws_out =
             File::create_new(write_intermediate_weight_systems_arg.getValue());
-        if (!candidates_out) {
+        if (!intermediate_ws_out) {
             cerr << "Could not create new file '"
                  << write_intermediate_weight_systems_arg.getValue() << "'\n";
             return EXIT_FAILURE;
@@ -330,8 +331,9 @@ int main(int argc, char *argv[])
     }
 
     try {
-        return classify(pairs_in, pairs_out, candidates_out) ? EXIT_SUCCESS
-                                                             : EXIT_FAILURE;
+        return classify(pairs_in, pairs_out, intermediate_ws_out)
+                   ? EXIT_SUCCESS
+                   : EXIT_FAILURE;
     } catch (File::Error) {
         cerr << "IO error\n";
         return EXIT_FAILURE;
