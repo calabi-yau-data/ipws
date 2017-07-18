@@ -1,7 +1,8 @@
-#include <argagg/argagg.hpp>
+#include <tclap/CmdLine.h>
 #include <experimental/optional>
 #include <iostream>
 #include <set>
+#include <sstream>
 #include <unordered_set>
 #include "config.h"
 #include "file.h"
@@ -364,118 +365,69 @@ bool classify(optional<File> &pairs_in, optional<File> &pairs_out)
 
 int main(int argc, char *argv[])
 {
-    argagg::parser argparser{{
-        {"help", {"-h", "--help"}, "Show this help message", 0},
-        {
-            "read-pairs",
-            {"--read-pairs"},
-            "Read weight system pairs from given file",
-            1,
-        },
-        {
-            "write-pairs",
-            {"--write-pairs"},
-            "Write weight system pairs to given file",
-            1,
-        },
-        {
-            "skip-redundancy-check",
-            {"--skip-redundancy-check"},
-            "Skip redundancy check on the number of recursions given "
-            "(default 2)",
-            1,
-        },
-        {
-            "allow-weight-one",
-            {"--allow-weight-one"},
-            "Allow weight systems containing a weight of 1",
-            0,
-        },
-        {
-            "allow-weight-one-half",
-            {"--allow-weight-one-half"},
-            "Allow weight systems containing a weight of 1/2",
-            0,
-        },
-        {
-            "allow-weights-sum-one",
-            {"--allow-weights-sum-one"},
-            "Allow weight systems containing two weights with a sum of 1",
-            0,
-        },
-        {
-            "print-stats",
-            {"--print-stats"},
-            "Print statistics during the last recursion",
-            0,
-        },
-        {
-            "print-candidates",
-            {"--print-candidates"},
-            "Print weight system candidates",
-            0,
-        },
-        {
-            "ignore-symmetries",
-            {"--ignore-symmetries"},
-            "Ignore symmetries (for debugging)",
-            0,
-        },
-        {
-            "no-lex-order",
-            {"--no-lex-order"},
-            "Disable lexicographic order (for debugging)",
-            0,
-        },
-    }};
+    std::ostringstream description;
+    description << "Classify weight systems with d=" << dim
+                << ", r=" << r_numerator << "/" << r_denominator
+                << " using ring type '" << typeid(Ring).name() << "'";
 
-    g_settings.redundancy_check_skip_recursions = 2;
+    TCLAP::CmdLine cmd(description.str(), ' ', GIT_REVISION);
 
-    argagg::parser_results args{};
-    try {
-        args = argparser.parse(argc, argv);
+    TCLAP::ValueArg<string> read_pairs_arg("", "read-pairs",
+                                           "Read weight system pairs from file",
+                                           false, "", "file", cmd);
+    TCLAP::ValueArg<string> write_pairs_arg("", "write-pairs",
+                                            "Write weight system pairs to file",
+                                            false, "", "file", cmd);
+    TCLAP::ValueArg<unsigned> skip_redundancy_check_arg(
+        "", "skip-redundancy-check",
+        "Skip redundancy check for the number of recursions (default 2)", false, 2,
+        "number", cmd);
+    TCLAP::SwitchArg allow_weight_one_arg(
+        "", "allow-weight-one", "Allow weight systems containing a weight of 1",
+        cmd);
+    TCLAP::SwitchArg allow_weight_one_half_arg(
+        "", "allow-weight-one-half",
+        "Allow weight systems containing a weight of 1/2", cmd);
+    TCLAP::SwitchArg allow_weights_sum_one_arg(
+        "", "allow-weights-sum-one",
+        "Allow weight systems containing two weights with a sum of 1", cmd);
+    TCLAP::SwitchArg print_stats_arg(
+        "", "print-stats", "Print statistics during the last recursion", cmd);
+    TCLAP::SwitchArg print_candidates_arg(
+        "", "print-candidates", "Print weight system candidates", cmd);
+    TCLAP::SwitchArg ignore_symmetries_arg(
+        "", "ignore-symmetries", "Ignore symmetries (for debugging)", cmd);
+    TCLAP::SwitchArg no_lex_order_arg(
+        "", "no-lex-order", "Disable lexicographic order (for debugging)", cmd);
 
-        if (args["skip-redundancy-check"])
-            g_settings.redundancy_check_skip_recursions =
-                args["skip-redundancy-check"];
-        g_settings.allow_weight_one = args["allow-weight-one"];
-        g_settings.allow_weight_one_half = args["allow-weight-one-half"];
-        g_settings.allow_weights_sum_one = args["allow-weights-sum-one"];
-        g_settings.print_last_recursion_statistics = args["print-stats"];
-        g_settings.print_candidates = args["print-candidates"];
-        g_settings.debug_ignore_symmetries = args["ignore-symmetries"];
-        g_settings.debug_disable_lex_order = args["no-lex-order"];
-    } catch (const std::exception &e) {
-        cerr << e.what() << endl;
-        return EXIT_FAILURE;
-    }
+    cmd.parse(argc, argv);
 
-    if (args["help"]) {
-        cerr << "Classify weight systems with d=" << dim
-             << ", r=" << r_numerator << "/" << r_denominator << endl
-             << "Revision: " << GIT_REVISION << endl
-             << "Ring typeid name: " << typeid(Ring).name() << endl
-             << argparser;
-        return EXIT_SUCCESS;
-    }
-
-    auto read_pairs_path = args["read-pairs"].as<string>("");
-    auto write_pairs_path = args["write-pairs"].as<string>("");
+    g_settings.redundancy_check_skip_recursions =
+        skip_redundancy_check_arg.getValue();
+    g_settings.allow_weight_one = allow_weight_one_arg.getValue();
+    g_settings.allow_weight_one_half = allow_weight_one_half_arg.getValue();
+    g_settings.allow_weights_sum_one = allow_weights_sum_one_arg.getValue();
+    g_settings.print_last_recursion_statistics = print_stats_arg.getValue();
+    g_settings.print_candidates = print_candidates_arg.getValue();
+    g_settings.debug_ignore_symmetries = ignore_symmetries_arg.getValue();
+    g_settings.debug_disable_lex_order = no_lex_order_arg.getValue();
 
     optional<File> pairs_in{};
-    if (!read_pairs_path.empty()) {
-        pairs_in = File::open(read_pairs_path);
+    if (read_pairs_arg.isSet()) {
+        pairs_in = File::open(read_pairs_arg.getValue());
         if (!pairs_in) {
-            cerr << "Could not open file '" << read_pairs_path << "'\n";
+            cerr << "Could not open file '" << read_pairs_arg.getValue()
+                 << "'\n";
             return EXIT_FAILURE;
         }
     }
 
     optional<File> pairs_out{};
-    if (!write_pairs_path.empty()) {
-        pairs_out = File::create_new(write_pairs_path);
+    if (write_pairs_arg.isSet()) {
+        pairs_out = File::create_new(write_pairs_arg.getValue());
         if (!pairs_out) {
-            cerr << "Could not create new file '" << write_pairs_path << "'\n";
+            cerr << "Could not create new file '" << write_pairs_arg.getValue()
+                 << "'\n";
             return EXIT_FAILURE;
         }
     }
