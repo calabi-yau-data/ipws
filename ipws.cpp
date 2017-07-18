@@ -73,9 +73,6 @@ void rec(const WeightSystemBuilder &builder,
 
     switch (n) {
     case dim - 2:
-        // The following happens when redundancies are not checked
-        assert(builder.generator_count() == 2);
-
         /* if (defer_last_recursion) */ {
             final_pairs.insert(canonicalize(builder.to_pair()));
             ++statistics.final_pairs_found;
