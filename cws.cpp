@@ -380,8 +380,8 @@ int main(int argc, char *argv[])
                                             false, "", "file", cmd);
     TCLAP::ValueArg<unsigned> skip_redundancy_check_arg(
         "", "skip-redundancy-check",
-        "Skip redundancy check for the number of recursions (default 2)", false, 2,
-        "number", cmd);
+        "Skip redundancy check for the number of recursions (default 2)", false,
+        2, "number", cmd);
     TCLAP::SwitchArg allow_weight_one_arg(
         "", "allow-weight-one", "Allow weight systems containing a weight of 1",
         cmd);

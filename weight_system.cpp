@@ -138,9 +138,8 @@ static PolyPointList *new_point_list(const WeightSystem &ws)
     add_point(Point{}, P);
 
     auto gen = WeightSystemPointsOn(ws);
-    while (gen.find_next()) {
+    while (gen.find_next())
         add_point(gen.get(), P);
-    }
 
     return P;
 }
