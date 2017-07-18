@@ -2,6 +2,10 @@ cmake_minimum_required (VERSION 3.1)
 project (cws)
 
 option(LINK_STATICALLY "Link statically" OFF)
+set(LATTICE_RING "int" CACHE STRING "Lattice ring")
+set(DIMENSION 4 CACHE STRING "Dimension")
+set(R_NUMERATOR 1 CACHE STRING "Index numerator")
+set(R_DENOMINATOR 1 CACHE STRING "Index denominator")
 
 # Signed integer overflow check for the types 'int' and 'long'.
 set(FLAGS "${FLAGS} -fsanitize=signed-integer-overflow -fsanitize-undefined-trap-on-error")
@@ -33,6 +37,12 @@ endif(${GIT_CHANGES} STREQUAL CLEAN)
 
 add_library(wsip wsip.c palp/Polynf.c palp/Coord.c palp/Rat.c palp/Vertex.c)
 target_compile_options(wsip PRIVATE -Wno-conversion -Wno-misleading-indentation -Wno-unused-but-set-variable -Wno-unused-parameter)
+
+configure_file(
+  "${PROJECT_SOURCE_DIR}/config.h.in"
+  "${PROJECT_BINARY_DIR}/config.h"
+  )
+include_directories("${PROJECT_BINARY_DIR}")
 
 add_executable(cws cws.cpp file.cpp history.cpp point.cpp settings.cpp weight_system.cpp weight_system_builder.cpp weight_system_pair.cpp)
 target_include_directories(cws PRIVATE "${PROJECT_SOURCE_DIR}/include")

@@ -1,0 +1,10 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+using Ring = @LATTICE_RING@;
+
+constexpr unsigned dim = @DIMENSION@;
+constexpr Ring r_numerator = @R_NUMERATOR@;
+constexpr Ring r_denominator = @R_DENOMINATOR@;
+
+#endif
