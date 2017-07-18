@@ -30,8 +30,7 @@ private:
         WeightSystem eq;
         std::bitset<dim> incidences;
     };
-    std::vector<Generator>
-        generators; // TODO: can there ever be more generators than dimensions?
+    std::vector<Generator> generators;
     unsigned iteration;
 
     struct NoInit {
