@@ -205,7 +205,7 @@ bool good_weight_system(const WeightSystem &ws)
 void read(File &f, WeightSystem &ws)
 {
     for (unsigned i = 0; i < dim; ++i) {
-        uint32_t v;
+        int32_t v;
         f.read(v);
         ws.weights[i] = v;
     }
@@ -215,7 +215,7 @@ void write(File &f, const WeightSystem &ws)
 {
     for (unsigned i = 0; i < dim; ++i) {
         auto v = ws.weights[i];
-        assert(v >= 0 && v <= UINT32_MAX);
-        f.write(static_cast<uint32_t>(v));
+        assert(v >= 0 && v <= INT32_MAX);
+        f.write(static_cast<int32_t>(v));
     }
 }

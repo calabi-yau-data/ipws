@@ -27,10 +27,14 @@ public:
     void read(void *data, size_t size);
     void read(uint16_t &data);
     void read(uint32_t &data);
+    void read(int16_t &data);
+    void read(int32_t &data);
 
     void write(const void *data, size_t size);
     void write(uint16_t data);
     void write(uint32_t data);
+    void write(int16_t data);
+    void write(int32_t data);
 
     template <class T>
     void read(gsl::span<T> data)

@@ -73,6 +73,16 @@ void File::read(uint32_t &data)
     data = ntohl(data);
 }
 
+void File::read(int16_t &data)
+{
+    read(*reinterpret_cast<uint16_t *>(&data));
+}
+
+void File::read(int32_t &data)
+{
+    read(*reinterpret_cast<uint32_t *>(&data));
+}
+
 void File::write(const void *data, size_t size)
 {
     ssize_t ret = ::write(fd, data, size);
@@ -90,6 +100,16 @@ void File::write(uint32_t data)
 {
     data = htonl(data);
     write(&data, sizeof data);
+}
+
+void File::write(int16_t data)
+{
+    write(static_cast<uint16_t>(data));
+}
+
+void File::write(int32_t data)
+{
+    write(static_cast<uint32_t>(data));
 }
 
 File::File(int fd) : fd{fd}
