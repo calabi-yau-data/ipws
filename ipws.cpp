@@ -68,7 +68,8 @@ void rec(const WeightSystemBuilder &builder,
         last_point_redundant2(builder, n, history))
         return;
 
-    add_maybe(weight_systems, ws, statistics);
+    if (g_settings.generate_intermediate_weight_systems)
+        add_maybe(weight_systems, ws, statistics);
 
     switch (n) {
     case dim - 2:
@@ -260,9 +261,10 @@ int main(int argc, char *argv[])
     TCLAP::ValueArg<string> write_pairs_arg("", "write-pairs",
                                             "Write weight system pairs to file",
                                             false, "", "file", cmd);
-    TCLAP::ValueArg<string> write_candidates_arg(
-        "", "write-candidates", "Write weight system candidates to file", false,
-        "", "file", cmd);
+    TCLAP::ValueArg<string> write_intermediate_weight_systems_arg(
+        "", "write-intermediate",
+        "Write intermediate weight system candidates to file", false, "",
+        "file", cmd);
     TCLAP::ValueArg<unsigned> skip_redundancy_check_arg(
         "", "skip-redundancy-check",
         "Skip redundancy check for the number of recursions (default 2)", false,
@@ -318,11 +320,14 @@ int main(int argc, char *argv[])
     }
 
     optional<File> candidates_out{};
-    if (write_candidates_arg.isSet()) {
-        candidates_out = File::create_new(write_candidates_arg.getValue());
+    g_settings.generate_intermediate_weight_systems =
+        write_intermediate_weight_systems_arg.isSet();
+    if (g_settings.generate_intermediate_weight_systems) {
+        candidates_out =
+            File::create_new(write_intermediate_weight_systems_arg.getValue());
         if (!candidates_out) {
             cerr << "Could not create new file '"
-                 << write_candidates_arg.getValue() << "'\n";
+                 << write_intermediate_weight_systems_arg.getValue() << "'\n";
             return EXIT_FAILURE;
         }
     }
