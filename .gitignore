@@ -1,9 +1,2 @@
-*.o
-*.x
-/Makefile
-/CMakeFiles/
-/CMakeCache.txt
-/cmake_install.cmake
-/*.a
-*.class
-*.so
+/config.h
+/build/
