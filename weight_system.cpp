@@ -201,3 +201,21 @@ bool good_weight_system(const WeightSystem &ws)
 
     return true;
 }
+
+void read(File &f, WeightSystem &ws)
+{
+    for (unsigned i = 0; i < dim; ++i) {
+        uint16_t v;
+        f.read(v);
+        ws.weights[i] = v;
+    }
+}
+
+void write(File &f, const WeightSystem &ws)
+{
+    for (unsigned i = 0; i < dim; ++i) {
+        auto v = ws.weights[i];
+        assert(v >= 0 && v <= UINT16_MAX);
+        f.write(static_cast<uint16_t>(v));
+    }
+}

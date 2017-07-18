@@ -174,15 +174,9 @@ bool classify(optional<File> &pairs_in, optional<File> &pairs_out)
                 // unsigned ws_size = 2 * dim * (sizeof uint16_t);
                 // pairs_in.seek((rand() % (size / ws_size)) * ws_size);
                 WeightSystemPair pair;
-                array<uint16_t, dim> data;
 
-                pairs_in->read(span<uint16_t>(data));
-                for (unsigned i = 0; i < dim; ++i)
-                    pair.first.weights[i] = data[i];
-
-                pairs_in->read(span<uint16_t>(data));
-                for (unsigned i = 0; i < dim; ++i)
-                    pair.second.weights[i] = data[i];
+                read(*pairs_in, pair.first);
+                read(*pairs_in, pair.second);
 
                 process_pair(weight_systems, pair, statistics, stopwatch);
             }
@@ -202,21 +196,8 @@ bool classify(optional<File> &pairs_in, optional<File> &pairs_out)
             pairs_out->write(static_cast<uint32_t>(final_pairs.size()));
 
             for (auto &pair : final_pairs) {
-                array<uint16_t, dim> data;
-
-                for (unsigned i = 0; i < dim; ++i) {
-                    auto v = pair.first.weights[i];
-                    assert(v >= 0 && v <= UINT16_MAX);
-                    data[i] = static_cast<uint16_t>(v);
-                }
-                pairs_out->write(span<uint16_t>(data));
-
-                for (unsigned i = 0; i < dim; ++i) {
-                    auto v = pair.second.weights[i];
-                    assert(v >= 0 && v <= UINT16_MAX);
-                    data[i] = static_cast<uint16_t>(v);
-                }
-                pairs_out->write(span<uint16_t>(data));
+                write(*pairs_out, pair.first);
+                write(*pairs_out, pair.second);
             }
         } catch (File::Error) {
             cerr << "Write error\n";
