@@ -22,7 +22,6 @@ using std::cout;
 using std::endl;
 using std::experimental::optional;
 using std::unordered_set;
-using std::set;
 using std::string;
 
 struct Statistics {
@@ -30,8 +29,6 @@ struct Statistics {
     unsigned final_pairs_found;
     unsigned ip_weight_systems;
 };
-
-using WeightSystemCollection = unordered_set<WeightSystem>;
 
 void print_with_denominator(const WeightSystem &ws)
 {
@@ -42,7 +39,7 @@ void print_with_denominator(const WeightSystem &ws)
     cout << endl;
 }
 
-bool add_maybe(WeightSystemCollection &weight_systems, WeightSystem ws,
+bool add_maybe(unordered_set<WeightSystem> &weight_systems, WeightSystem ws,
                Statistics &statistics)
 {
     if (!good_weight_system(ws))
@@ -56,9 +53,9 @@ bool add_maybe(WeightSystemCollection &weight_systems, WeightSystem ws,
 }
 
 void rec(const WeightSystemBuilder &builder,
-         WeightSystemCollection &weight_systems,
-         set<WeightSystemPair> &final_pairs, unsigned n, History &history,
-         Statistics &statistics, const Stopwatch &stopwatch)
+         unordered_set<WeightSystem> &weight_systems,
+         unordered_set<WeightSystemPair> &final_pairs, unsigned n,
+         History &history, Statistics &statistics, const Stopwatch &stopwatch)
 {
     WeightSystem ws{};
     if (!builder.average_if_nonzero(ws))
@@ -116,7 +113,7 @@ void rec(const WeightSystemBuilder &builder,
     }
 }
 
-void process_pair(WeightSystemCollection &weight_systems,
+void process_pair(unordered_set<WeightSystem> &weight_systems,
                   const WeightSystemPair &pair, Statistics &statistics,
                   const Stopwatch &stopwatch)
 {
@@ -163,8 +160,8 @@ bool classify(optional<File> &pairs_in, optional<File> &pairs_out)
 {
     Stopwatch stopwatch{};
     History history{};
-    WeightSystemCollection weight_systems{};
-    set<WeightSystemPair> final_pairs{}; // TODO: unordered_set?
+    unordered_set<WeightSystem> weight_systems{};
+    unordered_set<WeightSystemPair> final_pairs{};
     Statistics statistics{};
 
     if (pairs_in) {

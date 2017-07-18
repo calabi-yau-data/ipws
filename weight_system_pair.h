@@ -9,6 +9,19 @@
 
 using WeightSystemPair = std::pair<WeightSystem, WeightSystem>;
 
+namespace std {
+template <>
+struct hash<WeightSystemPair> {
+    size_t operator()(WeightSystemPair const &pair) const
+    {
+        size_t ret = 934761;
+        ret = ret * 18739 + std::hash<WeightSystem>{}(pair.first);
+        ret = ret * 18739 + std::hash<WeightSystem>{}(pair.second);
+        return ret;
+    }
+};
+}
+
 const WeightSystemPair canonicalize(const WeightSystemPair &pair);
 const WeightSystem average(const WeightSystemPair &pair);
 bool restrict(const WeightSystemPair &pair, const Point &x, WeightSystem &ws);
