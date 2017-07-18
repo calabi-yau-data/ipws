@@ -9,8 +9,8 @@
 
 using WeightSystemPair = std::pair<WeightSystem, WeightSystem>;
 
-WeightSystemPair canonicalize(const WeightSystemPair &pair);
-WeightSystem average(const WeightSystemPair &pair);
+const WeightSystemPair canonicalize(const WeightSystemPair &pair);
+const WeightSystem average(const WeightSystemPair &pair);
 bool restrict(const WeightSystemPair &pair, const Point &x, WeightSystem &ws);
 
 // Returns a generating set of coordinate permutations that are symmetries of

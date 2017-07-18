@@ -93,7 +93,7 @@ unsigned WeightSystemBuilder::generator_count() const
 //     return ret;
 // }
 
-WeightSystemBuilder WeightSystemBuilder::restrict(const Point &x) const
+const WeightSystemBuilder WeightSystemBuilder::restrict(const Point &x) const
 {
     WeightSystemBuilder ret{NoInit{}};
     ret.iteration = iteration + 1;
@@ -183,7 +183,7 @@ bool WeightSystemBuilder::allows(const Point &x) const
     return true;
 }
 
-WeightSystemPair WeightSystemBuilder::to_pair() const
+const WeightSystemPair WeightSystemBuilder::to_pair() const
 {
     assert(generators.size() == 2);
 

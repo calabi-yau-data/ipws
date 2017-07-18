@@ -6,7 +6,7 @@ using std::array;
 using std::pair;
 using std::vector;
 
-WeightSystemPair canonicalize(const WeightSystemPair &pair)
+const WeightSystemPair canonicalize(const WeightSystemPair &pair)
 {
     WeightSystemPair ret{};
 
@@ -33,7 +33,7 @@ WeightSystemPair canonicalize(const WeightSystemPair &pair)
     return ret;
 }
 
-WeightSystem average(const WeightSystemPair &pair)
+const WeightSystem average(const WeightSystemPair &pair)
 {
     Ring norm1 = norm(pair.first);
     Ring norm2 = norm(pair.second);

@@ -60,8 +60,8 @@ Ring norm(const WeightSystem &ws);
 // 1) q.distance_from(x) == 0
 // 2) q1.distance_from(y) == 0 && q2.distance_from(y) == 0 implies
 //    q.distance_from(y) == 0 for all y
-WeightSystem intersect(const WeightSystem &q1, const WeightSystem &q2,
-                       const Point &x);
+const WeightSystem intersect(const WeightSystem &q1, const WeightSystem &q2,
+                             const Point &x);
 
 bool has_ip(const WeightSystem &ws);
 

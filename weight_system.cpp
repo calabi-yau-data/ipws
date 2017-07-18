@@ -42,8 +42,8 @@ Ring norm(const WeightSystem &ws)
     return std::accumulate(ws.weights.begin(), ws.weights.end(), 0);
 }
 
-WeightSystem intersect(const WeightSystem &q1, const WeightSystem &q2,
-                       const Point &x)
+const WeightSystem intersect(const WeightSystem &q1, const WeightSystem &q2,
+                             const Point &x)
 {
     Ring e1 = distance(q1, x);
     Ring e2 = distance(q2, x);

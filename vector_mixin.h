@@ -57,7 +57,7 @@ public:
         return lhs;
     }
 
-    friend T operator-(const T &lhs, const T &rhs)
+    friend const T operator-(const T &lhs, const T &rhs)
     {
         T ret{};
         for (unsigned i = 0; i < D; ++i)
@@ -66,7 +66,7 @@ public:
         return ret;
     }
 
-    friend T operator*(const R &lhs, const T &rhs)
+    friend const T operator*(const R &lhs, const T &rhs)
     {
         T ret{};
         for (unsigned i = 0; i < D; ++i)

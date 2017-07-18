@@ -16,14 +16,14 @@ public:
 
     unsigned generator_count() const;
 
-    WeightSystemBuilder restrict(const Point &x) const;
+    const WeightSystemBuilder restrict(const Point &x) const;
     bool average_if_nonzero(WeightSystem &q) const;
     bool allows(const Point &x) const;
 
     friend std::ostream &operator<<(std::ostream &os,
                                     const WeightSystemBuilder &rhs);
 
-    WeightSystemPair to_pair() const;
+    const WeightSystemPair to_pair() const;
 
 private:
     struct Generator {
