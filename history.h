@@ -10,9 +10,9 @@ struct History {
     template <class T, size_t D>
     using array = std::array<T, D>;
 
-    array<Point, dim - 1> points;
-    array<WeightSystem, dim> weight_systems;
-    array<array<Ring, dim - 1>, dim - 1> point_weight_system_distances;
+    array<Point, dim - 1> points{};
+    array<WeightSystem, dim> weight_systems{};
+    array<array<Ring, dim - 1>, dim - 1> point_weight_system_distances{};
 };
 
 bool last_point_redundant(int n, const History &history);
