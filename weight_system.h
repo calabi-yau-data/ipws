@@ -3,9 +3,9 @@
 
 #include <array>
 #include "config.h"
+#include "file.h"
 #include "point.h"
 #include "vector_mixin.h"
-#include "file.h"
 
 struct WeightSystem : VectorMixin<WeightSystem, std::array<Ring, dim>, dim> {
     using Container = std::array<Ring, dim>;
