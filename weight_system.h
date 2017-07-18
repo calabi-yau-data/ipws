@@ -54,6 +54,7 @@ Ring distance(const WeightSystem &ws, const Point &x);
 void cancel(WeightSystem &ws);
 void sort(WeightSystem &ws);
 Ring norm(const WeightSystem &ws);
+bool good_weight_system(const WeightSystem &ws);
 
 // Returns the weight system q that is a linear combination of q1 and q2
 // such that its distance to x is zero. Equivalently:

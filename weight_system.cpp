@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <experimental/numeric>
 #include <gsl/gsl>
+#include "settings.h"
 
 extern "C" {
 #include "palp/Global.h"
@@ -175,4 +176,28 @@ bool has_ip(const WeightSystem &ws)
     bool ret = P->np != 1;
     free(P);
     return ret;
+}
+
+bool good_weight_system(const WeightSystem &ws)
+{
+    Ring n = norm(ws);
+
+    for (unsigned i = 0; i < dim; ++i) {
+        if (!g_settings.allow_weight_one_half &&
+            2 * ws.weights[i] * r_numerator == n * r_denominator)
+            return false;
+
+        if (!g_settings.allow_weight_one &&
+            ws.weights[i] * r_numerator == n * r_denominator)
+            return false;
+    }
+
+    if (!g_settings.allow_weights_sum_one)
+        for (unsigned i = 0; i < dim - 1; ++i)
+            for (unsigned j = i + 1; j < dim; ++j)
+                if ((ws.weights[i] + ws.weights[j]) * r_numerator ==
+                    n * r_denominator)
+                    return false;
+
+    return true;
 }
