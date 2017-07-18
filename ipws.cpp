@@ -23,6 +23,7 @@ using std::endl;
 using std::experimental::optional;
 using std::unordered_set;
 using std::string;
+using std::vector;
 
 struct Statistics {
     unsigned weight_systems_found;
@@ -194,10 +195,17 @@ bool classify(optional<File> &pairs_in, optional<File> &pairs_out,
          << ", unique: " << final_pairs.size() << endl;
 
     if (candidates_out) {
+        cerr << stopwatch << " - sorting candidates\n";
+
+        vector<WeightSystem> ws_list{};
+        ws_list.reserve(weight_systems.size());
+        std::copy(weight_systems.begin(), weight_systems.end(),
+                  std::back_inserter(ws_list));
+
         cerr << stopwatch << " - writing candidates\n";
 
         candidates_out->write(static_cast<uint32_t>(weight_systems.size()));
-        for (const auto &ws : weight_systems)
+        for (const auto &ws : ws_list)
             write(*candidates_out, ws);
 
         cerr << stopwatch << " - writing done\n";
