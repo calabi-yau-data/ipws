@@ -156,7 +156,8 @@ void process_pair(unordered_set<WeightSystem> &weight_systems,
     }
 }
 
-bool classify(optional<File> &pairs_in, optional<File> &pairs_out)
+bool classify(optional<File> &pairs_in, optional<File> &pairs_out,
+              optional<File> &candidates_out)
 {
     Stopwatch stopwatch{};
     History history{};
@@ -182,25 +183,37 @@ bool classify(optional<File> &pairs_in, optional<File> &pairs_out)
     } else {
         rec(WeightSystemBuilder{}, weight_systems, final_pairs, 0, history,
             statistics, stopwatch);
+
+        cerr << stopwatch
+             << " - weight systems: " << statistics.weight_systems_found
+             << ", unique: " << weight_systems.size() << endl;
+    }
+
+    cerr << stopwatch
+         << " - weight system pairs: " << statistics.final_pairs_found
+         << ", unique: " << final_pairs.size() << endl;
+
+    if (candidates_out) {
+        cerr << stopwatch << " - writing candidates\n";
+
+        candidates_out->write(static_cast<uint32_t>(weight_systems.size()));
+        for (const auto &ws : weight_systems)
+            write(*candidates_out, ws);
+
+        cerr << stopwatch << " - writing done\n";
     }
 
     if (pairs_out) {
-        cerr << stopwatch << " - writing\n";
+        cerr << stopwatch << " - writing pairs\n";
 
         pairs_out->write(static_cast<uint32_t>(final_pairs.size()));
-
         for (auto &pair : final_pairs) {
             write(*pairs_out, pair.first);
             write(*pairs_out, pair.second);
         }
-    }
 
-    cerr << stopwatch
-         << " - weight systems: " << statistics.weight_systems_found
-         << ", unique: " << weight_systems.size() << endl;
-    cerr << stopwatch
-         << " - weight system pairs: " << statistics.final_pairs_found
-         << ", unique: " << final_pairs.size() << endl;
+        cerr << stopwatch << " - writing done\n";
+    }
 
     for (const auto &pair : final_pairs)
         process_pair(weight_systems, pair, statistics, stopwatch);
@@ -239,6 +252,9 @@ int main(int argc, char *argv[])
     TCLAP::ValueArg<string> write_pairs_arg("", "write-pairs",
                                             "Write weight system pairs to file",
                                             false, "", "file", cmd);
+    TCLAP::ValueArg<string> write_candidates_arg(
+        "", "write-candidates", "Write weight system candidates to file", false,
+        "", "file", cmd);
     TCLAP::ValueArg<unsigned> skip_redundancy_check_arg(
         "", "skip-redundancy-check",
         "Skip redundancy check for the number of recursions (default 2)", false,
@@ -289,6 +305,16 @@ int main(int argc, char *argv[])
         if (!pairs_out) {
             cerr << "Could not create new file '" << write_pairs_arg.getValue()
                  << "'\n";
+            return EXIT_FAILURE;
+        }
+    }
+
+    optional<File> candidates_out{};
+    if (write_candidates_arg.isSet()) {
+        candidates_out = File::create_new(write_candidates_arg.getValue());
+        if (!candidates_out) {
+            cerr << "Could not create new file '"
+                 << write_candidates_arg.getValue() << "'\n";
             return EXIT_FAILURE;
         }
     }
