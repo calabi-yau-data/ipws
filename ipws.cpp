@@ -165,24 +165,19 @@ bool classify(optional<File> &pairs_in, optional<File> &pairs_out)
     Statistics statistics{};
 
     if (pairs_in) {
-        try {
-            uint32_t size;
-            pairs_in->read(size);
+        uint32_t size;
+        pairs_in->read(size);
 
-            srand(1234);
-            for (unsigned i = 0; i < size; ++i) {
-                // unsigned ws_size = 2 * dim * (sizeof uint16_t);
-                // pairs_in.seek((rand() % (size / ws_size)) * ws_size);
-                WeightSystemPair pair;
+        srand(1234);
+        for (unsigned i = 0; i < size; ++i) {
+            // unsigned ws_size = 2 * dim * (sizeof uint16_t);
+            // pairs_in.seek((rand() % (size / ws_size)) * ws_size);
+            WeightSystemPair pair;
 
-                read(*pairs_in, pair.first);
-                read(*pairs_in, pair.second);
+            read(*pairs_in, pair.first);
+            read(*pairs_in, pair.second);
 
-                process_pair(weight_systems, pair, statistics, stopwatch);
-            }
-        } catch (File::Error) {
-            cerr << "Read error\n";
-            return false;
+            process_pair(weight_systems, pair, statistics, stopwatch);
         }
     } else {
         rec(WeightSystemBuilder{}, weight_systems, final_pairs, 0, history,
@@ -190,18 +185,13 @@ bool classify(optional<File> &pairs_in, optional<File> &pairs_out)
     }
 
     if (pairs_out) {
-        try {
-            cerr << stopwatch << " - writing\n";
+        cerr << stopwatch << " - writing\n";
 
-            pairs_out->write(static_cast<uint32_t>(final_pairs.size()));
+        pairs_out->write(static_cast<uint32_t>(final_pairs.size()));
 
-            for (auto &pair : final_pairs) {
-                write(*pairs_out, pair.first);
-                write(*pairs_out, pair.second);
-            }
-        } catch (File::Error) {
-            cerr << "Write error\n";
-            return false;
+        for (auto &pair : final_pairs) {
+            write(*pairs_out, pair.first);
+            write(*pairs_out, pair.second);
         }
     }
 
@@ -303,5 +293,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    return classify(pairs_in, pairs_out) ? EXIT_SUCCESS : EXIT_FAILURE;
+    try {
+        return classify(pairs_in, pairs_out, candidates_out) ? EXIT_SUCCESS
+                                                             : EXIT_FAILURE;
+    } catch (File::Error) {
+        cerr << "IO error\n";
+        return EXIT_FAILURE;
+    }
 }
