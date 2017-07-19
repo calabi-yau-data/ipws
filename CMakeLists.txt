@@ -1,11 +1,15 @@
 cmake_minimum_required (VERSION 3.1)
 project (ipws)
 
-option(LINK_STATICALLY "Link statically" OFF)
 set(LATTICE_RING "int" CACHE STRING "Lattice ring")
 set(DIMENSION 4 CACHE STRING "Dimension")
 set(R_NUMERATOR 1 CACHE STRING "Index numerator")
 set(R_DENOMINATOR 1 CACHE STRING "Index denominator")
+
+option(LINK_STATICALLY "Link statically" OFF)
+if(LINK_STATICALLY)
+  link_libraries(-static)
+endif()
 
 # Signed integer overflow check for the types 'int' and 'long'.
 set(FLAGS "${FLAGS} -fsanitize=signed-integer-overflow -fsanitize-undefined-trap-on-error")
@@ -35,12 +39,7 @@ else()
   add_definitions("-DGIT_REVISION=\"${GIT_HASH}(dirty)\"")
 endif()
 
-set(Boost_USE_MULTITHREADED OFF)
-find_package(Boost 1.46 REQUIRED COMPONENTS filesystem)
-add_definitions(-DBOOST_FILESYSTEM_NO_DEPRECATED)
-
-add_library(ip_check ip_check.c palp/Polynf.c palp/Coord.c palp/Rat.c palp/Vertex.c)
-target_compile_options(ip_check PRIVATE -Wno-conversion -Wno-misleading-indentation -Wno-unused-but-set-variable -Wno-unused-parameter)
+include_directories("${PROJECT_SOURCE_DIR}/include")
 
 configure_file(
   "${PROJECT_SOURCE_DIR}/config.h.in"
@@ -48,12 +47,19 @@ configure_file(
   )
 include_directories("${PROJECT_BINARY_DIR}")
 
-add_executable(ipws ipws.cpp file.cpp history.cpp point.cpp settings.cpp weight_system.cpp weight_system_builder.cpp weight_system_pair.cpp)
-target_include_directories(ipws PRIVATE "${PROJECT_SOURCE_DIR}/include")
-target_link_libraries(ipws ip_check)
-target_include_directories(ipws PRIVATE ${Boost_INCLUDE_DIRS})
-target_link_libraries(ipws ${Boost_LIBRARIES})
+set(Boost_USE_MULTITHREADED OFF)
+find_package(Boost 1.46 REQUIRED COMPONENTS filesystem)
+add_definitions(-DBOOST_FILESYSTEM_NO_DEPRECATED)
+include_directories(${Boost_INCLUDE_DIRS})
 
-if(LINK_STATICALLY)
-  target_link_libraries(ipws -static) # requires: glibc-static libstdc++-static
-endif()
+add_library(ip_check ip_check.c palp/Polynf.c palp/Coord.c palp/Rat.c
+  palp/Vertex.c)
+target_compile_options(ip_check PRIVATE -Wno-conversion -Wno-unused-parameter
+  -Wno-misleading-indentation -Wno-unused-but-set-variable)
+
+add_library(common file.cpp history.cpp point.cpp settings.cpp weight_system.cpp
+  weight_system_builder.cpp weight_system_pair.cpp)
+target_link_libraries(common ip_check)
+
+add_executable(ipws ipws.cpp)
+target_link_libraries(ipws common ${Boost_LIBRARIES})
