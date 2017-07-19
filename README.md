@@ -6,9 +6,9 @@ Building
 
 Requirements:
 
-- CMake >= 3.1
+- CMake
 - C++14 compiler
-- boost
+- boost library
 
 The dimension `d` and the index `r` of the weight systems are determined at compile time.
 For an ordinary release build with `d=4` and `r=1/2` run:
