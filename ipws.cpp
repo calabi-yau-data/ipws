@@ -1,4 +1,5 @@
 #include <tclap/CmdLine.h>
+#include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <iostream>
 #include <set>
@@ -25,6 +26,8 @@ using std::endl;
 using std::unordered_set;
 using std::string;
 using std::vector;
+
+namespace fs = boost::filesystem;
 
 struct Statistics {
     unsigned weight_systems_found;
@@ -159,7 +162,7 @@ void find_weight_systems_from_pair(unordered_set<WeightSystem> &weight_systems,
 
 void read_pairs(unordered_set<WeightSystem> *weight_systems,
                 Statistics statistics, Stopwatch &stopwatch, File &pairs_in,
-                const optional<string> &write_weight_systems_from_pairs_dir)
+                const optional<fs::path> &write_weight_systems_from_pairs_dir)
 {
     uint32_t size;
     pairs_in.read(size);
@@ -190,7 +193,7 @@ void read_pairs(unordered_set<WeightSystem> *weight_systems,
 
 void classify(optional<File> &pairs_in, optional<File> &pairs_out,
               optional<File> &intermediate_ws_out,
-              const optional<string> &write_weight_systems_from_pairs_dir)
+              const optional<fs::path> &write_weight_systems_from_pairs_dir)
 {
     Stopwatch stopwatch{};
     History history{};
@@ -361,26 +364,27 @@ int main(int argc, char *argv[])
 
     optional<File> pairs_out{};
     if (write_pairs_arg.isSet()) {
-        pairs_out = File::create_new(write_pairs_arg.getValue());
+        fs::path path = write_pairs_arg.getValue();
+
+        pairs_out = File::create_new(path);
         if (!pairs_out) {
-            cerr << "Could not create new file '" << write_pairs_arg.getValue()
-                 << "'\n";
+            cerr << "Could not create new file " << path << endl;
             return EXIT_FAILURE;
         }
     }
 
     optional<File> intermediate_ws_out{};
     if (write_intermediate_weight_systems_arg.isSet()) {
-        intermediate_ws_out =
-            File::create_new(write_intermediate_weight_systems_arg.getValue());
+        fs::path path = write_intermediate_weight_systems_arg.getValue();
+
+        intermediate_ws_out = File::create_new(path);
         if (!intermediate_ws_out) {
-            cerr << "Could not create new file '"
-                 << write_intermediate_weight_systems_arg.getValue() << "'\n";
+            cerr << "Could not create new file " << path << endl;
             return EXIT_FAILURE;
         }
     }
 
-    optional<string> write_weight_systems_from_pairs_dir{};
+    optional<fs::path> write_weight_systems_from_pairs_dir{};
     if (write_weight_systems_from_pairs_arg.isSet())
         write_weight_systems_from_pairs_dir =
             write_weight_systems_from_pairs_arg.getValue();

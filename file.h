@@ -1,6 +1,7 @@
 #ifndef FILE_H
 #define FILE_H
 
+#include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <gsl/gsl>
 
@@ -19,8 +20,8 @@ public:
     File &operator=(File rhs);
     friend void swap(File &a, File &b);
 
-    static optional<File> open(const std::string &path);
-    static optional<File> create_new(const std::string &path);
+    static optional<File> open(const boost::filesystem::path &path);
+    static optional<File> create_new(const boost::filesystem::path &path);
 
     void seek(unsigned pos);
 

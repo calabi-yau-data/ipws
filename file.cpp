@@ -32,18 +32,18 @@ File &File::operator=(File rhs)
     return *this;
 }
 
-optional<File> File::open(const std::string &path)
+optional<File> File::open(const boost::filesystem::path &path)
 {
-    int fd = ::open(path.data(), O_RDONLY);
+    int fd = ::open(path.c_str(), O_RDONLY);
     if (fd == -1)
         return {};
     return File{fd};
 }
 
-optional<File> File::create_new(const std::string &path)
+optional<File> File::create_new(const boost::filesystem::path &path)
 {
     int fd =
-        ::open(path.data(), O_CREAT | O_EXCL | O_NOFOLLOW | O_WRONLY, 0666);
+        ::open(path.c_str(), O_CREAT | O_EXCL | O_NOFOLLOW | O_WRONLY, 0666);
     if (fd == -1)
         return {};
     return File{fd};
