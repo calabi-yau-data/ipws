@@ -198,7 +198,8 @@ void classify(optional<File> &pairs_in, optional<File> &pairs_out,
     Statistics statistics{};
 
     if (pairs_in) {
-        if (g_settings.ip_check || g_settings.count_weight_systems) {
+        if (g_settings.ip_check || g_settings.count_weight_systems ||
+            g_settings.print_candidates) {
             read_pairs(&weight_systems, statistics, stopwatch, *pairs_in,
                        write_weight_systems_from_pairs_dir);
 
@@ -211,7 +212,7 @@ void classify(optional<File> &pairs_in, optional<File> &pairs_out,
         }
     } else {
         if (intermediate_ws_out || g_settings.ip_check ||
-            g_settings.count_weight_systems) {
+            g_settings.count_weight_systems || g_settings.print_candidates) {
             rec(WeightSystemBuilder{}, &weight_systems, final_pairs, 0, history,
                 statistics, stopwatch);
 
@@ -270,13 +271,14 @@ void classify(optional<File> &pairs_in, optional<File> &pairs_out,
         }
     }
 
+    if (g_settings.print_candidates)
+        for (const auto &ws : weight_systems)
+            print_with_denominator(ws);
+
     if (g_settings.ip_check) {
-        for (const auto &ws : weight_systems) {
-            if (g_settings.print_candidates)
-                print_with_denominator(ws);
+        for (const auto &ws : weight_systems)
             if (has_ip(ws))
                 ++statistics.ip_weight_systems;
-        }
 
         cerr << stopwatch
              << " - weight systems: " << statistics.weight_systems_found
@@ -385,7 +387,8 @@ int main(int argc, char *argv[])
     try {
         if (!intermediate_ws_out && !g_settings.ip_check &&
             !g_settings.count_weight_systems && !pairs_out &&
-            !write_weight_systems_from_pairs_dir) {
+            !write_weight_systems_from_pairs_dir &&
+            !g_settings.print_candidates) {
             auto e = TCLAP::ArgException("No action specified");
             cmd.getOutput()->failure(cmd, e);
         }
