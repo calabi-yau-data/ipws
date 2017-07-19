@@ -35,10 +35,7 @@ else()
   add_definitions("-DGIT_REVISION=\"${GIT_HASH}(dirty)\"")
 endif()
 
-if(LINK_STATICALLY)
-  set(Boost_USE_STATIC_LIBS ON)
-  set(Boost_USE_STATIC_RUNTIME ON)
-endif()
+set(Boost_USE_MULTITHREADED OFF)
 find_package(Boost 1.46 REQUIRED COMPONENTS filesystem)
 add_definitions(-DBOOST_FILESYSTEM_NO_DEPRECATED)
 

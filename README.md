@@ -26,7 +26,7 @@ If the standard library or boost is too old on the machine where the binary is s
 Install the required packages (on Fedora):
 
 ```
-dnf install glibc-static libstdc++-static
+dnf install glibc-static libstdc++-static boost-static
 ```
 
 Then run:
