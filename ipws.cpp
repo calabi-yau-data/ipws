@@ -1,5 +1,5 @@
 #include <tclap/CmdLine.h>
-#include <experimental/optional>
+#include <boost/optional.hpp>
 #include <iostream>
 #include <set>
 #include <sstream>
@@ -15,12 +15,13 @@
 #include "weight_system_builder.h"
 #include "weight_system_pair.h"
 
+using boost::optional;
+using boost::none;
 using gsl::span;
 using std::array;
 using std::cerr;
 using std::cout;
 using std::endl;
-using std::experimental::optional;
 using std::unordered_set;
 using std::string;
 using std::vector;
@@ -243,7 +244,7 @@ void classify(optional<File> &pairs_in, optional<File> &pairs_out,
             for (const auto &ws : ws_list)
                 write(*intermediate_ws_out, ws);
 
-            intermediate_ws_out = {};
+            intermediate_ws_out = none;
             cerr << stopwatch << " - writing complete\n";
         }
 
@@ -256,7 +257,7 @@ void classify(optional<File> &pairs_in, optional<File> &pairs_out,
                 write(*pairs_out, pair.second);
             }
 
-            pairs_out = {};
+            pairs_out = none;
             cerr << stopwatch << " - writing complete\n";
         }
 

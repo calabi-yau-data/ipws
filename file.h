@@ -1,13 +1,13 @@
 #ifndef FILE_H
 #define FILE_H
 
-#include <experimental/optional>
+#include <boost/optional.hpp>
 #include <gsl/gsl>
 
 class File {
 public:
     template <class T>
-    using optional = std::experimental::optional<T>;
+    using optional = boost::optional<T>;
 
     class Error {
     };

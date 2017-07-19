@@ -1,7 +1,7 @@
 #ifndef VECTOR_LIKE_H
 #define VECTOR_LIKE_H
 
-#include <experimental/numeric>
+#include <boost/math/common_factor.hpp>
 #include <iostream>
 
 template <class T, class Container, unsigned D>
@@ -17,7 +17,7 @@ public:
         R ret = std::abs(a.vector_container()[0]);
 
         for (size_t i = 1; i < D; ++i)
-            ret = std::experimental::gcd(ret, a.vector_container()[i]);
+            ret = boost::math::gcd(ret, a.vector_container()[i]);
 
         return ret;
     }

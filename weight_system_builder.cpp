@@ -1,6 +1,6 @@
 #include "weight_system_builder.h"
 #include <algorithm>
-#include <experimental/numeric>
+#include <boost/math/common_factor.hpp>
 #include "settings.h"
 #include "stl_utils.h"
 
@@ -152,7 +152,7 @@ bool WeightSystemBuilder::average_if_nonzero(WeightSystem &q) const
 
     Ring lcm = norms[0];
     for (unsigned i = 1; i < size; ++i)
-        lcm = std::experimental::lcm(lcm, norms[i]);
+        lcm = boost::math::lcm(lcm, norms[i]);
 
     for (unsigned j = 0; j < dim; ++j) {
         q.weights[j] = 0;

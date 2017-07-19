@@ -7,10 +7,8 @@ Building
 Requirements:
 
 - CMake >= 3.1
-- C++14 compiler with support for:
-    - std::experimental::optional
-    - std::experimental::gcd
-    - std::experimental::lcm
+- C++14 compiler
+- boost
 
 The dimension `d` and the index `r` of the weight systems are determined at compile time.
 For an ordinary release build with `d=4` and `r=1/2` run:
@@ -24,7 +22,7 @@ make
 
 ### Link Statically
 
-If the standard library is too old on the machine where the binary is supposed to run, it can be statically linked instead.
+If the standard library or boost is too old on the machine where the binary is supposed to run, it can be statically linked instead.
 Install the required packages (on Fedora):
 
 ```

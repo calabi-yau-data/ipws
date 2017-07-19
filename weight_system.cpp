@@ -1,6 +1,6 @@
 #include "weight_system.h"
 #include <algorithm>
-#include <experimental/numeric>
+#include <boost/math/common_factor.hpp>
 #include <gsl/gsl>
 #include "settings.h"
 
@@ -27,7 +27,7 @@ void cancel(WeightSystem &ws)
     Ring gcd = std::abs(ws.weights[0]);
 
     for (unsigned i = 1; i < dim; ++i)
-        gcd = std::experimental::gcd(gcd, ws.weights[i]);
+        gcd = boost::math::gcd(gcd, ws.weights[i]);
 
     if (gcd != 1 && gcd != 0)
         ws /= gcd;
@@ -49,7 +49,7 @@ const WeightSystem intersect(const WeightSystem &q1, const WeightSystem &q2,
     Ring e1 = distance(q1, x);
     Ring e2 = distance(q2, x);
 
-    // Ring gcd = std::experimental::gcd(e1, e2);
+    // Ring gcd = boost::math::gcd(e1, e2);
     // e1 /= gcd;
     // e2 /= gcd;
 
