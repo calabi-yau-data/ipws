@@ -294,12 +294,12 @@ int main(int argc, char *argv[])
 
     TCLAP::CmdLine cmd(description.str(), ' ', GIT_REVISION);
 
-    TCLAP::ValueArg<string> read_pairs_arg("", "read-pairs",
-                                           "Read weight system pairs from file",
-                                           false, "", "file", cmd);
-    TCLAP::ValueArg<string> write_pairs_arg("", "write-pairs",
-                                            "Write weight system pairs to file",
-                                            false, "", "file", cmd);
+    TCLAP::ValueArg<string> read_pairs_arg( //
+        "", "read-pairs", "Read weight system pairs from file", false, "",
+        "file", cmd);
+    TCLAP::ValueArg<string> write_pairs_arg( //
+        "", "write-pairs", "Write weight system pairs to file", false, "",
+        "file", cmd);
     TCLAP::ValueArg<string> write_intermediate_weight_systems_arg(
         "", "write-intermediate", "Write intermediate weight systems to file",
         false, "", "file", cmd);
