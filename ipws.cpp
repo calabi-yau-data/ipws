@@ -116,6 +116,18 @@ void rec(const WeightSystemBuilder &builder,
     }
 }
 
+void write_sorted(File &f, const unordered_set<WeightSystem> &weight_systems)
+{
+    vector<WeightSystem> ws_list{};
+    ws_list.reserve(weight_systems.size());
+    std::copy(weight_systems.begin(), weight_systems.end(),
+              std::back_inserter(ws_list));
+
+    f.write(static_cast<uint32_t>(weight_systems.size()));
+    for (const auto &ws : ws_list)
+        write(f, ws);
+}
+
 void find_weight_systems_from_pair(unordered_set<WeightSystem> &weight_systems,
                                    const WeightSystemPair &pair,
                                    Statistics &statistics,
@@ -233,21 +245,11 @@ void classify(optional<File> &pairs_in, optional<File> &pairs_out,
              << ", unique: " << final_pairs.size() << endl;
 
         if (intermediate_ws_out) {
-            cerr << stopwatch << " - sorting intermediate weight systems\n";
-
-            vector<WeightSystem> ws_list{};
-            ws_list.reserve(weight_systems.size());
-            std::copy(weight_systems.begin(), weight_systems.end(),
-                      std::back_inserter(ws_list));
-
             cerr << stopwatch << " - writing intermediate weight systems\n";
 
-            intermediate_ws_out->write(
-                static_cast<uint32_t>(weight_systems.size()));
-            for (const auto &ws : ws_list)
-                write(*intermediate_ws_out, ws);
-
+            write_sorted(*intermediate_ws_out, weight_systems);
             intermediate_ws_out = none;
+
             cerr << stopwatch << " - writing complete\n";
         }
 
