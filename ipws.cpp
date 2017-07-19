@@ -193,7 +193,27 @@ void read_pairs(unordered_set<WeightSystem> *weight_systems,
                                       stopwatch);
 
         if (write_weight_systems_from_pairs_dir) {
-            // TODO
+            std::ostringstream name{};
+            for (unsigned i = 0; i < dim; ++i)
+            {
+                if (i != 0)
+                    name << " ";
+                name << pair.first.weights[i];
+            }
+            name << "; ";
+            for (unsigned i = 0; i < dim; ++i)
+            {
+                if (i != 0)
+                    name << " ";
+                name << pair.second.weights[i];
+            }
+
+            fs::path path = *write_weight_systems_from_pairs_dir;
+            path /= name.str();
+
+            optional<File> out = File::create_new(path.string());
+            if (out)
+                write_sorted(*out, weight_systems_of_pair);
         }
 
         if (weight_systems)
@@ -387,9 +407,16 @@ int main(int argc, char *argv[])
     }
 
     optional<fs::path> write_weight_systems_from_pairs_dir{};
-    if (write_weight_systems_from_pairs_arg.isSet())
+    if (write_weight_systems_from_pairs_arg.isSet()) {
         write_weight_systems_from_pairs_dir =
             write_weight_systems_from_pairs_arg.getValue();
+
+        if (!fs::is_directory(*write_weight_systems_from_pairs_dir)) {
+            cerr << "No directory " << *write_weight_systems_from_pairs_dir
+                 << endl;
+            return EXIT_FAILURE;
+        }
+    }
 
     try {
         if (!intermediate_ws_out && !g_settings.ip_check &&
