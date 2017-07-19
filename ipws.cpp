@@ -156,7 +156,8 @@ void process_pair(unordered_set<WeightSystem> &weight_systems,
 }
 
 bool classify(optional<File> &pairs_in, optional<File> &pairs_out,
-              optional<File> &intermediate_ws_out)
+              optional<File> &intermediate_ws_out,
+              const optional<string> &write_weight_systems_dir)
 {
     Stopwatch stopwatch{};
     History history{};
@@ -179,67 +180,77 @@ bool classify(optional<File> &pairs_in, optional<File> &pairs_out,
 
             process_pair(weight_systems, pair, statistics, stopwatch);
         }
-    } else {
-        rec(WeightSystemBuilder{}, weight_systems, final_pairs, 0, history,
-            statistics, stopwatch);
 
         cerr << stopwatch
              << " - weight systems: " << statistics.weight_systems_found
              << ", unique: " << weight_systems.size() << endl;
-    }
+    } else {
+        rec(WeightSystemBuilder{}, weight_systems, final_pairs, 0, history,
+            statistics, stopwatch);
 
-    cerr << stopwatch
-         << " - weight system pairs: " << statistics.final_pairs_found
-         << ", unique: " << final_pairs.size() << endl;
+        cerr << stopwatch << " - intermediate weight systems: "
+             << statistics.weight_systems_found
+             << ", unique: " << weight_systems.size() << endl;
 
-    if (intermediate_ws_out) {
-        cerr << stopwatch << " - sorting candidates\n";
+        cerr << stopwatch
+             << " - weight system pairs: " << statistics.final_pairs_found
+             << ", unique: " << final_pairs.size() << endl;
 
-        vector<WeightSystem> ws_list{};
-        ws_list.reserve(weight_systems.size());
-        std::copy(weight_systems.begin(), weight_systems.end(),
-                  std::back_inserter(ws_list));
+        if (intermediate_ws_out) {
+            cerr << stopwatch << " - sorting intermediate weight systems\n";
 
-        cerr << stopwatch << " - writing candidates\n";
+            vector<WeightSystem> ws_list{};
+            ws_list.reserve(weight_systems.size());
+            std::copy(weight_systems.begin(), weight_systems.end(),
+                      std::back_inserter(ws_list));
 
-        intermediate_ws_out->write(
-            static_cast<uint32_t>(weight_systems.size()));
-        for (const auto &ws : ws_list)
-            write(*intermediate_ws_out, ws);
+            cerr << stopwatch << " - writing intermediate weight systems\n";
 
-        cerr << stopwatch << " - writing done\n";
-    }
+            intermediate_ws_out->write(
+                static_cast<uint32_t>(weight_systems.size()));
+            for (const auto &ws : ws_list)
+                write(*intermediate_ws_out, ws);
 
-    if (pairs_out) {
-        cerr << stopwatch << " - writing pairs\n";
-
-        pairs_out->write(static_cast<uint32_t>(final_pairs.size()));
-        for (auto &pair : final_pairs) {
-            write(*pairs_out, pair.first);
-            write(*pairs_out, pair.second);
+            intermediate_ws_out = {};
+            cerr << stopwatch << " - writing complete\n";
         }
 
-        cerr << stopwatch << " - writing done\n";
+        if (pairs_out) {
+            cerr << stopwatch << " - writing pairs\n";
+
+            pairs_out->write(static_cast<uint32_t>(final_pairs.size()));
+            for (auto &pair : final_pairs) {
+                write(*pairs_out, pair.first);
+                write(*pairs_out, pair.second);
+            }
+
+            pairs_out = {};
+            cerr << stopwatch << " - writing complete\n";
+        }
+
+        if (g_settings.ip_check) {
+            for (const auto &pair : final_pairs)
+                process_pair(weight_systems, pair, statistics, stopwatch);
+
+            cerr << stopwatch
+                 << " - weight systems: " << statistics.weight_systems_found
+                 << ", unique: " << weight_systems.size() << endl;
+        }
     }
 
-    for (const auto &pair : final_pairs)
-        process_pair(weight_systems, pair, statistics, stopwatch);
+    if (g_settings.ip_check) {
+        for (const auto &ws : weight_systems) {
+            if (g_settings.print_candidates)
+                print_with_denominator(ws);
+            if (has_ip(ws))
+                ++statistics.ip_weight_systems;
+        }
 
-    cerr << stopwatch
-         << " - weight systems: " << statistics.weight_systems_found
-         << ", unique: " << weight_systems.size() << endl;
-
-    for (const auto &ws : weight_systems) {
-        if (g_settings.print_candidates)
-            print_with_denominator(ws);
-        if (has_ip(ws))
-            ++statistics.ip_weight_systems;
+        cerr << stopwatch
+             << " - weight systems: " << statistics.weight_systems_found
+             << ", unique: " << weight_systems.size()
+             << ", ip: " << statistics.ip_weight_systems << endl;
     }
-
-    cerr << stopwatch
-         << " - weight systems: " << statistics.weight_systems_found
-         << ", unique: " << weight_systems.size()
-         << ", ip: " << statistics.ip_weight_systems << endl;
 
     return true;
 }
@@ -260,8 +271,11 @@ int main(int argc, char *argv[])
                                             "Write weight system pairs to file",
                                             false, "", "file", cmd);
     TCLAP::ValueArg<string> write_intermediate_weight_systems_arg(
-        "", "write-intermediate",
-        "Write intermediate weight system candidates to file", false, "",
+        "", "write-intermediate", "Write intermediate weight systems to file",
+        false, "", "file", cmd);
+    TCLAP::ValueArg<string> write_weight_systems_arg(
+        "", "write-weight-systems",
+        "Write weight system obtained from pairs to directory", false, "",
         "file", cmd);
     TCLAP::ValueArg<unsigned> skip_redundancy_check_arg(
         "", "skip-redundancy-check",
@@ -284,6 +298,7 @@ int main(int argc, char *argv[])
         "", "ignore-symmetries", "Ignore symmetries (for debugging)", cmd);
     TCLAP::SwitchArg no_lex_order_arg(
         "", "no-lex-order", "Disable lexicographic order (for debugging)", cmd);
+    TCLAP::SwitchArg ip_check_arg("", "ip-check", "Check IP property", cmd);
 
     cmd.parse(argc, argv);
 
@@ -296,6 +311,7 @@ int main(int argc, char *argv[])
     g_settings.print_candidates = print_candidates_arg.getValue();
     g_settings.debug_ignore_symmetries = ignore_symmetries_arg.getValue();
     g_settings.debug_disable_lex_order = no_lex_order_arg.getValue();
+    g_settings.ip_check = ip_check_arg.getValue();
 
     optional<File> pairs_in{};
     if (read_pairs_arg.isSet()) {
@@ -330,8 +346,13 @@ int main(int argc, char *argv[])
         }
     }
 
+    optional<string> write_weight_systems_dir{};
+    if (write_weight_systems_arg.isSet())
+        write_weight_systems_dir = write_weight_systems_arg.getValue();
+
     try {
-        return classify(pairs_in, pairs_out, intermediate_ws_out)
+        return classify(pairs_in, pairs_out, intermediate_ws_out,
+                        write_weight_systems_dir)
                    ? EXIT_SUCCESS
                    : EXIT_FAILURE;
     } catch (File::Error) {
