@@ -10,8 +10,8 @@ struct Settings {
     bool print_candidates{};
     bool debug_ignore_symmetries{};
     bool debug_disable_lex_order{};
-    bool generate_intermediate_weight_systems{};
     bool ip_check{};
+    bool count_weight_systems{};
 };
 
 extern Settings g_settings;
