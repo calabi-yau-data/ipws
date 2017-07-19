@@ -209,8 +209,7 @@ void classify(optional<File> &pairs_in, optional<File> &pairs_out,
                  << " - weight systems: " << statistics.weight_systems_found
                  << ", unique: " << weight_systems.size() << endl;
         }
-    } else if (intermediate_ws_out || g_settings.ip_check ||
-               g_settings.count_weight_systems || pairs_out) {
+    } else {
         if (intermediate_ws_out || g_settings.ip_check ||
             g_settings.count_weight_systems) {
             rec(WeightSystemBuilder{}, &weight_systems, final_pairs, 0, history,
@@ -384,11 +383,19 @@ int main(int argc, char *argv[])
             write_weight_systems_from_pairs_arg.getValue();
 
     try {
+        if (!intermediate_ws_out && !g_settings.ip_check &&
+            !g_settings.count_weight_systems && !pairs_out &&
+            !write_weight_systems_from_pairs_dir) {
+            auto e = TCLAP::ArgException("No action specified");
+            cmd.getOutput()->failure(cmd, e);
+        }
+
         classify(pairs_in, pairs_out, intermediate_ws_out,
                  write_weight_systems_from_pairs_dir);
         return EXIT_SUCCESS;
     } catch (File::Error) {
         cerr << "IO error\n";
         return EXIT_FAILURE;
+    } catch (TCLAP::ExitException) {
     }
 }
