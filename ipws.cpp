@@ -194,15 +194,13 @@ void read_pairs(unordered_set<WeightSystem> *weight_systems,
 
         if (write_weight_systems_from_pairs_dir) {
             std::ostringstream name{};
-            for (unsigned i = 0; i < dim; ++i)
-            {
+            for (unsigned i = 0; i < dim; ++i) {
                 if (i != 0)
                     name << " ";
                 name << pair.first.weights[i];
             }
             name << "; ";
-            for (unsigned i = 0; i < dim; ++i)
-            {
+            for (unsigned i = 0; i < dim; ++i) {
                 if (i != 0)
                     name << " ";
                 name << pair.second.weights[i];
