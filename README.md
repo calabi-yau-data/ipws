@@ -37,3 +37,22 @@ cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DLINK_STATICALLY=ON -DDIMENSION=4 -DR_NUMERATOR=1 -DR_DENOMINATOR=2 ..
 make
 ```
+
+Usage
+-----
+
+### Count all IP weight systems
+
+This does all in one run, and is feasible for `d - 2r < 4`.
+
+```
+./ipws --ip-check
+```
+
+### Write weight system pairs and weight systems candidates found so far to files
+
+The files must not exist.
+
+```
+./ipws --write-pairs pairs --write-intermediate intermediate
+```
