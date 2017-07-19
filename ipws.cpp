@@ -201,13 +201,13 @@ void classify(optional<File> &pairs_in, optional<File> &pairs_out,
         if (g_settings.ip_check || g_settings.count_weight_systems) {
             read_pairs(&weight_systems, statistics, stopwatch, *pairs_in,
                        write_weight_systems_from_pairs_dir);
-        } else {
-            read_pairs(nullptr, statistics, stopwatch, *pairs_in,
-                       write_weight_systems_from_pairs_dir);
 
             cerr << stopwatch
                  << " - weight systems: " << statistics.weight_systems_found
                  << ", unique: " << weight_systems.size() << endl;
+        } else {
+            read_pairs(nullptr, statistics, stopwatch, *pairs_in,
+                       write_weight_systems_from_pairs_dir);
         }
     } else {
         if (intermediate_ws_out || g_settings.ip_check ||
