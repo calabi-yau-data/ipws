@@ -31,7 +31,7 @@ namespace fs = boost::filesystem;
 
 struct Statistics {
     unsigned weight_systems_found;
-    unsigned final_pairs_found;
+    unsigned pairs_found;
     unsigned ip_weight_systems;
 };
 
@@ -59,8 +59,8 @@ bool add_maybe(unordered_set<WeightSystem> &weight_systems, WeightSystem ws,
 
 void rec(const WeightSystemBuilder &builder,
          unordered_set<WeightSystem> *weight_systems,
-         unordered_set<WeightSystemPair> &final_pairs, unsigned n,
-         History &history, Statistics &statistics, const Stopwatch &stopwatch)
+         unordered_set<WeightSystemPair> &pairs, unsigned n, History &history,
+         Statistics &statistics, const Stopwatch &stopwatch)
 {
     WeightSystem ws{};
     if (!builder.average_if_nonzero(ws))
@@ -78,13 +78,12 @@ void rec(const WeightSystemBuilder &builder,
     switch (n) {
     case dim - 2:
         /* if (defer_last_recursion) */ {
-            final_pairs.insert(canonicalize(builder.to_pair()));
-            ++statistics.final_pairs_found;
+            pairs.insert(canonicalize(builder.to_pair()));
+            ++statistics.pairs_found;
 
-            if (statistics.final_pairs_found % 10000 == 0)
-                cerr << stopwatch << " - weight system pairs: "
-                     << statistics.final_pairs_found
-                     << ", unique: " << final_pairs.size() << endl;
+            if (statistics.pairs_found % 10000 == 0)
+                cerr << stopwatch << " - pairs: " << statistics.pairs_found
+                     << ", unique: " << pairs.size() << endl;
 
             return;
         }
@@ -111,7 +110,7 @@ void rec(const WeightSystemBuilder &builder,
         if (last_point_redundant(n, history))
             continue;
 
-        rec(builder.restrict(x), weight_systems, final_pairs, n + 1, history,
+        rec(builder.restrict(x), weight_systems, pairs, n + 1, history,
             statistics, stopwatch);
     }
 }
@@ -128,15 +127,11 @@ void write_sorted(File &f, const unordered_set<WeightSystem> &weight_systems)
         write(f, ws);
 }
 
-void find_weight_systems_from_pair(unordered_set<WeightSystem> &weight_systems,
-                                   const WeightSystemPair &pair,
-                                   Statistics &statistics,
-                                   const Stopwatch &stopwatch)
+void weight_systems_from_pair(unordered_set<WeightSystem> &weight_systems,
+                              const WeightSystemPair &pair,
+                              Statistics &statistics)
 {
     WeightSystem ws = average(pair);
-    unsigned candidate_count = 0;
-    size_t old_unique_count = weight_systems.size();
-    unordered_set<WeightSystem> current_weight_systems{};
 
     // auto sym = symmetries(pair);
 
@@ -150,49 +145,116 @@ void find_weight_systems_from_pair(unordered_set<WeightSystem> &weight_systems,
             continue;
 
         WeightSystem final_ws{};
-        if (restrict(pair, x, final_ws)) {
-            if (add_maybe(weight_systems, final_ws, statistics)) {
-                if (g_settings.print_last_recursion_statistics) {
-                    ++candidate_count;
-                    current_weight_systems.insert(final_ws);
-                }
-
-                if (statistics.weight_systems_found % 1000000 == 0)
-                    cerr << stopwatch << " - weight systems: "
-                         << statistics.weight_systems_found
-                         << ", unique: " << weight_systems.size() << endl;
-            }
-        }
-    }
-
-    if (g_settings.print_last_recursion_statistics) {
-        size_t unique_count = weight_systems.size() - old_unique_count;
-        cout << candidate_count << " " << current_weight_systems.size() << " "
-             << unique_count << endl;
+        if (restrict(pair, x, final_ws))
+            add_maybe(weight_systems, final_ws, statistics);
     }
 }
 
-void read_pairs(unordered_set<WeightSystem> *weight_systems,
-                Statistics statistics, Stopwatch &stopwatch, File &pairs_in,
-                const optional<fs::path> &write_weight_systems_from_pairs_dir)
+void find_weight_systems(bool ip_only)
 {
-    uint32_t size;
-    pairs_in.read(size);
+    Stopwatch stopwatch{};
+    History history{};
+    Statistics statistics{};
+    unordered_set<WeightSystem> weight_systems{};
+    unordered_set<WeightSystemPair> pairs{};
+
+    rec(WeightSystemBuilder{}, &weight_systems, pairs, 0, history, statistics,
+        stopwatch);
+    cerr << stopwatch << " - intermediate weight systems: "
+         << statistics.weight_systems_found
+         << ", unique: " << weight_systems.size() << endl;
+
+    for (const auto &pair : pairs)
+        weight_systems_from_pair(weight_systems, pair, statistics);
+
+    cerr << stopwatch
+         << " - weight systems: " << statistics.weight_systems_found
+         << ", unique: " << weight_systems.size() << endl;
+
+    if (ip_only) {
+        for (const auto &ws : weight_systems) {
+            if (has_ip(ws)) {
+                ++statistics.ip_weight_systems;
+                if (g_settings.print_weight_systems)
+                    print_with_denominator(ws);
+            }
+        }
+        cerr << stopwatch
+             << " - weight systems: " << statistics.weight_systems_found
+             << ", unique: " << weight_systems.size()
+             << ", ip: " << statistics.ip_weight_systems << endl;
+    } else if (g_settings.print_weight_systems) {
+        for (const auto &ws : weight_systems)
+            print_with_denominator(ws);
+    }
+}
+
+void find_pairs(optional<File> &ws_out, optional<File> &pairs_out)
+{
+    Stopwatch stopwatch{};
+    History history{};
+    Statistics statistics{};
+    unordered_set<WeightSystem> weight_systems{};
+    unordered_set<WeightSystemPair> pairs{};
+
+    rec(WeightSystemBuilder{}, &weight_systems, pairs, 0, history, statistics,
+        stopwatch);
+    cerr << stopwatch << " - pairs: " << statistics.pairs_found
+         << ", unique: " << pairs.size() << endl;
+
+    if (ws_out) {
+        cerr << stopwatch << " - writing weight systems\n";
+        write_sorted(*ws_out, weight_systems);
+        cerr << stopwatch << " - writing complete\n";
+    }
+
+    if (pairs_out) {
+        cerr << stopwatch << " - writing pairs\n";
+        pairs_out->write(static_cast<uint32_t>(pairs.size()));
+        for (auto &pair : pairs) {
+            write(*pairs_out, pair.first);
+            write(*pairs_out, pair.second);
+        }
+        cerr << stopwatch << " - writing complete\n";
+    }
+}
+
+void find_weight_systems_from_pairs(
+    File &pairs_in, const optional<fs::path> &weight_systems_dir)
+{
+    Stopwatch stopwatch{};
+    unordered_set<WeightSystemPair> pairs{};
+    size_t candidate_count = 0;
+
+    uint32_t pair_count;
+    pairs_in.read(pair_count);
+
+    cerr << stopwatch << " - pairs: " << pair_count << endl;
 
     srand(1234);
-    for (unsigned i = 0; i < size; ++i) {
+    for (unsigned i = 0; i < pair_count; ++i) {
         // unsigned ws_size = 2 * dim * (sizeof uint16_t);
-        // pairs_in.seek((rand() % (size / ws_size)) * ws_size);
-        WeightSystemPair pair;
+        // pairs_in.seek((rand() % (pair_count / ws_size)) * ws_size);
+        unordered_set<WeightSystem> weight_systems{};
+        Statistics statistics{};
+        WeightSystemPair pair{};
 
         read(pairs_in, pair.first);
         read(pairs_in, pair.second);
 
-        unordered_set<WeightSystem> weight_systems_of_pair{};
-        find_weight_systems_from_pair(weight_systems_of_pair, pair, statistics,
-                                      stopwatch);
+        weight_systems_from_pair(weight_systems, pair, statistics);
 
-        if (write_weight_systems_from_pairs_dir) {
+        size_t new_candidate_count = candidate_count + weight_systems.size();
+        if (candidate_count / 100000 != new_candidate_count / 100000)
+            cerr << stopwatch << " - weight systems: " << new_candidate_count
+                 << endl;
+        candidate_count = new_candidate_count;
+
+        if (g_settings.print_statistics)
+            cout << statistics.weight_systems_found << " "
+                 << weight_systems.size() << endl;
+
+        if (weight_systems_dir) {
             std::ostringstream name{};
             for (unsigned i = 0; i < dim; ++i) {
                 if (i != 0)
@@ -206,113 +268,23 @@ void read_pairs(unordered_set<WeightSystem> *weight_systems,
                 name << pair.second.weights[i];
             }
 
-            fs::path path = *write_weight_systems_from_pairs_dir;
+            fs::path path = *weight_systems_dir;
             path /= name.str();
 
             optional<File> out = File::create_new(path.string());
             if (out)
-                write_sorted(*out, weight_systems_of_pair);
-        }
-
-        if (weight_systems)
-            std::copy(weight_systems_of_pair.begin(),
-                      weight_systems_of_pair.end(),
-                      std::inserter(*weight_systems, weight_systems->end()));
-    }
-}
-
-void classify(optional<File> &pairs_in, optional<File> &pairs_out,
-              optional<File> &intermediate_ws_out,
-              const optional<fs::path> &write_weight_systems_from_pairs_dir)
-{
-    Stopwatch stopwatch{};
-    History history{};
-    unordered_set<WeightSystem> weight_systems{};
-    unordered_set<WeightSystemPair> final_pairs{};
-    Statistics statistics{};
-
-    if (pairs_in) {
-        if (g_settings.ip_check || g_settings.count_weight_systems ||
-            g_settings.print_candidates) {
-            read_pairs(&weight_systems, statistics, stopwatch, *pairs_in,
-                       write_weight_systems_from_pairs_dir);
-
-            cerr << stopwatch
-                 << " - weight systems: " << statistics.weight_systems_found
-                 << ", unique: " << weight_systems.size() << endl;
-        } else {
-            read_pairs(nullptr, statistics, stopwatch, *pairs_in,
-                       write_weight_systems_from_pairs_dir);
-        }
-    } else {
-        if (intermediate_ws_out || g_settings.ip_check ||
-            g_settings.count_weight_systems || g_settings.print_candidates) {
-            rec(WeightSystemBuilder{}, &weight_systems, final_pairs, 0, history,
-                statistics, stopwatch);
-
-            cerr << stopwatch << " - intermediate weight systems: "
-                 << statistics.weight_systems_found
-                 << ", unique: " << weight_systems.size() << endl;
-        } else {
-            rec(WeightSystemBuilder{}, nullptr, final_pairs, 0, history,
-                statistics, stopwatch);
-        }
-
-        cerr << stopwatch
-             << " - weight system pairs: " << statistics.final_pairs_found
-             << ", unique: " << final_pairs.size() << endl;
-
-        if (intermediate_ws_out) {
-            cerr << stopwatch << " - writing intermediate weight systems\n";
-
-            write_sorted(*intermediate_ws_out, weight_systems);
-            intermediate_ws_out = none;
-
-            cerr << stopwatch << " - writing complete\n";
-        }
-
-        if (pairs_out) {
-            cerr << stopwatch << " - writing pairs\n";
-
-            pairs_out->write(static_cast<uint32_t>(final_pairs.size()));
-            for (auto &pair : final_pairs) {
-                write(*pairs_out, pair.first);
-                write(*pairs_out, pair.second);
-            }
-
-            pairs_out = none;
-            cerr << stopwatch << " - writing complete\n";
-        }
-
-        if (g_settings.ip_check || g_settings.count_weight_systems) {
-            for (const auto &pair : final_pairs)
-                find_weight_systems_from_pair(weight_systems, pair, statistics,
-                                              stopwatch);
-
-            cerr << stopwatch
-                 << " - weight systems: " << statistics.weight_systems_found
-                 << ", unique: " << weight_systems.size() << endl;
+                write_sorted(*out, weight_systems);
         }
     }
 
-    if (g_settings.print_candidates)
-        for (const auto &ws : weight_systems)
-            print_with_denominator(ws);
-
-    if (g_settings.ip_check) {
-        for (const auto &ws : weight_systems)
-            if (has_ip(ws))
-                ++statistics.ip_weight_systems;
-
-        cerr << stopwatch
-             << " - weight systems: " << statistics.weight_systems_found
-             << ", unique: " << weight_systems.size()
-             << ", ip: " << statistics.ip_weight_systems << endl;
-    }
+    cerr << stopwatch << " - weight systems: " << candidate_count << endl;
 }
 
 int main(int argc, char *argv[])
 {
+    using TCLAP::SwitchArg;
+    using TCLAP::ValueArg;
+
     std::ostringstream description;
     description << "Classify weight systems with d=" << dim
                 << ", r=" << r_numerator << "/" << r_denominator
@@ -320,43 +292,53 @@ int main(int argc, char *argv[])
 
     TCLAP::CmdLine cmd(description.str(), ' ', GIT_REVISION);
 
-    TCLAP::ValueArg<string> read_pairs_arg( //
-        "", "read-pairs", "Read weight system pairs from file", false, "",
-        "file", cmd);
-    TCLAP::ValueArg<string> write_pairs_arg( //
-        "", "write-pairs", "Write weight system pairs to file", false, "",
-        "file", cmd);
-    TCLAP::ValueArg<string> write_intermediate_weight_systems_arg(
-        "", "write-intermediate", "Write intermediate weight systems to file",
+    // Actions
+    SwitchArg find_candidates_arg( //
+        "", "find-candidates",
+        "Find and optionally print IP weight system candidates", cmd);
+    SwitchArg find_ip_arg( //
+        "", "find-ip", "Find and optionally print IP weight systems", cmd);
+    SwitchArg find_pairs_arg(
+        "", "find-pairs",
+        "Find weight system pairs in the penultimate recursion", cmd);
+    ValueArg<string> find_from_pairs_arg( //
+        "", "find-from-pairs",
+        "Find weight system candidates from given weight system pairs file",
         false, "", "file", cmd);
-    TCLAP::ValueArg<string> write_weight_systems_from_pairs_arg(
-        "", "write-weight-systems-from-pairs",
-        "Write weight system obtained from pairs to directory", false, "",
-        "directory", cmd);
-    TCLAP::ValueArg<unsigned> skip_redundancy_check_arg(
+
+    SwitchArg print_stats_arg("", "print-stats",
+                              "Enable printing of statistics", cmd);
+    SwitchArg print_ws_arg( //
+        "", "print-ws", "Enable printing of weight systems", cmd);
+    ValueArg<string> ws_out_arg( //
+        "", "ws-out", "Weight systems destination file", false, "", "file",
+        cmd);
+    ValueArg<string> pairs_out_arg( //
+        "", "pairs-out", "Pairs destination file", false, "", "file", cmd);
+    ValueArg<string> weight_systems_dir_arg( //
+        "", "ws-dir", "Weight systems directory", false, "", "directory", cmd);
+
+    // ValueArg<string> read_pairs_arg( //
+    //     "", "read-pairs", "Read weight system pairs from file", false, "",
+    //     "file", cmd);
+
+    ValueArg<unsigned> skip_redundancy_check_arg(
         "", "skip-redundancy-check",
         "Skip redundancy check for the number of recursions (default 2)", false,
         2, "number", cmd);
-    TCLAP::SwitchArg allow_weight_one_arg(
+    SwitchArg allow_weight_one_arg(
         "", "allow-weight-one", "Allow weight systems containing a weight of 1",
         cmd);
-    TCLAP::SwitchArg allow_weight_one_half_arg(
+    SwitchArg allow_weight_one_half_arg(
         "", "allow-weight-one-half",
         "Allow weight systems containing a weight of 1/2", cmd);
-    TCLAP::SwitchArg allow_weights_sum_one_arg(
+    SwitchArg allow_weights_sum_one_arg(
         "", "allow-weights-sum-one",
         "Allow weight systems containing two weights with a sum of 1", cmd);
-    TCLAP::SwitchArg print_stats_arg(
-        "", "print-stats", "Print statistics during the last recursion", cmd);
-    TCLAP::SwitchArg print_candidates_arg(
-        "", "print-candidates", "Print weight system candidates", cmd);
-    TCLAP::SwitchArg ignore_symmetries_arg(
-        "", "ignore-symmetries", "Ignore symmetries (for debugging)", cmd);
-    TCLAP::SwitchArg no_lex_order_arg(
+    SwitchArg ignore_symmetries_arg("", "ignore-symmetries",
+                                    "Ignore symmetries (for debugging)", cmd);
+    SwitchArg no_lex_order_arg(
         "", "no-lex-order", "Disable lexicographic order (for debugging)", cmd);
-    TCLAP::SwitchArg ip_check_arg("", "ip-check", "Check IP property", cmd);
-    TCLAP::SwitchArg count_weight_systems_arg("", "count-weight-systems",
-                                              "Count weight systems", cmd);
 
     cmd.parse(argc, argv);
 
@@ -365,26 +347,14 @@ int main(int argc, char *argv[])
     g_settings.allow_weight_one = allow_weight_one_arg.getValue();
     g_settings.allow_weight_one_half = allow_weight_one_half_arg.getValue();
     g_settings.allow_weights_sum_one = allow_weights_sum_one_arg.getValue();
-    g_settings.print_last_recursion_statistics = print_stats_arg.getValue();
-    g_settings.print_candidates = print_candidates_arg.getValue();
+    g_settings.print_statistics = print_stats_arg.getValue();
+    g_settings.print_weight_systems = print_ws_arg.getValue();
     g_settings.debug_ignore_symmetries = ignore_symmetries_arg.getValue();
     g_settings.debug_disable_lex_order = no_lex_order_arg.getValue();
-    g_settings.ip_check = ip_check_arg.getValue();
-    g_settings.count_weight_systems = count_weight_systems_arg.getValue();
-
-    optional<File> pairs_in{};
-    if (read_pairs_arg.isSet()) {
-        pairs_in = File::open(read_pairs_arg.getValue());
-        if (!pairs_in) {
-            cerr << "Could not open file '" << read_pairs_arg.getValue()
-                 << "'\n";
-            return EXIT_FAILURE;
-        }
-    }
 
     optional<File> pairs_out{};
-    if (write_pairs_arg.isSet()) {
-        fs::path path = write_pairs_arg.getValue();
+    if (pairs_out_arg.isSet()) {
+        fs::path path = pairs_out_arg.getValue();
 
         pairs_out = File::create_new(path);
         if (!pairs_out) {
@@ -393,44 +363,56 @@ int main(int argc, char *argv[])
         }
     }
 
-    optional<File> intermediate_ws_out{};
-    if (write_intermediate_weight_systems_arg.isSet()) {
-        fs::path path = write_intermediate_weight_systems_arg.getValue();
+    optional<File> ws_out{};
+    if (ws_out_arg.isSet()) {
+        fs::path path = ws_out_arg.getValue();
 
-        intermediate_ws_out = File::create_new(path);
-        if (!intermediate_ws_out) {
+        ws_out = File::create_new(path);
+        if (!ws_out) {
             cerr << "Could not create new file " << path << endl;
             return EXIT_FAILURE;
         }
     }
 
-    optional<fs::path> write_weight_systems_from_pairs_dir{};
-    if (write_weight_systems_from_pairs_arg.isSet()) {
-        write_weight_systems_from_pairs_dir =
-            write_weight_systems_from_pairs_arg.getValue();
+    optional<File> pairs_in{};
+    if (find_from_pairs_arg.isSet()) {
+        fs::path path = find_from_pairs_arg.getValue();
 
-        if (!fs::is_directory(*write_weight_systems_from_pairs_dir)) {
-            cerr << "No directory " << *write_weight_systems_from_pairs_dir
-                 << endl;
+        pairs_in = File::open(path);
+        if (!pairs_in) {
+            cerr << "Could not open file " << path << endl;
+            return EXIT_FAILURE;
+        }
+    }
+
+    optional<fs::path> weight_systems_dir{};
+    if (weight_systems_dir_arg.isSet()) {
+        weight_systems_dir = weight_systems_dir_arg.getValue();
+
+        if (!fs::is_directory(*weight_systems_dir)) {
+            cerr << "No directory " << *weight_systems_dir << endl;
             return EXIT_FAILURE;
         }
     }
 
     try {
-        if (!intermediate_ws_out && !g_settings.ip_check &&
-            !g_settings.count_weight_systems && !pairs_out &&
-            !write_weight_systems_from_pairs_dir &&
-            !g_settings.print_candidates) {
+        if (find_candidates_arg.getValue()) {
+            find_weight_systems(false);
+        } else if (find_ip_arg.getValue()) {
+            find_weight_systems(true);
+        } else if (find_pairs_arg.getValue()) {
+            find_pairs(ws_out, pairs_out);
+        } else if (find_from_pairs_arg.isSet()) {
+            find_weight_systems_from_pairs(*pairs_in, weight_systems_dir);
+        } else {
             auto e = TCLAP::ArgException("No action specified");
             cmd.getOutput()->failure(cmd, e);
         }
-
-        classify(pairs_in, pairs_out, intermediate_ws_out,
-                 write_weight_systems_from_pairs_dir);
         return EXIT_SUCCESS;
     } catch (File::Error) {
         cerr << "IO error\n";
         return EXIT_FAILURE;
     } catch (TCLAP::ExitException) {
+        return EXIT_FAILURE;
     }
 }
