@@ -115,12 +115,33 @@ void rec(const WeightSystemBuilder &builder,
     }
 }
 
+void write_config(File &f)
+{
+    f.write(static_cast<uint32_t>(dim));
+    f.write(static_cast<uint32_t>(r_numerator));
+    f.write(static_cast<uint32_t>(r_denominator));
+}
+
+void check_config(File &f)
+{
+    uint32_t v;
+
+    f.read(v);
+    assert(v == dim);
+    f.read(v);
+    assert(v == r_numerator);
+    f.read(v);
+    assert(v == r_denominator);
+}
+
 void write_sorted(File &f, const unordered_set<WeightSystem> &weight_systems)
 {
     vector<WeightSystem> ws_list{};
     ws_list.reserve(weight_systems.size());
     std::copy(weight_systems.begin(), weight_systems.end(),
               std::back_inserter(ws_list));
+
+    write_config(f);
 
     f.write(static_cast<uint32_t>(weight_systems.size()));
     for (const auto &ws : ws_list)
@@ -213,6 +234,9 @@ void find_pairs(optional<File> &ws_out, optional<File> &pairs_out)
 
     if (pairs_out) {
         cerr << stopwatch << " - writing pairs\n";
+
+        write_config(*pairs_out);
+
         pairs_out->write(static_cast<uint32_t>(pairs.size()));
         for (auto &pair : pairs) {
             write(*pairs_out, pair.first);
@@ -233,6 +257,8 @@ void find_weight_systems_from_pairs(File &pairs_in, unsigned start,
     Stopwatch stopwatch{};
     unordered_set<WeightSystemPair> pairs{};
     // size_t candidate_count = 0;
+
+    check_config(pairs_in);
 
     uint32_t pair_count;
     pairs_in.read(pair_count);
@@ -276,6 +302,8 @@ void check_ip(File &ws_in)
 {
     Stopwatch stopwatch{};
 
+    check_config(ws_in);
+
     uint32_t ws_count;
     ws_in.read(ws_count);
 
@@ -297,10 +325,15 @@ void check_ip(File &ws_in)
 
 void combine_ws_files(File &in1, File &in2, File &out)
 {
+    check_config(in1);
+    check_config(in2);
+
     uint32_t count1;
     uint32_t count2;
     in1.read(count1);
     in2.read(count2);
+
+    write_config(out);
 
     WeightSystem ws1{};
     WeightSystem ws2{};
