@@ -244,6 +244,10 @@ void find_weight_systems_from_pairs(
 
         weight_systems_from_pair(weight_systems, pair, statistics);
 
+        if (g_settings.print_weight_systems)
+            for (const auto &ws : weight_systems)
+                print_with_denominator(ws);
+
         size_t new_candidate_count = candidate_count + weight_systems.size();
         if (candidate_count / 100000 != new_candidate_count / 100000)
             cerr << stopwatch << " - weight systems: " << new_candidate_count
@@ -280,6 +284,52 @@ void find_weight_systems_from_pairs(
     cerr << stopwatch << " - weight systems: " << candidate_count << endl;
 }
 
+void split_pairs(File &pairs_in, const fs::path &dir_out, unsigned num)
+{
+    Stopwatch stopwatch{};
+    uint32_t pair_count;
+    pairs_in.read(pair_count);
+
+    cerr << stopwatch << " - pairs: " << pair_count << endl;
+
+    unsigned chunk_size = pair_count / num + 1;
+
+    optional<File> pairs_out{};
+    unsigned count = 0;
+
+    for (unsigned i = 0; i < pair_count; ++i) {
+        WeightSystemPair pair{};
+
+        read(pairs_in, pair.first);
+        read(pairs_in, pair.second);
+
+        if (count % chunk_size == 0) {
+            cerr << stopwatch << " - writing pairs\n";
+
+            fs::path path = dir_out;
+            path /= std::to_string(count / chunk_size + 1);
+
+            pairs_out = File::create_new(path.string());
+
+            if (pairs_out) {
+                pairs_out->write(static_cast<int32_t>(
+                    std::min(pair_count - count, chunk_size)));
+            } else {
+                cerr << "could not create file: " << path << endl;
+            }
+        }
+
+        ++count;
+
+        if (pairs_out) {
+            write(*pairs_out, pair.first);
+            write(*pairs_out, pair.second);
+        }
+    }
+
+    cerr << stopwatch << " - writing complete\n";
+}
+
 int main(int argc, char *argv[])
 {
     using TCLAP::Arg;
@@ -301,16 +351,15 @@ int main(int argc, char *argv[])
     SwitchArg find_pairs_arg(
         "", "find-pairs",
         "Find weight system pairs in the penultimate recursion");
-    ValueArg<string> find_from_pairs_arg( //
-        "", "find-from-pairs",
-        "Find weight system candidates from given weight system pairs file",
-        false, "", "file");
+    ValueArg<unsigned> split_pairs_arg( //
+        "", "split-pairs", "Split list of weight system pairs", false, 1,
+        "number");
 
     vector<Arg *> arg_list;
     arg_list.push_back(&find_candidates_arg);
     arg_list.push_back(&find_ip_arg);
     arg_list.push_back(&find_pairs_arg);
-    arg_list.push_back(&find_from_pairs_arg);
+    arg_list.push_back(&split_pairs_arg);
     cmd.xorAdd(arg_list);
 
     SwitchArg print_stats_arg("", "print-stats",
@@ -320,10 +369,12 @@ int main(int argc, char *argv[])
     ValueArg<string> ws_out_arg( //
         "", "ws-out", "Weight systems destination file", false, "", "file",
         cmd);
+    ValueArg<string> pairs_in_arg( //
+        "", "pairs-in", "Pairs source file", false, "", "file", cmd);
     ValueArg<string> pairs_out_arg( //
         "", "pairs-out", "Pairs destination file", false, "", "file", cmd);
-    ValueArg<string> weight_systems_dir_arg( //
-        "", "ws-dir", "Weight systems directory", false, "", "directory", cmd);
+    ValueArg<string> dir_out_arg( //
+        "", "dir-out", "Output directory", false, "", "directory", cmd);
 
     // ValueArg<string> read_pairs_arg( //
     //     "", "read-pairs", "Read weight system pairs from file", false, "",
@@ -382,8 +433,8 @@ int main(int argc, char *argv[])
     }
 
     optional<File> pairs_in{};
-    if (find_from_pairs_arg.isSet()) {
-        fs::path path = find_from_pairs_arg.getValue();
+    if (pairs_in_arg.isSet()) {
+        fs::path path = pairs_in_arg.getValue();
 
         pairs_in = File::open(path);
         if (!pairs_in) {
@@ -392,25 +443,29 @@ int main(int argc, char *argv[])
         }
     }
 
-    optional<fs::path> weight_systems_dir{};
-    if (weight_systems_dir_arg.isSet()) {
-        weight_systems_dir = weight_systems_dir_arg.getValue();
+    optional<fs::path> dir_out{};
+    if (dir_out_arg.isSet()) {
+        dir_out = dir_out_arg.getValue();
 
-        if (!fs::is_directory(*weight_systems_dir)) {
-            cerr << "No directory " << *weight_systems_dir << endl;
+        if (!fs::is_directory(*dir_out)) {
+            cerr << "No directory " << *dir_out << endl;
             return EXIT_FAILURE;
         }
     }
 
     try {
         if (find_candidates_arg.getValue()) {
-            find_weight_systems(false);
+            if (pairs_in)
+                find_weight_systems_from_pairs(*pairs_in, dir_out);
+            else
+                find_weight_systems(false);
         } else if (find_ip_arg.getValue()) {
             find_weight_systems(true);
         } else if (find_pairs_arg.getValue()) {
             find_pairs(ws_out, pairs_out);
-        } else if (find_from_pairs_arg.isSet()) {
-            find_weight_systems_from_pairs(*pairs_in, weight_systems_dir);
+        } else if (split_pairs_arg.isSet()) {
+            if (pairs_in && dir_out)
+                split_pairs(*pairs_in, *dir_out, split_pairs_arg.getValue());
         }
         return EXIT_SUCCESS;
     } catch (File::Error) {
