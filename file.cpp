@@ -54,6 +54,11 @@ void File::seek(unsigned pos)
     lseek(fd, pos, SEEK_SET);
 }
 
+void File::seek_relative(int pos)
+{
+    lseek(fd, pos, SEEK_CUR);
+}
+
 void File::read(void *data, size_t size)
 {
     ssize_t ret = ::read(fd, data, size);

@@ -69,4 +69,6 @@ const WeightSystem intersect(const WeightSystem &q1, const WeightSystem &q2,
 
 bool has_ip(const WeightSystem &ws);
 
+constexpr unsigned weight_system_storage_size = 2 * dim * sizeof(uint16_t);
+
 #endif

@@ -41,18 +41,30 @@ make
 Usage
 -----
 
-### Count all IP weight systems
+### Print all IP weight system candidates
 
 This does all in one run, and is feasible for `d - 2r < 4`.
 
 ```
-./ipws --ip-check
+./ipws --find-candidates --print-ws
 ```
 
-### Write weight system pairs and weight systems candidates found so far to files
+### Print all IP weight systems
 
-The files must not exist.
+This does all in one run, and is feasible for `d - 2r < 4`.
 
 ```
-./ipws --write-pairs pairs --write-intermediate intermediate
+./ipws --find-ip --print-ws
 ```
+
+### Find all IP weight systems, parallelizable
+
+```
+./ipws --find-pairs --pairs-out pairs --ws-out ws
+
+./ipws --find-candidates --from 0 --count 100 --pairs-in pairs --ws-out ws-1-100
+
+./ipws --combine-ws ....
+./ipws --find-ip --ws-in ws ...
+```
+

@@ -24,6 +24,7 @@ public:
     static optional<File> create_new(const boost::filesystem::path &path);
 
     void seek(unsigned pos);
+    void seek_relative(int pos);
 
     void read(void *data, size_t size);
     void read(uint16_t &data);

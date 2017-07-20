@@ -201,7 +201,8 @@ void find_pairs(optional<File> &ws_out, optional<File> &pairs_out)
         stopwatch);
     cerr << stopwatch << " - pairs: " << statistics.pairs_found
          << ", unique: " << pairs.size() << endl;
-    cerr << stopwatch << " - weight systems: " << statistics.weight_systems_found
+    cerr << stopwatch
+         << " - weight systems: " << statistics.weight_systems_found
          << ", unique: " << weight_systems.size() << endl;
 
     if (ws_out) {
@@ -221,26 +222,29 @@ void find_pairs(optional<File> &ws_out, optional<File> &pairs_out)
     }
 }
 
-void find_weight_systems_from_pairs(
-    File &pairs_in, const optional<fs::path> &weight_systems_dir)
+void find_weight_systems_from_pairs(File &pairs_in, unsigned start,
+                                    int count, optional<File> &ws_out)
 {
     // TODO: Only generate weight systems that were not already written to file.
     // TODO: Do not create file in final location until complete.
+    unordered_set<WeightSystem> weight_systems{};
+    Statistics statistics{};
     Stopwatch stopwatch{};
     unordered_set<WeightSystemPair> pairs{};
-    size_t candidate_count = 0;
+    // size_t candidate_count = 0;
 
     uint32_t pair_count;
     pairs_in.read(pair_count);
 
     cerr << stopwatch << " - pairs: " << pair_count << endl;
 
-    srand(1234);
-    for (unsigned i = 0; i < pair_count; ++i) {
-        // unsigned ws_size = 2 * dim * (sizeof uint16_t);
-        // pairs_in.seek((rand() % (pair_count / ws_size)) * ws_size);
-        unordered_set<WeightSystem> weight_systems{};
-        Statistics statistics{};
+    if (count < 0)
+        count = pair_count - start;
+
+    assert(start + count <= pair_count);
+    pairs_in.seek_relative(weight_system_storage_size * start);
+
+    for (int i = 0; i < count; ++i) {
         WeightSystemPair pair{};
 
         read(pairs_in, pair.first);
@@ -248,90 +252,23 @@ void find_weight_systems_from_pairs(
 
         weight_systems_from_pair(weight_systems, pair, statistics);
 
-        if (g_settings.print_weight_systems)
-            for (const auto &ws : weight_systems)
-                print_with_denominator(ws);
-
-        size_t new_candidate_count = candidate_count + weight_systems.size();
-        if (candidate_count / 100000 != new_candidate_count / 100000)
-            cerr << stopwatch << " - weight systems: " << new_candidate_count
-                 << endl;
-        candidate_count = new_candidate_count;
-
-        if (g_settings.print_statistics)
-            cout << statistics.weight_systems_found << " "
-                 << weight_systems.size() << endl;
-
-        if (weight_systems_dir) {
-            std::ostringstream name{};
-            for (unsigned i = 0; i < dim; ++i) {
-                if (i != 0)
-                    name << " ";
-                name << pair.first.weights[i];
-            }
-            name << "; ";
-            for (unsigned i = 0; i < dim; ++i) {
-                if (i != 0)
-                    name << " ";
-                name << pair.second.weights[i];
-            }
-
-            fs::path path = *weight_systems_dir;
-            path /= name.str();
-
-            optional<File> out = File::create_new(path.string());
-            if (out)
-                write_sorted(*out, weight_systems);
-        }
+        // size_t new_candidate_count = candidate_count + weight_systems.size();
+        // if (candidate_count / 100000 != new_candidate_count / 100000)
+        //     cerr << stopwatch << " - weight systems: " << new_candidate_count
+        //          << endl;
+        // candidate_count = new_candidate_count;
     }
 
-    cerr << stopwatch << " - weight systems: " << candidate_count << endl;
-}
+    cerr << stopwatch
+         << " - weight systems: " << statistics.weight_systems_found
+         << ", unique: " << weight_systems.size() << endl;
 
-void split_pairs(File &pairs_in, const fs::path &dir_out, unsigned num)
-{
-    Stopwatch stopwatch{};
-    uint32_t pair_count;
-    pairs_in.read(pair_count);
+    if (ws_out)
+        write_sorted(*ws_out, weight_systems);
 
-    cerr << stopwatch << " - pairs: " << pair_count << endl;
-
-    unsigned chunk_size = pair_count / num + 1;
-
-    optional<File> pairs_out{};
-    unsigned count = 0;
-
-    for (unsigned i = 0; i < pair_count; ++i) {
-        WeightSystemPair pair{};
-
-        read(pairs_in, pair.first);
-        read(pairs_in, pair.second);
-
-        if (count % chunk_size == 0) {
-            cerr << stopwatch << " - writing pairs\n";
-
-            fs::path path = dir_out;
-            path /= std::to_string(count / chunk_size + 1);
-
-            pairs_out = File::create_new(path.string());
-
-            if (pairs_out) {
-                pairs_out->write(static_cast<int32_t>(
-                    std::min(pair_count - count, chunk_size)));
-            } else {
-                cerr << "could not create file: " << path << endl;
-            }
-        }
-
-        ++count;
-
-        if (pairs_out) {
-            write(*pairs_out, pair.first);
-            write(*pairs_out, pair.second);
-        }
-    }
-
-    cerr << stopwatch << " - writing complete\n";
+    if (g_settings.print_weight_systems)
+        for (const auto &ws : weight_systems)
+            print_with_denominator(ws);
 }
 
 void check_ip(File &ws_in)
@@ -357,6 +294,49 @@ void check_ip(File &ws_in)
          << ", ip: " << ip_count << endl;
 }
 
+void combine_ws_files(File &in1, File &in2, File &out)
+{
+    uint32_t count1;
+    uint32_t count2;
+    in1.read(count1);
+    in2.read(count2);
+
+    WeightSystem ws1{};
+    WeightSystem ws2{};
+
+    if (count1 > 0)
+        read(in1, ws1);
+    if (count2 > 0)
+        read(in2, ws2);
+
+    while (count1 > 0 && count2 > 0) {
+        if (ws1 < ws2) {
+            write(out, ws1);
+            if (--count1 > 0)
+                read(in1, ws1);
+        } else if (ws2 < ws1) {
+            write(out, ws2);
+            if (--count2 > 0)
+                read(in2, ws2);
+        } else {
+            if (--count1 > 0)
+                read(in1, ws1);
+        }
+    }
+
+    while (count1 > 0) {
+        write(out, ws1);
+        if (--count1 > 0)
+            read(in1, ws1);
+    }
+
+    while (count2 > 0) {
+        write(out, ws2);
+        if (--count2 > 0)
+            read(in2, ws2);
+    }
+}
+
 int main(int argc, char *argv[])
 {
     using TCLAP::Arg;
@@ -378,19 +358,16 @@ int main(int argc, char *argv[])
     SwitchArg find_pairs_arg(
         "", "find-pairs",
         "Find weight system pairs in the penultimate recursion");
-    ValueArg<unsigned> split_pairs_arg( //
-        "", "split-pairs", "Split list of weight system pairs", false, 1,
-        "number");
+    // SwitchArg combine_ws_arg("", "combine-ws",
+    //                          "Combine to weight systems files");
 
     vector<Arg *> arg_list;
     arg_list.push_back(&find_candidates_arg);
     arg_list.push_back(&find_ip_arg);
     arg_list.push_back(&find_pairs_arg);
-    arg_list.push_back(&split_pairs_arg);
+    // arg_list.push_back(&combine_ws_arg);
     cmd.xorAdd(arg_list);
 
-    SwitchArg print_stats_arg("", "print-stats",
-                              "Enable printing of statistics", cmd);
     SwitchArg print_ws_arg( //
         "", "print-ws", "Enable printing of weight systems", cmd);
     ValueArg<string> ws_out_arg( //
@@ -398,16 +375,12 @@ int main(int argc, char *argv[])
         cmd);
     ValueArg<string> ws_in_arg( //
         "", "ws-in", "Weight systems source file", false, "", "file", cmd);
+    ValueArg<string> ws_in2_arg( //
+        "", "ws-in2", "Weight systems source file", false, "", "file", cmd);
     ValueArg<string> pairs_in_arg( //
         "", "pairs-in", "Pairs source file", false, "", "file", cmd);
     ValueArg<string> pairs_out_arg( //
         "", "pairs-out", "Pairs destination file", false, "", "file", cmd);
-    ValueArg<string> dir_out_arg( //
-        "", "dir-out", "Output directory", false, "", "directory", cmd);
-
-    // ValueArg<string> read_pairs_arg( //
-    //     "", "read-pairs", "Read weight system pairs from file", false, "",
-    //     "file", cmd);
 
     ValueArg<unsigned> skip_redundancy_check_arg(
         "", "skip-redundancy-check",
@@ -434,7 +407,6 @@ int main(int argc, char *argv[])
     g_settings.allow_weights_one = allow_weights_one_arg.getValue();
     g_settings.allow_weights_one_half = allow_weights_one_half_arg.getValue();
     g_settings.allow_weights_sum_one = allow_weights_sum_one_arg.getValue();
-    g_settings.print_statistics = print_stats_arg.getValue();
     g_settings.print_weight_systems = print_ws_arg.getValue();
     g_settings.debug_ignore_symmetries = ignore_symmetries_arg.getValue();
     g_settings.debug_disable_lex_order = no_lex_order_arg.getValue();
@@ -472,6 +444,17 @@ int main(int argc, char *argv[])
         }
     }
 
+    optional<File> ws_in2{};
+    if (ws_in2_arg.isSet()) {
+        fs::path path = ws_in2_arg.getValue();
+
+        ws_in2 = File::open(path);
+        if (!ws_in2) {
+            cerr << "Could not open file " << path << endl;
+            return EXIT_FAILURE;
+        }
+    }
+
     optional<File> ws_out{};
     if (ws_out_arg.isSet()) {
         fs::path path = ws_out_arg.getValue();
@@ -483,20 +466,10 @@ int main(int argc, char *argv[])
         }
     }
 
-    optional<fs::path> dir_out{};
-    if (dir_out_arg.isSet()) {
-        dir_out = dir_out_arg.getValue();
-
-        if (!fs::is_directory(*dir_out)) {
-            cerr << "No directory " << *dir_out << endl;
-            return EXIT_FAILURE;
-        }
-    }
-
     try {
         if (find_candidates_arg.getValue()) {
             if (pairs_in)
-                find_weight_systems_from_pairs(*pairs_in, dir_out);
+                find_weight_systems_from_pairs(*pairs_in, 0, -1, ws_out);
             else
                 find_weight_systems(false);
         } else if (find_ip_arg.getValue()) {
@@ -506,10 +479,10 @@ int main(int argc, char *argv[])
                 find_weight_systems(true);
         } else if (find_pairs_arg.getValue()) {
             find_pairs(ws_out, pairs_out);
-        } else if (split_pairs_arg.isSet()) {
-            if (pairs_in && dir_out)
-                split_pairs(*pairs_in, *dir_out, split_pairs_arg.getValue());
         }
+        // else if (combine_ws_arg.getValue()) {
+        //     combine_ws_files(*ws_in, *ws_in2, *ws_out);
+        // }
         return EXIT_SUCCESS;
     } catch (File::Error) {
         cerr << "IO error\n";
