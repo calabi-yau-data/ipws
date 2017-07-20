@@ -222,6 +222,8 @@ void find_pairs(optional<File> &ws_out, optional<File> &pairs_out)
 void find_weight_systems_from_pairs(
     File &pairs_in, const optional<fs::path> &weight_systems_dir)
 {
+    // TODO: Only generate weight systems that were not already written to file.
+    // TODO: Do not create file in final location until complete.
     Stopwatch stopwatch{};
     unordered_set<WeightSystemPair> pairs{};
     size_t candidate_count = 0;
@@ -330,6 +332,29 @@ void split_pairs(File &pairs_in, const fs::path &dir_out, unsigned num)
     cerr << stopwatch << " - writing complete\n";
 }
 
+void check_ip(File &ws_in)
+{
+    Stopwatch stopwatch{};
+
+    uint32_t ws_count;
+    ws_in.read(ws_count);
+
+    unsigned ip_count = 0;
+    for (unsigned i = 0; i < ws_count; ++i) {
+        WeightSystem ws{};
+        read(ws_in, ws);
+
+        if (has_ip(ws)) {
+            ++ip_count;
+            if (g_settings.print_weight_systems)
+                print_with_denominator(ws);
+        }
+    }
+
+    cerr << stopwatch << " - weight systems: " << ws_count
+         << ", ip: " << ip_count << endl;
+}
+
 int main(int argc, char *argv[])
 {
     using TCLAP::Arg;
@@ -369,6 +394,8 @@ int main(int argc, char *argv[])
     ValueArg<string> ws_out_arg( //
         "", "ws-out", "Weight systems destination file", false, "", "file",
         cmd);
+    ValueArg<string> ws_in_arg( //
+        "", "ws-in", "Weight systems source file", false, "", "file", cmd);
     ValueArg<string> pairs_in_arg( //
         "", "pairs-in", "Pairs source file", false, "", "file", cmd);
     ValueArg<string> pairs_out_arg( //
@@ -410,6 +437,17 @@ int main(int argc, char *argv[])
     g_settings.debug_ignore_symmetries = ignore_symmetries_arg.getValue();
     g_settings.debug_disable_lex_order = no_lex_order_arg.getValue();
 
+    optional<File> pairs_in{};
+    if (pairs_in_arg.isSet()) {
+        fs::path path = pairs_in_arg.getValue();
+
+        pairs_in = File::open(path);
+        if (!pairs_in) {
+            cerr << "Could not open file " << path << endl;
+            return EXIT_FAILURE;
+        }
+    }
+
     optional<File> pairs_out{};
     if (pairs_out_arg.isSet()) {
         fs::path path = pairs_out_arg.getValue();
@@ -421,6 +459,17 @@ int main(int argc, char *argv[])
         }
     }
 
+    optional<File> ws_in{};
+    if (ws_in_arg.isSet()) {
+        fs::path path = ws_in_arg.getValue();
+
+        ws_in = File::open(path);
+        if (!ws_in) {
+            cerr << "Could not open file " << path << endl;
+            return EXIT_FAILURE;
+        }
+    }
+
     optional<File> ws_out{};
     if (ws_out_arg.isSet()) {
         fs::path path = ws_out_arg.getValue();
@@ -428,17 +477,6 @@ int main(int argc, char *argv[])
         ws_out = File::create_new(path);
         if (!ws_out) {
             cerr << "Could not create new file " << path << endl;
-            return EXIT_FAILURE;
-        }
-    }
-
-    optional<File> pairs_in{};
-    if (pairs_in_arg.isSet()) {
-        fs::path path = pairs_in_arg.getValue();
-
-        pairs_in = File::open(path);
-        if (!pairs_in) {
-            cerr << "Could not open file " << path << endl;
             return EXIT_FAILURE;
         }
     }
@@ -460,7 +498,10 @@ int main(int argc, char *argv[])
             else
                 find_weight_systems(false);
         } else if (find_ip_arg.getValue()) {
-            find_weight_systems(true);
+            if (ws_in)
+                check_ip(*ws_in);
+            else
+                find_weight_systems(true);
         } else if (find_pairs_arg.getValue()) {
             find_pairs(ws_out, pairs_out);
         } else if (split_pairs_arg.isSet()) {
