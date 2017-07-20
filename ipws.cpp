@@ -435,43 +435,39 @@ bool run(int argc, char *argv[])
     g_settings.debug_ignore_symmetries = ignore_symmetries_arg.getValue();
     g_settings.debug_disable_lex_order = no_lex_order_arg.getValue();
 
-    optional<File> ws_in{};
-    optional<File> ws_in2{};
-    optional<File> ws_out{};
-    optional<File> pairs_in{};
-    optional<File> pairs_out{};
-
-    if (ws_in_arg.isSet())
-        ws_in = open_file(ws_in_arg.getValue());
-
-    if (ws_in2_arg.isSet())
-        ws_in2 = open_file(ws_in2_arg.getValue());
-
-    if (pairs_in_arg.isSet())
-        pairs_in = open_file(pairs_in_arg.getValue());
-
-    if (ws_out_arg.isSet())
-        ws_out = create_file(ws_out_arg.getValue());
-
-    if (pairs_out_arg.isSet())
-        pairs_out = create_file(pairs_out_arg.getValue());
-
     unsigned start = start_arg.getValue();
     optional<unsigned> count{};
     if (count_arg.getValue() >= 0)
         count = count_arg.getValue();
 
     if (find_candidates_arg.getValue()) {
-        if (pairs_in)
-            find_weight_systems_from_pairs(*pairs_in, start, count, ws_out);
-        else
+        if (pairs_in_arg.isSet()) {
+            File pairs_in = open_file(pairs_in_arg.getValue());
+
+            optional<File> ws_out{};
+            if (ws_out_arg.isSet())
+                ws_out = create_file(ws_out_arg.getValue());
+
+            find_weight_systems_from_pairs(pairs_in, start, count, ws_out);
+        } else {
             find_weight_systems(false);
+        }
     } else if (find_ip_arg.getValue()) {
-        if (ws_in)
-            check_ip(*ws_in);
-        else
+        if (ws_in_arg.isSet()) {
+            File ws_in = open_file(ws_in_arg.getValue());
+            check_ip(ws_in);
+        } else {
             find_weight_systems(true);
+        }
     } else if (find_pairs_arg.getValue()) {
+        optional<File> ws_out{};
+        if (ws_out_arg.isSet())
+            ws_out = create_file(ws_out_arg.getValue());
+
+        optional<File> pairs_out{};
+        if (pairs_out_arg.isSet())
+            pairs_out = create_file(pairs_out_arg.getValue());
+
         find_pairs(ws_out, pairs_out);
     }
     // else if (combine_ws_arg.getValue()) {
