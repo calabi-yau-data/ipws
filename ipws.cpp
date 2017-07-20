@@ -337,7 +337,7 @@ void combine_ws_files(File &in1, File &in2, File &out)
     }
 }
 
-int main(int argc, char *argv[])
+bool run(int argc, char *argv[])
 {
     using TCLAP::Arg;
     using TCLAP::SwitchArg;
@@ -433,7 +433,7 @@ int main(int argc, char *argv[])
         pairs_out = File::create_new(path);
         if (!pairs_out) {
             cerr << "Could not create new file " << path << endl;
-            return EXIT_FAILURE;
+            return false;
         }
     }
 
@@ -444,7 +444,7 @@ int main(int argc, char *argv[])
         ws_in = File::open(path);
         if (!ws_in) {
             cerr << "Could not open file " << path << endl;
-            return EXIT_FAILURE;
+            return false;
         }
     }
 
@@ -455,7 +455,7 @@ int main(int argc, char *argv[])
         ws_in2 = File::open(path);
         if (!ws_in2) {
             cerr << "Could not open file " << path << endl;
-            return EXIT_FAILURE;
+            return false;
         }
     }
 
@@ -466,7 +466,7 @@ int main(int argc, char *argv[])
         ws_out = File::create_new(path);
         if (!ws_out) {
             cerr << "Could not create new file " << path << endl;
-            return EXIT_FAILURE;
+            return false;
         }
     }
 
@@ -475,26 +475,31 @@ int main(int argc, char *argv[])
     if (count_arg.getValue() >= 0)
         count = count_arg.getValue();
 
+    if (find_candidates_arg.getValue()) {
+        if (pairs_in)
+            find_weight_systems_from_pairs(*pairs_in, start, count, ws_out);
+        else
+            find_weight_systems(false);
+    } else if (find_ip_arg.getValue()) {
+        if (ws_in)
+            check_ip(*ws_in);
+        else
+            find_weight_systems(true);
+    } else if (find_pairs_arg.getValue()) {
+        find_pairs(ws_out, pairs_out);
+    }
+    // else if (combine_ws_arg.getValue()) {
+    //     combine_ws_files(*ws_in, *ws_in2, *ws_out);
+    // }
+    return true;
+}
+
+int main(int argc, char *argv[])
+{
     try {
-        if (find_candidates_arg.getValue()) {
-            if (pairs_in)
-                find_weight_systems_from_pairs(*pairs_in, start, count, ws_out);
-            else
-                find_weight_systems(false);
-        } else if (find_ip_arg.getValue()) {
-            if (ws_in)
-                check_ip(*ws_in);
-            else
-                find_weight_systems(true);
-        } else if (find_pairs_arg.getValue()) {
-            find_pairs(ws_out, pairs_out);
-        }
-        // else if (combine_ws_arg.getValue()) {
-        //     combine_ws_files(*ws_in, *ws_in2, *ws_out);
-        // }
-        return EXIT_SUCCESS;
-    } catch (File::Error) {
-        cerr << "IO error\n";
+        return run(argc, argv) ? EXIT_SUCCESS : EXIT_FAILURE;
+    } catch (const std::exception &e) {
+        cerr << e.what() << endl;
         return EXIT_FAILURE;
     }
 }

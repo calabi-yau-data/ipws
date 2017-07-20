@@ -3,6 +3,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
+#include <exception>
 #include <gsl/gsl>
 
 class File {
@@ -10,7 +11,8 @@ public:
     template <class T>
     using optional = boost::optional<T>;
 
-    class Error {
+    struct Error : std::exception {
+        virtual const char* what() const noexcept { return "IO error"; }
     };
 
     File();
