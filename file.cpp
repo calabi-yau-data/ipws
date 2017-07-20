@@ -4,33 +4,23 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
+
+namespace ios = boost::iostreams;
 
 using boost::optional;
 
-File::File() : fd{-1}
-{
-}
+struct File::Impl {
+    ios::file_descriptor ios_fd;
+    ios::stream_buffer<ios::file_descriptor> buffer;
+    std::iostream stream;
 
-File::File(const File &other)
-{
-    fd = dup(other.fd);
-}
-
-File::File(File &&other) : fd{-1}
-{
-    swap(*this, other);
-}
-
-File::~File()
-{
-    close(fd);
-}
-
-File &File::operator=(File rhs)
-{
-    swap(*this, rhs);
-    return *this;
-}
+    Impl(int fd)
+            : ios_fd(fd, ios::close_handle), buffer(ios_fd), stream(&buffer)
+    {
+    }
+};
 
 optional<File> File::open(const boost::filesystem::path &path)
 {
@@ -51,18 +41,18 @@ optional<File> File::create_new(const boost::filesystem::path &path)
 
 void File::seek(unsigned pos)
 {
-    lseek(fd, pos, SEEK_SET);
+    impl->stream.seekg(pos, std::ios_base::beg);
 }
 
 void File::seek_relative(int pos)
 {
-    lseek(fd, pos, SEEK_CUR);
+    impl->stream.seekg(pos, std::ios_base::cur);
 }
 
 void File::read(void *data, size_t size)
 {
-    ssize_t ret = ::read(fd, data, size);
-    if (ret != static_cast<ssize_t>(size))
+    impl->stream.read(reinterpret_cast<char *>(data), size);
+    if (!impl->stream)
         throw Error{};
 }
 
@@ -90,8 +80,8 @@ void File::read(int32_t &data)
 
 void File::write(const void *data, size_t size)
 {
-    ssize_t ret = ::write(fd, data, size);
-    if (ret != static_cast<ssize_t>(size))
+    impl->stream.write(reinterpret_cast<const char *>(data), size);
+    if (!impl->stream)
         throw Error{};
 }
 
@@ -117,12 +107,7 @@ void File::write(int32_t data)
     write(static_cast<uint32_t>(data));
 }
 
-File::File(int fd) : fd{fd}
+File::File(int fd)
 {
-    this->fd = fd;
-}
-
-void swap(File &a, File &b)
-{
-    std::swap(a.fd, b.fd);
+    impl = std::make_shared<Impl>(fd);
 }

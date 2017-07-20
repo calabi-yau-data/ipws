@@ -5,6 +5,7 @@
 #include <boost/optional.hpp>
 #include <exception>
 #include <gsl/gsl>
+#include <memory>
 
 class File {
 public:
@@ -15,12 +16,12 @@ public:
         virtual const char *what() const noexcept { return "IO error"; }
     };
 
-    File();
-    File(const File &other);
-    File(File &&other);
-    ~File();
-    File &operator=(File rhs);
-    friend void swap(File &a, File &b);
+    File() = delete;
+
+    File(const File &other) = default;
+    File(File &&other) = default;
+    File &operator=(const File &rhs) = default;
+    File &operator=(File &&rhs) = default;
 
     static optional<File> open(const boost::filesystem::path &path);
     static optional<File> create_new(const boost::filesystem::path &path);
@@ -55,7 +56,8 @@ public:
     }
 
 private:
-    int fd;
+    struct Impl;
+    std::shared_ptr<Impl> impl;
 
     File(int fd);
 };

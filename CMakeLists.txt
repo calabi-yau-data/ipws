@@ -48,7 +48,7 @@ configure_file(
 include_directories("${PROJECT_BINARY_DIR}")
 
 set(Boost_USE_MULTITHREADED OFF)
-find_package(Boost 1.46 REQUIRED COMPONENTS filesystem)
+find_package(Boost 1.46 REQUIRED COMPONENTS filesystem iostreams)
 add_definitions(-DBOOST_FILESYSTEM_NO_DEPRECATED)
 include_directories(${Boost_INCLUDE_DIRS})
 
