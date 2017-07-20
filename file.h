@@ -30,30 +30,7 @@ public:
     void seek_relative(int pos);
 
     void read(void *data, size_t size);
-    void read(uint16_t &data);
-    void read(uint32_t &data);
-    void read(int16_t &data);
-    void read(int32_t &data);
-
     void write(const void *data, size_t size);
-    void write(uint16_t data);
-    void write(uint32_t data);
-    void write(int16_t data);
-    void write(int32_t data);
-
-    template <class T>
-    void read(gsl::span<T> data)
-    {
-        for (auto &x : data)
-            read(x);
-    }
-
-    template <class T>
-    void write(gsl::span<T> data)
-    {
-        for (auto &x : data)
-            write(x);
-    }
 
 private:
     struct Impl;
@@ -61,5 +38,14 @@ private:
 
     File(int fd);
 };
+
+void read(File &f, uint16_t &data);
+void read(File &f, uint32_t &data);
+void read(File &f, int16_t &data);
+void read(File &f, int32_t &data);
+void write(File &f, uint16_t data);
+void write(File &f, uint32_t data);
+void write(File &f, int16_t data);
+void write(File &f, int32_t data);
 
 #endif

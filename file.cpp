@@ -56,28 +56,6 @@ void File::read(void *data, size_t size)
         throw Error{};
 }
 
-void File::read(uint16_t &data)
-{
-    read(&data, sizeof data);
-    data = ntohs(data);
-}
-
-void File::read(uint32_t &data)
-{
-    read(&data, sizeof data);
-    data = ntohl(data);
-}
-
-void File::read(int16_t &data)
-{
-    read(*reinterpret_cast<uint16_t *>(&data));
-}
-
-void File::read(int32_t &data)
-{
-    read(*reinterpret_cast<uint32_t *>(&data));
-}
-
 void File::write(const void *data, size_t size)
 {
     impl->stream.write(reinterpret_cast<const char *>(data), size);
@@ -85,29 +63,51 @@ void File::write(const void *data, size_t size)
         throw Error{};
 }
 
-void File::write(uint16_t data)
-{
-    data = htons(data);
-    write(&data, sizeof data);
-}
-
-void File::write(uint32_t data)
-{
-    data = htonl(data);
-    write(&data, sizeof data);
-}
-
-void File::write(int16_t data)
-{
-    write(static_cast<uint16_t>(data));
-}
-
-void File::write(int32_t data)
-{
-    write(static_cast<uint32_t>(data));
-}
-
 File::File(int fd)
 {
     impl = std::make_shared<Impl>(fd);
+}
+
+void read(File &f, uint16_t &data)
+{
+    f.read(&data, sizeof data);
+    data = ntohs(data);
+}
+
+void read(File &f, uint32_t &data)
+{
+    f.read(&data, sizeof data);
+    data = ntohl(data);
+}
+
+void read(File &f, int16_t &data)
+{
+    read(f, *reinterpret_cast<uint16_t *>(&data));
+}
+
+void read(File &f, int32_t &data)
+{
+    read(f, *reinterpret_cast<uint32_t *>(&data));
+}
+
+void write(File &f, uint16_t data)
+{
+    data = htons(data);
+    f.write(&data, sizeof data);
+}
+
+void write(File &f, uint32_t data)
+{
+    data = htonl(data);
+    f.write(&data, sizeof data);
+}
+
+void write(File &f, int16_t data)
+{
+    write(f, static_cast<uint16_t>(data));
+}
+
+void write(File &f, int32_t data)
+{
+    write(f, static_cast<uint32_t>(data));
 }

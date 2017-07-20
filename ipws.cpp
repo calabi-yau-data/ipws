@@ -117,20 +117,20 @@ void rec(const WeightSystemBuilder &builder,
 
 void write_config(File &f)
 {
-    f.write(static_cast<uint32_t>(dim));
-    f.write(static_cast<uint32_t>(r_numerator));
-    f.write(static_cast<uint32_t>(r_denominator));
+    write(f, static_cast<uint32_t>(dim));
+    write(f, static_cast<uint32_t>(r_numerator));
+    write(f, static_cast<uint32_t>(r_denominator));
 }
 
 void check_config(File &f)
 {
     uint32_t v;
 
-    f.read(v);
+    read(f, v);
     assert(v == dim);
-    f.read(v);
+    read(f, v);
     assert(v == r_numerator);
-    f.read(v);
+    read(f, v);
     assert(v == r_denominator);
 }
 
@@ -143,7 +143,7 @@ void write_sorted(File &f, const unordered_set<WeightSystem> &weight_systems)
 
     write_config(f);
 
-    f.write(static_cast<uint32_t>(weight_systems.size()));
+    write(f, static_cast<uint32_t>(weight_systems.size()));
     for (const auto &ws : ws_list)
         write(f, ws);
 }
@@ -238,7 +238,7 @@ void find_pairs(optional<File> &ws_out, optional<File> &pairs_out)
 
         write_config(*pairs_out);
 
-        pairs_out->write(static_cast<uint32_t>(pairs.size()));
+        write(*pairs_out, static_cast<uint32_t>(pairs.size()));
         for (auto &pair : pairs) {
             write(*pairs_out, pair.first);
             write(*pairs_out, pair.second);
@@ -263,7 +263,7 @@ void find_weight_systems_from_pairs(File &pairs_in, unsigned start,
     check_config(pairs_in);
 
     uint32_t pair_count;
-    pairs_in.read(pair_count);
+    read(pairs_in, pair_count);
 
     unsigned count = count_opt ? *count_opt : pair_count - start;
 
@@ -311,7 +311,7 @@ void check_ip(File &ws_in)
     check_config(ws_in);
 
     uint32_t ws_count;
-    ws_in.read(ws_count);
+    read(ws_in, ws_count);
 
     unsigned ip_count = 0;
     for (unsigned i = 0; i < ws_count; ++i) {
@@ -336,8 +336,8 @@ void combine_ws_files(File &in1, File &in2, File &out)
 
     uint32_t count1;
     uint32_t count2;
-    in1.read(count1);
-    in2.read(count2);
+    read(in1, count1);
+    read(in2, count2);
 
     write_config(out);
 

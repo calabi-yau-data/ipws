@@ -206,7 +206,7 @@ void read(File &f, WeightSystem &ws)
 {
     for (unsigned i = 0; i < dim; ++i) {
         int32_t v;
-        f.read(v);
+        read(f, v);
         ws.weights[i] = v;
     }
 }
@@ -216,6 +216,6 @@ void write(File &f, const WeightSystem &ws)
     for (unsigned i = 0; i < dim; ++i) {
         auto v = ws.weights[i];
         assert(v >= 0 && v <= INT32_MAX);
-        f.write(static_cast<int32_t>(v));
+        write(f, static_cast<int32_t>(v));
     }
 }
