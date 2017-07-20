@@ -183,11 +183,11 @@ bool good_weight_system(const WeightSystem &ws)
     Ring n = norm(ws);
 
     for (unsigned i = 0; i < dim; ++i) {
-        if (!g_settings.allow_weight_one_half &&
+        if (!g_settings.allow_weights_one_half &&
             2 * ws.weights[i] * r_numerator == n * r_denominator)
             return false;
 
-        if (!g_settings.allow_weight_one &&
+        if (!g_settings.allow_weights_one &&
             ws.weights[i] * r_numerator == n * r_denominator)
             return false;
     }

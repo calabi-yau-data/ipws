@@ -207,10 +207,10 @@ bool leads_to_allowed_weightsystem(const Point &x)
     if (xmax * r_numerator <= r_denominator)
         return false;
 
-    if (!g_settings.allow_weight_one && xsum == 1)
+    if (!g_settings.allow_weights_one && xsum == 1)
         return false;
 
-    if (!g_settings.allow_weight_one_half && xsum == 2 && xmax == 2)
+    if (!g_settings.allow_weights_one_half && xsum == 2 && xmax == 2)
         return false;
 
     if (!g_settings.allow_weights_sum_one && xsum == 2 && xmax != 2)

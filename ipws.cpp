@@ -384,11 +384,11 @@ int main(int argc, char *argv[])
         "", "skip-redundancy-check",
         "Skip redundancy check for the number of recursions (default 2)", false,
         2, "number", cmd);
-    SwitchArg allow_weight_one_arg(
-        "", "allow-weight-one", "Allow weight systems containing a weight of 1",
-        cmd);
-    SwitchArg allow_weight_one_half_arg(
-        "", "allow-weight-one-half",
+    SwitchArg allow_weights_one_arg(
+        "", "allow-weights-one",
+        "Allow weight systems containing a weight of 1", cmd);
+    SwitchArg allow_weights_one_half_arg(
+        "", "allow-weights-one-half",
         "Allow weight systems containing a weight of 1/2", cmd);
     SwitchArg allow_weights_sum_one_arg(
         "", "allow-weights-sum-one",
@@ -402,8 +402,8 @@ int main(int argc, char *argv[])
 
     g_settings.redundancy_check_skip_recursions =
         skip_redundancy_check_arg.getValue();
-    g_settings.allow_weight_one = allow_weight_one_arg.getValue();
-    g_settings.allow_weight_one_half = allow_weight_one_half_arg.getValue();
+    g_settings.allow_weights_one = allow_weights_one_arg.getValue();
+    g_settings.allow_weights_one_half = allow_weights_one_half_arg.getValue();
     g_settings.allow_weights_sum_one = allow_weights_sum_one_arg.getValue();
     g_settings.print_statistics = print_stats_arg.getValue();
     g_settings.print_weight_systems = print_ws_arg.getValue();

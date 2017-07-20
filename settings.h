@@ -3,8 +3,8 @@
 
 struct Settings {
     unsigned redundancy_check_skip_recursions{};
-    bool allow_weight_one{};
-    bool allow_weight_one_half{};
+    bool allow_weights_one{};
+    bool allow_weights_one_half{};
     bool allow_weights_sum_one{};
     bool print_statistics{};
     bool print_weight_systems{};
