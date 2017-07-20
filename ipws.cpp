@@ -282,6 +282,7 @@ void find_weight_systems_from_pairs(
 
 int main(int argc, char *argv[])
 {
+    using TCLAP::Arg;
     using TCLAP::SwitchArg;
     using TCLAP::ValueArg;
 
@@ -292,19 +293,25 @@ int main(int argc, char *argv[])
 
     TCLAP::CmdLine cmd(description.str(), ' ', GIT_REVISION);
 
-    // Actions
     SwitchArg find_candidates_arg( //
         "", "find-candidates",
-        "Find and optionally print IP weight system candidates", cmd);
+        "Find and optionally print IP weight system candidates");
     SwitchArg find_ip_arg( //
-        "", "find-ip", "Find and optionally print IP weight systems", cmd);
+        "", "find-ip", "Find and optionally print IP weight systems");
     SwitchArg find_pairs_arg(
         "", "find-pairs",
-        "Find weight system pairs in the penultimate recursion", cmd);
+        "Find weight system pairs in the penultimate recursion");
     ValueArg<string> find_from_pairs_arg( //
         "", "find-from-pairs",
         "Find weight system candidates from given weight system pairs file",
-        false, "", "file", cmd);
+        false, "", "file");
+
+    vector<Arg *> arg_list;
+    arg_list.push_back(&find_candidates_arg);
+    arg_list.push_back(&find_ip_arg);
+    arg_list.push_back(&find_pairs_arg);
+    arg_list.push_back(&find_from_pairs_arg);
+    cmd.xorAdd(arg_list);
 
     SwitchArg print_stats_arg("", "print-stats",
                               "Enable printing of statistics", cmd);
@@ -404,15 +411,10 @@ int main(int argc, char *argv[])
             find_pairs(ws_out, pairs_out);
         } else if (find_from_pairs_arg.isSet()) {
             find_weight_systems_from_pairs(*pairs_in, weight_systems_dir);
-        } else {
-            auto e = TCLAP::ArgException("No action specified");
-            cmd.getOutput()->failure(cmd, e);
         }
         return EXIT_SUCCESS;
     } catch (File::Error) {
         cerr << "IO error\n";
-        return EXIT_FAILURE;
-    } catch (TCLAP::ExitException) {
         return EXIT_FAILURE;
     }
 }
