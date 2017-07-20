@@ -223,7 +223,8 @@ void find_pairs(optional<File> &ws_out, optional<File> &pairs_out)
 }
 
 void find_weight_systems_from_pairs(File &pairs_in, unsigned start,
-                                    optional<unsigned> count_opt, optional<File> &ws_out)
+                                    optional<unsigned> count_opt,
+                                    optional<File> &ws_out)
 {
     // TODO: Only generate weight systems that were not already written to file.
     // TODO: Do not create file in final location until complete.

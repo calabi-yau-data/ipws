@@ -12,7 +12,7 @@ public:
     using optional = boost::optional<T>;
 
     struct Error : std::exception {
-        virtual const char* what() const noexcept { return "IO error"; }
+        virtual const char *what() const noexcept { return "IO error"; }
     };
 
     File();
