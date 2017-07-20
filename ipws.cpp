@@ -229,6 +229,7 @@ void find_pairs(optional<File> &ws_out, optional<File> &pairs_out)
     if (ws_out) {
         cerr << stopwatch << " - writing weight systems\n";
         write_sorted(*ws_out, weight_systems);
+        ws_out = none;
         cerr << stopwatch << " - writing complete\n";
     }
 
@@ -242,6 +243,7 @@ void find_pairs(optional<File> &ws_out, optional<File> &pairs_out)
             write(*pairs_out, pair.first);
             write(*pairs_out, pair.second);
         }
+        pairs_out = none;
         cerr << stopwatch << " - writing complete\n";
     }
 }
@@ -290,8 +292,12 @@ void find_weight_systems_from_pairs(File &pairs_in, unsigned start,
          << " - weight systems: " << statistics.weight_systems_found
          << ", unique: " << weight_systems.size() << endl;
 
-    if (ws_out)
+    if (ws_out) {
+        cerr << stopwatch << " - writing weight systems\n";
         write_sorted(*ws_out, weight_systems);
+        ws_out = none;
+        cerr << stopwatch << " - writing complete\n";
+    }
 
     if (g_settings.print_weight_systems)
         for (const auto &ws : weight_systems)
