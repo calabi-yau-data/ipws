@@ -62,7 +62,7 @@ This does all in one run, and is feasible for `d - 2r < 4`.
 ```
 ./ipws --find-pairs --pairs-out pairs --ws-out ws
 
-./ipws --find-candidates --from 0 --count 100 --pairs-in pairs --ws-out ws-1-100
+./ipws --find-candidates --start 0 --count 100 --pairs-in pairs --ws-out ws-0
 
 ./ipws --combine-ws ....
 ./ipws --find-ip --ws-in ws ...

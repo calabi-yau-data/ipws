@@ -13,7 +13,7 @@ endif()
 
 # Signed integer overflow check for the types 'int' and 'long'.
 set(FLAGS "${FLAGS} -fsanitize=signed-integer-overflow -fsanitize-undefined-trap-on-error")
-set(FLAGS "${FLAGS} -pedantic -Wall -Wextra -Wconversion")
+set(FLAGS "${FLAGS} -pedantic -Wall -Wextra -Wconversion -Wno-maybe-uninitialized")
 
 set(FLAGS_DEBUG "-O0 -g")
 set(FLAGS_RELEASE "-O3")

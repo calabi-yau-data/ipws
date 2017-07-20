@@ -223,7 +223,7 @@ void find_pairs(optional<File> &ws_out, optional<File> &pairs_out)
 }
 
 void find_weight_systems_from_pairs(File &pairs_in, unsigned start,
-                                    int count, optional<File> &ws_out)
+                                    optional<unsigned> count_opt, optional<File> &ws_out)
 {
     // TODO: Only generate weight systems that were not already written to file.
     // TODO: Do not create file in final location until complete.
@@ -236,15 +236,15 @@ void find_weight_systems_from_pairs(File &pairs_in, unsigned start,
     uint32_t pair_count;
     pairs_in.read(pair_count);
 
-    cerr << stopwatch << " - pairs: " << pair_count << endl;
+    unsigned count = count_opt ? *count_opt : pair_count - start;
 
-    if (count < 0)
-        count = pair_count - start;
+    cerr << stopwatch << " - total pairs: " << pair_count
+         << ", pairs used: " << pair_count << endl;
 
     assert(start + count <= pair_count);
     pairs_in.seek_relative(weight_system_storage_size * start);
 
-    for (int i = 0; i < count; ++i) {
+    for (unsigned i = 0; i < count; ++i) {
         WeightSystemPair pair{};
 
         read(pairs_in, pair.first);
@@ -381,6 +381,10 @@ int main(int argc, char *argv[])
         "", "pairs-in", "Pairs source file", false, "", "file", cmd);
     ValueArg<string> pairs_out_arg( //
         "", "pairs-out", "Pairs destination file", false, "", "file", cmd);
+    ValueArg<unsigned> start_arg( //
+        "", "start", "", false, 0, "number", cmd);
+    ValueArg<int> count_arg( //
+        "", "count", "", false, -1, "number", cmd);
 
     ValueArg<unsigned> skip_redundancy_check_arg(
         "", "skip-redundancy-check",
@@ -466,10 +470,15 @@ int main(int argc, char *argv[])
         }
     }
 
+    unsigned start = start_arg.getValue();
+    optional<unsigned> count{};
+    if (count_arg.getValue() >= 0)
+        count = count_arg.getValue();
+
     try {
         if (find_candidates_arg.getValue()) {
             if (pairs_in)
-                find_weight_systems_from_pairs(*pairs_in, 0, -1, ws_out);
+                find_weight_systems_from_pairs(*pairs_in, start, count, ws_out);
             else
                 find_weight_systems(false);
         } else if (find_ip_arg.getValue()) {
