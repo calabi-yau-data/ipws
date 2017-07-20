@@ -337,6 +337,26 @@ void combine_ws_files(File &in1, File &in2, File &out)
     }
 }
 
+File open_file(const fs::path &path)
+{
+    optional<File> f = File::open(path);
+    if (!f) {
+        cerr << "Could not open file " << path << endl;
+        exit(EXIT_FAILURE);
+    }
+    return *f;
+}
+
+File create_file(const fs::path &path)
+{
+    optional<File> f = File::create_new(path);
+    if (!f) {
+        cerr << "Could not create new file " << path << endl;
+        exit(EXIT_FAILURE);
+    }
+    return *f;
+}
+
 bool run(int argc, char *argv[])
 {
     using TCLAP::Arg;
@@ -415,60 +435,26 @@ bool run(int argc, char *argv[])
     g_settings.debug_ignore_symmetries = ignore_symmetries_arg.getValue();
     g_settings.debug_disable_lex_order = no_lex_order_arg.getValue();
 
-    optional<File> pairs_in{};
-    if (pairs_in_arg.isSet()) {
-        fs::path path = pairs_in_arg.getValue();
-
-        pairs_in = File::open(path);
-        if (!pairs_in) {
-            cerr << "Could not open file " << path << endl;
-            return EXIT_FAILURE;
-        }
-    }
-
-    optional<File> pairs_out{};
-    if (pairs_out_arg.isSet()) {
-        fs::path path = pairs_out_arg.getValue();
-
-        pairs_out = File::create_new(path);
-        if (!pairs_out) {
-            cerr << "Could not create new file " << path << endl;
-            return false;
-        }
-    }
-
     optional<File> ws_in{};
-    if (ws_in_arg.isSet()) {
-        fs::path path = ws_in_arg.getValue();
-
-        ws_in = File::open(path);
-        if (!ws_in) {
-            cerr << "Could not open file " << path << endl;
-            return false;
-        }
-    }
-
     optional<File> ws_in2{};
-    if (ws_in2_arg.isSet()) {
-        fs::path path = ws_in2_arg.getValue();
-
-        ws_in2 = File::open(path);
-        if (!ws_in2) {
-            cerr << "Could not open file " << path << endl;
-            return false;
-        }
-    }
-
     optional<File> ws_out{};
-    if (ws_out_arg.isSet()) {
-        fs::path path = ws_out_arg.getValue();
+    optional<File> pairs_in{};
+    optional<File> pairs_out{};
 
-        ws_out = File::create_new(path);
-        if (!ws_out) {
-            cerr << "Could not create new file " << path << endl;
-            return false;
-        }
-    }
+    if (ws_in_arg.isSet())
+        ws_in = open_file(ws_in_arg.getValue());
+
+    if (ws_in2_arg.isSet())
+        ws_in2 = open_file(ws_in2_arg.getValue());
+
+    if (pairs_in_arg.isSet())
+        pairs_in = open_file(pairs_in_arg.getValue());
+
+    if (ws_out_arg.isSet())
+        ws_out = create_file(ws_out_arg.getValue());
+
+    if (pairs_out_arg.isSet())
+        pairs_out = create_file(pairs_out_arg.getValue());
 
     unsigned start = start_arg.getValue();
     optional<unsigned> count{};
