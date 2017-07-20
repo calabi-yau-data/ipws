@@ -201,6 +201,8 @@ void find_pairs(optional<File> &ws_out, optional<File> &pairs_out)
         stopwatch);
     cerr << stopwatch << " - pairs: " << statistics.pairs_found
          << ", unique: " << pairs.size() << endl;
+    cerr << stopwatch << " - weight systems: " << statistics.weight_systems_found
+         << ", unique: " << weight_systems.size() << endl;
 
     if (ws_out) {
         cerr << stopwatch << " - writing weight systems\n";
