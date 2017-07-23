@@ -268,7 +268,7 @@ void find_weight_systems_from_pairs(File &pairs_in, unsigned start,
     unsigned count = count_opt ? *count_opt : pair_count - start;
 
     cerr << stopwatch << " - total pairs: " << pair_count
-         << ", pairs used: " << pair_count << endl;
+         << ", pairs used: " << count << endl;
 
     assert(start + count <= pair_count);
     pairs_in.seek_relative(weight_system_storage_size * start);
