@@ -273,7 +273,11 @@ void find_weight_systems_from_pairs(File &pairs_in, unsigned start,
     assert(start + count <= pair_count);
     pairs_in.seek_relative(weight_system_storage_size * start);
 
+    // srand(1234);
     for (unsigned i = 0; i < count; ++i) {
+        // pairs_in.seek((rand() % (pair_count / weight_system_storage_size)) *
+        //               weight_system_storage_size);
+
         WeightSystemPair pair{};
 
         read(pairs_in, pair.first);
