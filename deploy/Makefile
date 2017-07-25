@@ -51,4 +51,4 @@ df:
 
 .PHONY: du
 du:
-	$(ansible) all -a 'du "{{ work_dir }}"'
+	$(ansible) all -a 'du -hs "{{ work_dir }}"'
