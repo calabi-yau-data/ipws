@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 using Ring = @LATTICE_RING@;
+constexpr const char *ring_name = "@LATTICE_RING@";
 
 constexpr unsigned dim = @DIMENSION@;
 constexpr Ring r_numerator = @R_NUMERATOR@;

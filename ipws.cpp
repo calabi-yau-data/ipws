@@ -394,7 +394,7 @@ bool run(int argc, char *argv[])
     std::ostringstream description;
     description << "Classify weight systems with d=" << dim
                 << ", r=" << r_numerator << "/" << r_denominator
-                << " using ring type '" << typeid(Ring).name() << "'";
+                << " using ring '" << ring_name << "'";
 
     TCLAP::CmdLine cmd(description.str(), ' ', GIT_REVISION);
 
