@@ -9,11 +9,11 @@ ansible-playbook=ansible-playbook -i inventory
 
 .PHONY: usage
 usage:
-	@echo Usage: make ipws pairs deploy
+	@echo Usage: make ipws pairs deploy find-ws
 
 .PHONY: ipws
 ipws:
-	rm -rf build && mkdir build && cd build && \
+	rm -rf build-$(suffix) && mkdir build-$(suffix) && cd build-$(suffix) && \
 	cmake -DCMAKE_BUILD_TYPE=Release -DLINK_STATICALLY=ON \
 	      -DDIMENSION=$(dimension) -DR_NUMERATOR=$(r_numerator) \
 	      -DR_DENOMINATOR=$(r_denominator) ../.. && \
@@ -21,14 +21,13 @@ ipws:
 
 pairs:
 	mkdir -p data
-	build/ipws --find-pairs --pairs-out data/pairs-$(suffix) --ws-out data/ws-$(suffix)
+	build-$(suffix)/ipws-$(suffix) --find-pairs --pairs-out data/pairs-$(suffix) --ws-out data/ws-$(suffix)
 
-.PHONY: count-pairs
-count-pairs:
-	$(eval pair_count=`build/ipws --print-count --pairs-in data/$(pairs)`)
-
-deploy: count-pairs
+deploy:
 	$(ansible-playbook) --extra-vars "suffix=$(suffix)" deploy.yml
+
+find-ws:
+	$(ansible-playbook) --extra-vars "suffix=$(suffix)" find-ws.yml
 
 ping:
 	$(ansible) all -m ping

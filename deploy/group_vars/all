@@ -1,4 +1,5 @@
 ---
-ipws_path: "{{ work_dir }}/ipws"
+ipws_path: "{{ work_dir }}/ipws-{{ suffix }}"
+run_ipws_path: "{{ work_dir }}/run-ipws-{{ suffix }}"
 pairs_path: "{{ work_dir }}/data/pairs-{{ suffix }}"
 ws_path_start: "{{ work_dir }}/data/ws-{{ suffix }}"

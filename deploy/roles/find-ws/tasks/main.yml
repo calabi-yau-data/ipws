@@ -1,0 +1,15 @@
+---
+- name: Read pair count
+  command: "{{ ipws_path }} --print-count --pairs-in {{ pairs_path }}"
+  register: pair_count_output
+
+- name: Set pair count
+  set_fact:
+    pair_count: "{{ pair_count_output.stdout }}"
+
+- name: Run ipws
+  command: >
+    {{ run_ipws_path }} {{ ipws_path }} {{ pairs_path }}
+    {{ ws_path_start }} {{ pair_count }}
+    {{ task_count }} {{ item }} {{ chunk_size }}
+  with_items: "{{ tasks }}"

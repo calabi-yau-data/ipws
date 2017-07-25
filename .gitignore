@@ -2,3 +2,4 @@
 /deploy/build-*
 /deploy/data
 /deploy/inventory
+/deploy/*.retry

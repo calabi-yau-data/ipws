@@ -9,7 +9,7 @@
 
 - name: Copy ipws
   copy:
-    src: build/ipws
+    src: build-{{ suffix }}/ipws-{{ suffix }}
     dest: "{{ ipws_path }}"
     mode: 0755
 
@@ -22,5 +22,5 @@
 - name: Create ipws run script
   template:
     src: run-ipws
-    dest: "{{ work_dir }}/run-ipws"
-    mode: 0644
+    dest: "{{ run_ipws_path }}"
+    mode: 0755
