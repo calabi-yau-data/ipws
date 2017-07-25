@@ -78,17 +78,15 @@ void rec(const WeightSystemBuilder &builder,
 
     switch (n) {
     case dim - 2:
-        /* if (defer_last_recursion) */ {
-            pairs.insert(canonicalize(builder.to_pair()));
-            ++statistics.pairs_found;
+        // defer last recursion
+        pairs.insert(canonicalize(builder.to_pair()));
+        ++statistics.pairs_found;
 
-            if (statistics.pairs_found % 10000 == 0)
-                cerr << stopwatch << " - pairs: " << statistics.pairs_found
-                     << ", unique: " << pairs.size() << endl;
+        if (statistics.pairs_found % 10000 == 0)
+            cerr << stopwatch << " - pairs: " << statistics.pairs_found
+                 << ", unique: " << pairs.size() << endl;
 
-            return;
-        }
-        break;
+        return;
     case dim - 1:
         return;
     }
