@@ -9,7 +9,7 @@ ansible-playbook=ansible-playbook -i inventory
 
 .PHONY: usage
 usage:
-	@echo Usage: make ipws pairs deploy copy-pairs find-ws
+	@echo Usage: make ipws pairs deploy copy-pairs find-candidates
 
 .PHONY: ipws
 ipws:
@@ -19,24 +19,31 @@ ipws:
 	      -DR_DENOMINATOR=$(r_denominator) ../.. && \
 	make
 
+.PHONY: pairs
 pairs:
 	mkdir -p data
 	build-$(suffix)/ipws-$(suffix) --find-pairs --pairs-out data/pairs-$(suffix) --ws-out data/ws-$(suffix)
 
+.PHONY: deploy
 deploy:
 	$(ansible-playbook) --extra-vars "suffix=$(suffix)" deploy.yml
 
+.PHONY: copy-pairs
 copy-pairs:
 	$(ansible-playbook) --extra-vars "suffix=$(suffix)" copy-pairs.yml
 
-find-ws:
-	$(ansible-playbook) --extra-vars "suffix=$(suffix)" find-ws.yml
+.PHONY: find-candidates
+find-candidates:
+	$(ansible-playbook) --extra-vars "suffix=$(suffix)" find-candidates.yml
 
+.PHONY: ping
 ping:
 	$(ansible) all -m ping
 
+.PHONY: df
 df:
 	$(ansible) all -a df
 
+.PHONY: du
 du:
 	$(ansible) all -a 'du "{{ work_dir }}"'
