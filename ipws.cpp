@@ -254,8 +254,6 @@ void find_weight_systems_from_pairs(ifstream &pairs_in, unsigned start,
                                     optional<unsigned> count_opt,
                                     ofstream *ws_out)
 {
-    // TODO: Only generate weight systems that were not already written to file.
-    // TODO: Do not create file in final location until complete.
     unordered_set<WeightSystem> weight_systems{};
     Statistics statistics{};
     Stopwatch stopwatch{};
