@@ -9,7 +9,7 @@ ansible-playbook=ansible-playbook -i inventory
 
 .PHONY: usage
 usage:
-	@echo Usage: make ipws pairs deploy find-ws
+	@echo Usage: make ipws pairs deploy copy-pairs find-ws
 
 .PHONY: ipws
 ipws:
@@ -25,6 +25,9 @@ pairs:
 
 deploy:
 	$(ansible-playbook) --extra-vars "suffix=$(suffix)" deploy.yml
+
+copy-pairs:
+	$(ansible-playbook) --extra-vars "suffix=$(suffix)" copy-pairs.yml
 
 find-ws:
 	$(ansible-playbook) --extra-vars "suffix=$(suffix)" find-ws.yml

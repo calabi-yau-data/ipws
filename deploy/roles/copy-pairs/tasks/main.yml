@@ -1,0 +1,12 @@
+---
+- name: Create directory
+  file:
+    path: "{{ data_dir }}"
+    state: directory
+    mode: 0755
+
+- name: Copy pairs
+  copy:
+    src: data/pairs-{{ suffix }}
+    dest: "{{ pairs_path }}"
+    mode: 0644

@@ -1,12 +1,4 @@
 ---
-- name: Create directories
-  file:
-    path: "{{ item }}"
-    state: directory
-    mode: 0755
-  with_items:
-    - "{{ work_dir }}/data"
-
 - name: Copy ipws
   copy:
     src: build-{{ suffix }}/ipws-{{ suffix }}
@@ -19,8 +11,8 @@
     dest: "{{ pairs_path }}"
     mode: 0644
 
-- name: Create ipws run script
-  template:
+- name: Copy ipws run script
+  copy:
     src: run-ipws
     dest: "{{ run_ipws_path }}"
     mode: 0755
