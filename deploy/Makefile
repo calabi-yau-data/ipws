@@ -35,3 +35,6 @@ ping:
 
 df:
 	$(ansible) all -a df
+
+du:
+	$(ansible) all -a 'du "{{ work_dir }}"'
