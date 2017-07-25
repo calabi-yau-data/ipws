@@ -1,8 +1,10 @@
 #include <tclap/CmdLine.h>
+#include <algorithm>
 #include <boost/optional.hpp>
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <random>
 #include <set>
 #include <sstream>
 #include <unordered_set>
@@ -136,18 +138,37 @@ void check_config(ifstream &f)
 void write_sorted(ofstream &f,
                   const unordered_set<WeightSystem> &weight_systems)
 {
-    vector<WeightSystem> ws_list{};
-    ws_list.reserve(weight_systems.size());
+    vector<WeightSystem> sorted{};
+    sorted.reserve(weight_systems.size());
 
     std::copy(weight_systems.begin(), weight_systems.end(),
-              std::back_inserter(ws_list));
+              std::back_inserter(sorted));
 
-    std::sort(ws_list.begin(), ws_list.end());
+    std::sort(sorted.begin(), sorted.end());
 
     write_config(f);
-    write(f, static_cast<uint32_t>(ws_list.size()));
-    for (const auto &ws : ws_list)
+    write(f, static_cast<uint32_t>(sorted.size()));
+    for (const auto &ws : sorted)
         write_varint(f, ws);
+}
+
+void write_randomized(ofstream &f, const unordered_set<WeightSystemPair> &pairs)
+{
+    vector<WeightSystemPair> sorted{};
+    sorted.reserve(pairs.size());
+
+    std::copy(pairs.begin(), pairs.end(), std::back_inserter(sorted));
+
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(sorted.begin(), sorted.end(), g);
+
+    write_config(f);
+    write(f, static_cast<uint32_t>(sorted.size()));
+    for (const auto &pair : sorted) {
+        write(f, pair.first);
+        write(f, pair.second);
+    }
 }
 
 void weight_systems_from_pair(unordered_set<WeightSystem> &weight_systems,
@@ -237,14 +258,7 @@ void find_pairs(ofstream *ws_out, ofstream *pairs_out)
 
     if (pairs_out) {
         cerr << stopwatch << " - writing pairs\n";
-
-        write_config(*pairs_out);
-
-        write(*pairs_out, static_cast<uint32_t>(pairs.size()));
-        for (auto &pair : pairs) {
-            write(*pairs_out, pair.first);
-            write(*pairs_out, pair.second);
-        }
+        write_randomized(*pairs_out, pairs);
         pairs_out->close();
         cerr << stopwatch << " - writing complete\n";
     }
