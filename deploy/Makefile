@@ -7,9 +7,6 @@ suffix=$(dimension)-$(r_numerator)-$(r_denominator)
 ansible=ansible -i inventory
 ansible-playbook=ansible-playbook -i inventory
 
-ping:
-	$(ansible) all -m ping
-
 .PHONY: ipws
 ipws:
 	rm -rf build && mkdir build && cd build && \
@@ -28,3 +25,9 @@ count-pairs:
 
 deploy: count-pairs
 	$(ansible-playbook) --extra-vars "suffix=$(suffix)" deploy.yml
+
+ping:
+	$(ansible) all -m ping
+
+df:
+	$(ansible) all -a df
