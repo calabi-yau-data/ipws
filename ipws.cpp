@@ -361,6 +361,9 @@ void combine_ws_files(ifstream &in1, ifstream &in2, ofstream &out)
 
     write_config(out);
 
+    uint32_t count = 0;
+    write(out, count);
+
     WeightSystem ws1{};
     WeightSystem ws2{};
 
@@ -372,10 +375,12 @@ void combine_ws_files(ifstream &in1, ifstream &in2, ofstream &out)
     while (count1 > 0 && count2 > 0) {
         if (ws1 < ws2) {
             write_varint(out, ws1);
+            ++count;
             if (--count1 > 0)
                 read_varint(in1, ws1);
         } else if (ws2 < ws1) {
             write_varint(out, ws2);
+            ++count;
             if (--count2 > 0)
                 read_varint(in2, ws2);
         } else {
@@ -386,15 +391,22 @@ void combine_ws_files(ifstream &in1, ifstream &in2, ofstream &out)
 
     while (count1 > 0) {
         write_varint(out, ws1);
+        ++count;
         if (--count1 > 0)
             read_varint(in1, ws1);
     }
 
     while (count2 > 0) {
         write_varint(out, ws2);
+        ++count;
         if (--count2 > 0)
             read_varint(in2, ws2);
     }
+
+    // Write header again, now with correct count
+    out.seekp(0);
+    write_config(out);
+    write(out, count);
 }
 
 void print_count(ifstream &in)
