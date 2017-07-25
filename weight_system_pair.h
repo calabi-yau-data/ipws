@@ -14,9 +14,11 @@ template <>
 struct hash<WeightSystemPair> {
     size_t operator()(WeightSystemPair const &pair) const
     {
-        size_t ret = 934761;
-        ret = ret * 18739 + std::hash<WeightSystem>{}(pair.first);
-        ret = ret * 18739 + std::hash<WeightSystem>{}(pair.second);
+        size_t ret = 13968802923818332081u;
+        ret =
+            ret * 14053336887773799961u + std::hash<WeightSystem>{}(pair.first);
+        ret = ret * 14053336887773799961u +
+              std::hash<WeightSystem>{}(pair.second);
         return ret;
     }
 };

@@ -20,9 +20,9 @@ template <>
 struct hash<WeightSystem> {
     size_t operator()(WeightSystem const &ws) const
     {
-        size_t ret = 237037;
+        size_t ret = 17280498655953172247u;
         for (const auto &w : ws.weights)
-            ret = ret * 92647 + std::hash<Ring>{}(w);
+            ret = ret * 15004982843340118561u + std::hash<Ring>{}(w);
         return ret;
     }
 };
