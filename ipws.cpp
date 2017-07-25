@@ -2,12 +2,13 @@
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <iostream>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <unordered_set>
 #include "config.h"
-#include "file.h"
 #include "history.h"
+#include "io.h"
 #include "point.h"
 #include "settings.h"
 #include "stl_utils.h"
@@ -26,6 +27,10 @@ using std::endl;
 using std::unordered_set;
 using std::string;
 using std::vector;
+using std::ostream;
+using std::istream;
+using std::unique_ptr;
+using std::make_unique;
 
 namespace fs = boost::filesystem;
 
@@ -115,14 +120,14 @@ void rec(const WeightSystemBuilder &builder,
     }
 }
 
-void write_config(File &f)
+void write_config(ostream &f)
 {
     write(f, static_cast<uint32_t>(dim));
     write(f, static_cast<uint32_t>(r_numerator));
     write(f, static_cast<uint32_t>(r_denominator));
 }
 
-void check_config(File &f)
+void check_config(istream &f)
 {
     uint32_t v;
 
@@ -134,7 +139,7 @@ void check_config(File &f)
     assert(v == r_denominator);
 }
 
-void write_sorted(File &f, const unordered_set<WeightSystem> &weight_systems)
+void write_sorted(ostream &f, const unordered_set<WeightSystem> &weight_systems)
 {
     vector<WeightSystem> ws_list{};
     ws_list.reserve(weight_systems.size());
@@ -210,7 +215,7 @@ void find_weight_systems(bool ip_only)
     }
 }
 
-void find_pairs(optional<File> &ws_out, optional<File> &pairs_out)
+void find_pairs(ostream *ws_out, ostream *pairs_out)
 {
     Stopwatch stopwatch{};
     History history{};
@@ -229,7 +234,7 @@ void find_pairs(optional<File> &ws_out, optional<File> &pairs_out)
     if (ws_out) {
         cerr << stopwatch << " - writing weight systems\n";
         write_sorted(*ws_out, weight_systems);
-        ws_out = none;
+        ws_out->flush();
         cerr << stopwatch << " - writing complete\n";
     }
 
@@ -243,14 +248,14 @@ void find_pairs(optional<File> &ws_out, optional<File> &pairs_out)
             write(*pairs_out, pair.first);
             write(*pairs_out, pair.second);
         }
-        pairs_out = none;
+        pairs_out->flush();
         cerr << stopwatch << " - writing complete\n";
     }
 }
 
-void find_weight_systems_from_pairs(File &pairs_in, unsigned start,
+void find_weight_systems_from_pairs(istream &pairs_in, unsigned start,
                                     optional<unsigned> count_opt,
-                                    optional<File> &ws_out)
+                                    ostream *ws_out)
 {
     // TODO: Only generate weight systems that were not already written to file.
     // TODO: Do not create file in final location until complete.
@@ -271,12 +276,13 @@ void find_weight_systems_from_pairs(File &pairs_in, unsigned start,
          << ", pairs used: " << count << endl;
 
     assert(start + count <= pair_count);
-    pairs_in.seek_relative(weight_system_storage_size * start);
+    pairs_in.seekg(weight_system_storage_size * start, std::ios_base::cur);
 
     // srand(1234);
     for (unsigned i = 0; i < count; ++i) {
-        // pairs_in.seek((rand() % (pair_count / weight_system_storage_size)) *
-        //               weight_system_storage_size);
+        // pairs_in.seekg((rand() % (pair_count / weight_system_storage_size)) *
+        //                    weight_system_storage_size,
+        //                std::ios_base::cur);
 
         WeightSystemPair pair{};
 
@@ -299,7 +305,7 @@ void find_weight_systems_from_pairs(File &pairs_in, unsigned start,
     if (ws_out) {
         cerr << stopwatch << " - writing weight systems\n";
         write_sorted(*ws_out, weight_systems);
-        ws_out = none;
+        ws_out->flush();
         cerr << stopwatch << " - writing complete\n";
     }
 
@@ -308,7 +314,7 @@ void find_weight_systems_from_pairs(File &pairs_in, unsigned start,
             print_with_denominator(ws);
 }
 
-void check_ip(File &ws_in)
+void check_ip(istream &ws_in)
 {
     Stopwatch stopwatch{};
 
@@ -333,7 +339,7 @@ void check_ip(File &ws_in)
          << ", ip: " << ip_count << endl;
 }
 
-void combine_ws_files(File &in1, File &in2, File &out)
+void combine_ws_files(istream &in1, istream &in2, ostream &out)
 {
     check_config(in1);
     check_config(in2);
@@ -381,28 +387,11 @@ void combine_ws_files(File &in1, File &in2, File &out)
     }
 }
 
-File open_file(const fs::path &path)
-{
-    optional<File> f = File::open(path);
-    if (!f) {
-        cerr << "Could not open file " << path << endl;
-        exit(EXIT_FAILURE);
-    }
-    return *f;
-}
-
-File create_file(const fs::path &path)
-{
-    optional<File> f = File::create_new(path);
-    if (!f) {
-        cerr << "Could not create new file " << path << endl;
-        exit(EXIT_FAILURE);
-    }
-    return *f;
-}
-
 bool run(int argc, char *argv[])
 {
+    using std::fstream;
+    using std::ifstream;
+    using std::ofstream;
     using TCLAP::Arg;
     using TCLAP::SwitchArg;
     using TCLAP::ValueArg;
@@ -486,33 +475,45 @@ bool run(int argc, char *argv[])
 
     if (find_candidates_arg.getValue()) {
         if (pairs_in_arg.isSet()) {
-            File pairs_in = open_file(pairs_in_arg.getValue());
+            ifstream pairs_in(pairs_in_arg.getValue(), fstream::binary);
+            pairs_in.exceptions(fstream::failbit);
 
-            optional<File> ws_out{};
-            if (ws_out_arg.isSet())
-                ws_out = create_file(ws_out_arg.getValue());
+            unique_ptr<ostream> ws_out{};
+            if (ws_out_arg.isSet()) {
+                ws_out = make_unique<ofstream>(ws_out_arg.getValue(),
+                                               std::ios::binary);
+                ws_out->exceptions(fstream::failbit);
+            }
 
-            find_weight_systems_from_pairs(pairs_in, start, count, ws_out);
+            find_weight_systems_from_pairs(pairs_in, start, count,
+                                           ws_out.get());
         } else {
             find_weight_systems(false);
         }
     } else if (find_ip_arg.getValue()) {
         if (ws_in_arg.isSet()) {
-            File ws_in = open_file(ws_in_arg.getValue());
+            ifstream ws_in(ws_in_arg.getValue(), std::ios::binary);
+            ws_in.exceptions(fstream::failbit);
             check_ip(ws_in);
         } else {
             find_weight_systems(true);
         }
     } else if (find_pairs_arg.getValue()) {
-        optional<File> ws_out{};
-        if (ws_out_arg.isSet())
-            ws_out = create_file(ws_out_arg.getValue());
+        unique_ptr<ostream> ws_out{};
+        if (ws_out_arg.isSet()) {
+            ws_out =
+                make_unique<ofstream>(ws_out_arg.getValue(), std::ios::binary);
+            ws_out->exceptions(fstream::failbit);
+        }
 
-        optional<File> pairs_out{};
-        if (pairs_out_arg.isSet())
-            pairs_out = create_file(pairs_out_arg.getValue());
+        unique_ptr<ostream> pairs_out{};
+        if (pairs_out_arg.isSet()) {
+            pairs_out = make_unique<ofstream>(pairs_out_arg.getValue(),
+                                              std::ios::binary);
+            pairs_out->exceptions(fstream::failbit);
+        }
 
-        find_pairs(ws_out, pairs_out);
+        find_pairs(ws_out.get(), pairs_out.get());
     }
     // else if (combine_ws_arg.getValue()) {
     //     combine_ws_files(*ws_in, *ws_in2, *ws_out);

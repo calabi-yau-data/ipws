@@ -3,7 +3,6 @@
 
 #include <array>
 #include "config.h"
-#include "file.h"
 #include "point.h"
 #include "vector_mixin.h"
 
@@ -56,8 +55,8 @@ void cancel(WeightSystem &ws);
 void sort(WeightSystem &ws);
 Ring norm(const WeightSystem &ws);
 bool good_weight_system(const WeightSystem &ws);
-void read(File &f, WeightSystem &ws);
-void write(File &f, const WeightSystem &ws);
+void read(std::istream &f, WeightSystem &ws);
+void write(std::ostream &f, const WeightSystem &ws);
 
 // Returns the weight system q that is a linear combination of q1 and q2
 // such that its distance to x is zero. Equivalently:

@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <boost/math/common_factor.hpp>
 #include <gsl/gsl>
+#include "io.h"
 #include "settings.h"
 
 extern "C" {
@@ -202,7 +203,7 @@ bool good_weight_system(const WeightSystem &ws)
     return true;
 }
 
-void read(File &f, WeightSystem &ws)
+void read(std::istream &f, WeightSystem &ws)
 {
     for (unsigned i = 0; i < dim; ++i) {
         int32_t v;
@@ -211,7 +212,7 @@ void read(File &f, WeightSystem &ws)
     }
 }
 
-void write(File &f, const WeightSystem &ws)
+void write(std::ostream &f, const WeightSystem &ws)
 {
     for (unsigned i = 0; i < dim; ++i) {
         auto v = ws.weights[i];
