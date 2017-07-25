@@ -59,12 +59,23 @@ This does all in one run, and is feasible for `d - 2r < 4`.
 
 ### Find all IP weight systems, parallelizable
 
+First, generate a list of weight system pairs and the list of weight systems found along the way:
+
 ```
 ./ipws --find-pairs --pairs-out pairs --ws-out ws
-
-./ipws --find-candidates --start 0 --count 100 --pairs-in pairs --ws-out ws-0
-
-./ipws --combine-ws ....
-./ipws --find-ip --ws-in ws ...
 ```
 
+Next iterate over all the weight system pairs and generate weight systems:
+
+```
+./ipws --find-candidates --start 0 --count 100 --pairs-in pairs --ws-out ws-0
+./ipws --find-candidates --start 100 --count 100 --pairs-in pairs --ws-out ws-100
+...
+```
+
+Combine all the so found weight systems into one big list, two at a time:
+
+```
+./ipws --combine-ws ws-0 --ws-in ws-100 --ws-out ws-a
+...
+```

@@ -416,15 +416,16 @@ bool run(int argc, char *argv[])
         "Find weight system pairs in the penultimate recursion");
     SwitchArg print_count_arg( //
         "", "print-count", "Print the number entries in the given file");
-    // SwitchArg combine_ws_arg("", "combine-ws",
-    //                          "Combine to weight systems files");
+    ValueArg<string> combine_ws_arg( //
+        "", "combine-ws", "Combine given weight systems file with a second one",
+        false, "", "file");
 
     vector<Arg *> arg_list;
     arg_list.push_back(&find_candidates_arg);
     arg_list.push_back(&find_ip_arg);
     arg_list.push_back(&find_pairs_arg);
     arg_list.push_back(&print_count_arg);
-    // arg_list.push_back(&combine_ws_arg);
+    arg_list.push_back(&combine_ws_arg);
     cmd.xorAdd(arg_list);
 
     SwitchArg print_ws_arg( //
@@ -434,8 +435,6 @@ bool run(int argc, char *argv[])
         cmd);
     ValueArg<string> ws_in_arg( //
         "", "ws-in", "Weight systems source file", false, "", "file", cmd);
-    ValueArg<string> ws_in2_arg( //
-        "", "ws-in2", "Weight systems source file", false, "", "file", cmd);
     ValueArg<string> pairs_in_arg( //
         "", "pairs-in", "Pairs source file", false, "", "file", cmd);
     ValueArg<string> pairs_out_arg( //
@@ -531,10 +530,17 @@ bool run(int argc, char *argv[])
             in.exceptions(fstream::failbit);
             print_count(in);
         }
+    } else if (combine_ws_arg.isSet()) {
+        if (ws_in_arg.isSet() && ws_out_arg.isSet()) {
+            ifstream ws_in(ws_in_arg.getValue(), std::ios::binary);
+            ws_in.exceptions(fstream::failbit);
+            ifstream ws_in2(combine_ws_arg.getValue(), std::ios::binary);
+            ws_in.exceptions(fstream::failbit);
+            ofstream ws_out(ws_out_arg.getValue(), std::ios::binary);
+            ws_out.exceptions(fstream::failbit);
+            combine_ws_files(ws_in, ws_in2, ws_out);
+        }
     }
-    // else if (combine_ws_arg.getValue()) {
-    //     combine_ws_files(*ws_in, *ws_in2, *ws_out);
-    // }
     return true;
 }
 
