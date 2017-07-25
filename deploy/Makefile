@@ -7,6 +7,10 @@ suffix=$(dimension)-$(r_numerator)-$(r_denominator)
 ansible=ansible -i inventory
 ansible-playbook=ansible-playbook -i inventory
 
+.PHONY: usage
+usage:
+	@echo Usage: make ipws pairs deploy
+
 .PHONY: ipws
 ipws:
 	rm -rf build && mkdir build && cd build && \
