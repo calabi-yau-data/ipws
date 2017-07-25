@@ -1,6 +1,6 @@
 #include <tclap/CmdLine.h>
-#include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <set>
@@ -18,9 +18,7 @@
 #include "weight_system_pair.h"
 
 using boost::optional;
-using boost::none;
 using gsl::span;
-using std::array;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -31,8 +29,6 @@ using std::ostream;
 using std::istream;
 using std::unique_ptr;
 using std::make_unique;
-
-namespace fs = boost::filesystem;
 
 struct Statistics {
     unsigned weight_systems_found;

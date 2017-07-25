@@ -47,9 +47,7 @@ configure_file(
   )
 include_directories("${PROJECT_BINARY_DIR}")
 
-set(Boost_USE_MULTITHREADED OFF)
-find_package(Boost 1.46 REQUIRED COMPONENTS filesystem)
-add_definitions(-DBOOST_FILESYSTEM_NO_DEPRECATED)
+find_package(Boost 1.46 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_library(ip_check ip_check.c palp/Polynf.c palp/Coord.c palp/Rat.c
@@ -62,4 +60,4 @@ add_library(common io.cpp history.cpp point.cpp settings.cpp weight_system.cpp
 target_link_libraries(common ip_check)
 
 add_executable(ipws ipws.cpp)
-target_link_libraries(ipws common ${Boost_LIBRARIES})
+target_link_libraries(ipws common)
