@@ -1,6 +1,6 @@
 ---
 data_dir: "{{ work_dir }}/data"
 ipws_path: "{{ work_dir }}/ipws-{{ suffix }}"
-run_ipws_path: "{{ work_dir }}/run-ipws-{{ suffix }}"
+find_candidates_path: "{{ work_dir }}/find-candidates"
 pairs_path: "{{ data_dir }}/pairs-{{ suffix }}"
 ws_path_start: "{{ data_dir }}/ws-{{ suffix }}"

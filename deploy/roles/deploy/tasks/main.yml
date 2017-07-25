@@ -11,8 +11,8 @@
     dest: "{{ pairs_path }}"
     mode: 0644
 
-- name: Copy ipws run script
+- name: Copy find candidates script
   copy:
-    src: run-ipws
-    dest: "{{ run_ipws_path }}"
+    src: find-candidates
+    dest: "{{ find_candidates_path }}"
     mode: 0755

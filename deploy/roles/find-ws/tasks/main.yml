@@ -9,7 +9,7 @@
 
 - name: Run ipws
   command: >
-    {{ run_ipws_path }} {{ ipws_path }} {{ pairs_path }}
+    {{ find_candidates_path }} {{ ipws_path }} {{ pairs_path }}
     {{ ws_path_start }} {{ pair_count }}
     {{ task_count }} {{ item }} {{ chunk_size }}
   with_items: "{{ tasks }}"
