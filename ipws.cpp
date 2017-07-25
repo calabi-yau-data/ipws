@@ -25,8 +25,8 @@ using std::endl;
 using std::unordered_set;
 using std::string;
 using std::vector;
-using std::ostream;
-using std::istream;
+using std::ofstream;
+using std::ifstream;
 using std::unique_ptr;
 using std::make_unique;
 
@@ -116,14 +116,14 @@ void rec(const WeightSystemBuilder &builder,
     }
 }
 
-void write_config(ostream &f)
+void write_config(ofstream &f)
 {
     write(f, static_cast<uint32_t>(dim));
     write(f, static_cast<uint32_t>(r_numerator));
     write(f, static_cast<uint32_t>(r_denominator));
 }
 
-void check_config(istream &f)
+void check_config(ifstream &f)
 {
     uint32_t v;
 
@@ -135,7 +135,8 @@ void check_config(istream &f)
     assert(v == r_denominator);
 }
 
-void write_sorted(ostream &f, const unordered_set<WeightSystem> &weight_systems)
+void write_sorted(ofstream &f,
+                  const unordered_set<WeightSystem> &weight_systems)
 {
     vector<WeightSystem> ws_list{};
     ws_list.reserve(weight_systems.size());
@@ -213,7 +214,7 @@ void find_weight_systems(bool ip_only)
     }
 }
 
-void find_pairs(ostream *ws_out, ostream *pairs_out)
+void find_pairs(ofstream *ws_out, ofstream *pairs_out)
 {
     Stopwatch stopwatch{};
     History history{};
@@ -232,7 +233,7 @@ void find_pairs(ostream *ws_out, ostream *pairs_out)
     if (ws_out) {
         cerr << stopwatch << " - writing weight systems\n";
         write_sorted(*ws_out, weight_systems);
-        ws_out->flush();
+        ws_out->close();
         cerr << stopwatch << " - writing complete\n";
     }
 
@@ -246,14 +247,14 @@ void find_pairs(ostream *ws_out, ostream *pairs_out)
             write(*pairs_out, pair.first);
             write(*pairs_out, pair.second);
         }
-        pairs_out->flush();
+        pairs_out->close();
         cerr << stopwatch << " - writing complete\n";
     }
 }
 
-void find_weight_systems_from_pairs(istream &pairs_in, unsigned start,
+void find_weight_systems_from_pairs(ifstream &pairs_in, unsigned start,
                                     optional<unsigned> count_opt,
-                                    ostream *ws_out)
+                                    ofstream *ws_out)
 {
     // TODO: Only generate weight systems that were not already written to file.
     // TODO: Do not create file in final location until complete.
@@ -303,7 +304,7 @@ void find_weight_systems_from_pairs(istream &pairs_in, unsigned start,
     if (ws_out) {
         cerr << stopwatch << " - writing weight systems\n";
         write_sorted(*ws_out, weight_systems);
-        ws_out->flush();
+        ws_out->close();
         cerr << stopwatch << " - writing complete\n";
     }
 
@@ -312,7 +313,7 @@ void find_weight_systems_from_pairs(istream &pairs_in, unsigned start,
             print_with_denominator(ws);
 }
 
-void check_ip(istream &ws_in)
+void check_ip(ifstream &ws_in)
 {
     Stopwatch stopwatch{};
 
@@ -337,7 +338,7 @@ void check_ip(istream &ws_in)
          << ", ip: " << ip_count << endl;
 }
 
-void combine_ws_files(istream &in1, istream &in2, ostream &out)
+void combine_ws_files(ifstream &in1, ifstream &in2, ofstream &out)
 {
     check_config(in1);
     check_config(in2);
@@ -388,8 +389,6 @@ void combine_ws_files(istream &in1, istream &in2, ostream &out)
 bool run(int argc, char *argv[])
 {
     using std::fstream;
-    using std::ifstream;
-    using std::ofstream;
     using TCLAP::Arg;
     using TCLAP::SwitchArg;
     using TCLAP::ValueArg;
@@ -476,7 +475,7 @@ bool run(int argc, char *argv[])
             ifstream pairs_in(pairs_in_arg.getValue(), fstream::binary);
             pairs_in.exceptions(fstream::failbit);
 
-            unique_ptr<ostream> ws_out{};
+            unique_ptr<ofstream> ws_out{};
             if (ws_out_arg.isSet()) {
                 ws_out = make_unique<ofstream>(ws_out_arg.getValue(),
                                                std::ios::binary);
@@ -497,14 +496,14 @@ bool run(int argc, char *argv[])
             find_weight_systems(true);
         }
     } else if (find_pairs_arg.getValue()) {
-        unique_ptr<ostream> ws_out{};
+        unique_ptr<ofstream> ws_out{};
         if (ws_out_arg.isSet()) {
             ws_out =
                 make_unique<ofstream>(ws_out_arg.getValue(), std::ios::binary);
             ws_out->exceptions(fstream::failbit);
         }
 
-        unique_ptr<ostream> pairs_out{};
+        unique_ptr<ofstream> pairs_out{};
         if (pairs_out_arg.isSet()) {
             pairs_out = make_unique<ofstream>(pairs_out_arg.getValue(),
                                               std::ios::binary);
