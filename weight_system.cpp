@@ -205,6 +205,7 @@ bool good_weight_system(const WeightSystem &ws)
 
 void read(std::istream &f, WeightSystem &ws)
 {
+    static_assert(weight_system_storage_size == dim * sizeof(int32_t));
     for (unsigned i = 0; i < dim; ++i) {
         int32_t v;
         read(f, v);

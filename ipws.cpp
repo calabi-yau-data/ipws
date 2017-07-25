@@ -268,6 +268,7 @@ void find_weight_systems_from_pairs(ifstream &pairs_in, unsigned start,
                                     optional<unsigned> count_opt,
                                     ofstream *ws_out)
 {
+    constexpr unsigned pair_storage_size = 2 * weight_system_storage_size;
     unordered_set<WeightSystem> weight_systems{};
     Statistics statistics{};
     Stopwatch stopwatch{};
@@ -285,12 +286,12 @@ void find_weight_systems_from_pairs(ifstream &pairs_in, unsigned start,
          << ", pairs used: " << count << endl;
 
     assert(start + count <= pair_count);
-    pairs_in.seekg(weight_system_storage_size * start, std::ios_base::cur);
+    pairs_in.seekg(pair_storage_size * start, std::ios_base::cur);
 
     // srand(1234);
     for (unsigned i = 0; i < count; ++i) {
-        // pairs_in.seekg((rand() % (pair_count / weight_system_storage_size)) *
-        //                    weight_system_storage_size,
+        // pairs_in.seekg((rand() % (pair_count / pair_storage_size)) *
+        //                    pair_storage_size,
         //                std::ios_base::cur);
 
         WeightSystemPair pair{};
