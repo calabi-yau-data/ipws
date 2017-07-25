@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+
+import datetime
+import os
+import subprocess
+import sys
+
+if len(sys.argv) != 7:
+    print("Usage: {} <pairs_path> <ws_path_start> <pair_count> <task_count> "
+          "<task_number> <chunk_size>".format(sys.argv[0]))
+    sys.exit(1)
+
+pairs_path, ws_path_start = sys.argv[1:3]
+pair_count, task_count, task_number, chunk_size = \
+    (int(x) for x in sys.argv[3:])
+
+pairs_per_task = pair_count // task_count + 1
+
+task_start_pair = pairs_per_task * task_number
+task_end_pair = min(pair_count, task_start_pair + pairs_per_task)
+task_pair_count = task_end_pair - task_start_pair
+
+for pair in range(task_start_pair, task_end_pair, chunk_size):
+    end_pair = min(pair + chunk_size, task_end_pair)
+    count = end_pair - pair
+
+    ws_path = "{}-{}-{}".format(ws_path_start, pair, end_pair - 1)
+    ws_tmp_path = ws_path + ".tmp"
+
+    if os.path.isfile(ws_path):
+        continue
+
+    cmd = ["ipws", "--find-candidates",
+           "--start", str(pair), "--count", str(count),
+           "--pairs-in", pairs_path, "--ws-out", ws_tmp_path]
+
+    print(datetime.datetime.utcnow(), cmd)
+
+    if subprocess.call(cmd, stderr=sys.stdout) == 0:
+        os.rename(ws_tmp_path, ws_path)
+    else:
+        print("failed")
