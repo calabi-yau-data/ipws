@@ -1,15 +1,16 @@
 ---
 - name: Read pair count
-  command: "{{ ipws_path }} --print-count --pairs-in {{ pairs_path }}"
+  command: >
+    "{{ ipws_path }}" --print-count --pairs-in "{{ pairs_path }}"
   register: pair_count_output
 
 - name: Set pair count
   set_fact:
     pair_count: "{{ pair_count_output.stdout }}"
 
-- name: Run ipws
-  command: >
-    {{ find_candidates_path }} {{ ipws_path }} {{ pairs_path }}
-    {{ ws_path_start }} {{ pair_count }}
-    {{ task_count }} {{ item }} {{ chunk_size }}
+- name: Find candidates
+  shell: >
+    "{{ find_candidates_path }}" "{{ ipws_path }}" "{{ pairs_path }}"
+    "{{ ws_path_start }}" "{{ pair_count }}"
+    "{{ task_count }}" "{{ item }}" "{{ chunk_size }}" >>"{{ log_path }}" 2>&1
   with_items: "{{ tasks }}"

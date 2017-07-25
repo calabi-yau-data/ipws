@@ -5,12 +5,6 @@
     dest: "{{ ipws_path }}"
     mode: 0755
 
-- name: Copy pairs
-  copy:
-    src: data/pairs-{{ suffix }}
-    dest: "{{ pairs_path }}"
-    mode: 0644
-
 - name: Copy find candidates script
   copy:
     src: find-candidates

@@ -35,8 +35,10 @@ for pair in range(task_start_pair, task_end_pair, chunk_size):
            "--pairs-in", pairs_path, "--ws-out", ws_tmp_path]
 
     print(datetime.datetime.utcnow(), cmd)
+    sys.stdout.flush()
 
     if subprocess.call(cmd, stderr=sys.stdout) == 0:
         os.rename(ws_tmp_path, ws_path)
     else:
         print("failed")
+        sys.stdout.flush()
