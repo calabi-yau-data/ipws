@@ -10,3 +10,9 @@
     src: find-candidates
     dest: "{{ find_candidates_path }}"
     mode: 0755
+
+- name: Copy combine candidates script
+  copy:
+    src: combine-candidates
+    dest: "{{ combine_candidates_path }}"
+    mode: 0755

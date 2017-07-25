@@ -9,7 +9,8 @@ ansible-playbook=ansible-playbook -i inventory
 
 .PHONY: usage
 usage:
-	@echo Usage: make ipws pairs deploy copy-pairs find-candidates
+	@echo "Usage: make ipws pairs deploy copy-pairs find-candidates"
+	@echo "       make combine-candidates"
 
 .PHONY: ipws
 ipws:
@@ -35,6 +36,10 @@ copy-pairs:
 .PHONY: find-candidates
 find-candidates:
 	$(ansible-playbook) --extra-vars "suffix=$(suffix)" find-candidates.yml
+
+.PHONY: combine-candidates
+combine-candidates:
+	$(ansible-playbook) --extra-vars "suffix=$(suffix)" combine-candidates.yml
 
 .PHONY: ping
 ping:
