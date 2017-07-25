@@ -384,6 +384,14 @@ void combine_ws_files(ifstream &in1, ifstream &in2, ofstream &out)
     }
 }
 
+void print_count(ifstream &in)
+{
+    check_config(in);
+    uint32_t count;
+    read(in, count);
+    cout << count << endl;
+}
+
 bool run(int argc, char *argv[])
 {
     using std::fstream;
@@ -406,6 +414,8 @@ bool run(int argc, char *argv[])
     SwitchArg find_pairs_arg(
         "", "find-pairs",
         "Find weight system pairs in the penultimate recursion");
+    SwitchArg print_count_arg( //
+        "", "print-count", "Print the number entries in the given file");
     // SwitchArg combine_ws_arg("", "combine-ws",
     //                          "Combine to weight systems files");
 
@@ -413,6 +423,7 @@ bool run(int argc, char *argv[])
     arg_list.push_back(&find_candidates_arg);
     arg_list.push_back(&find_ip_arg);
     arg_list.push_back(&find_pairs_arg);
+    arg_list.push_back(&print_count_arg);
     // arg_list.push_back(&combine_ws_arg);
     cmd.xorAdd(arg_list);
 
@@ -509,6 +520,17 @@ bool run(int argc, char *argv[])
         }
 
         find_pairs(ws_out.get(), pairs_out.get());
+    } else if (print_count_arg.getValue()) {
+        if (ws_in_arg.isSet()) {
+            ifstream in(ws_in_arg.getValue(), std::ios::binary);
+            in.exceptions(fstream::failbit);
+            print_count(in);
+        }
+        if (pairs_in_arg.isSet()) {
+            ifstream in(pairs_in_arg.getValue(), std::ios::binary);
+            in.exceptions(fstream::failbit);
+            print_count(in);
+        }
     }
     // else if (combine_ws_arg.getValue()) {
     //     combine_ws_files(*ws_in, *ws_in2, *ws_out);
