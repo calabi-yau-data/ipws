@@ -57,7 +57,7 @@ void write_varint(std::ostream &f, unsigned long i)
     f.write(reinterpret_cast<char *>(&v), sizeof(v));
 }
 
-boost::optional<unsigned long> read_varint(std::istream &f)
+unsigned long read_varint(std::istream &f)
 {
     unsigned long ret = 0;
     unsigned pos = 0;
@@ -71,7 +71,7 @@ boost::optional<unsigned long> read_varint(std::istream &f)
         ret |= w << pos;
 
         if (ret >> pos != w)
-            return {};
+            throw VarintReadError();
 
         if ((v & 128) == 0)
             break;

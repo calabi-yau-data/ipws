@@ -206,7 +206,7 @@ bool good_weight_system(const WeightSystem &ws)
 void read(std::istream &f, WeightSystem &ws)
 {
     for (unsigned i = 0; i < dim; ++i) {
-        auto v = *read_varint(f);
+        auto v = read_varint(f);
         assert(v <= std::numeric_limits<Ring>::max());
         ws.weights[i] = static_cast<Ring>(v);
     }
