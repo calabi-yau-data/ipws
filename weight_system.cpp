@@ -206,13 +206,31 @@ bool good_weight_system(const WeightSystem &ws)
 void read(std::istream &f, WeightSystem &ws)
 {
     for (unsigned i = 0; i < dim; ++i) {
+        int32_t v;
+        read(f, v);
+        ws.weights[i] = v;
+    }
+}
+
+void write(std::ostream &f, const WeightSystem &ws)
+{
+    for (unsigned i = 0; i < dim; ++i) {
+        auto v = ws.weights[i];
+        assert(v >= 0 && v <= INT32_MAX);
+        write(f, static_cast<int32_t>(v));
+    }
+}
+
+void read_varint(std::istream &f, WeightSystem &ws)
+{
+    for (unsigned i = 0; i < dim; ++i) {
         auto v = read_varint(f);
         assert(v <= std::numeric_limits<Ring>::max());
         ws.weights[i] = static_cast<Ring>(v);
     }
 }
 
-void write(std::ostream &f, const WeightSystem &ws)
+void write_varint(std::ostream &f, const WeightSystem &ws)
 {
     for (unsigned i = 0; i < dim; ++i)
         write_varint(f, ws.weights[i]);

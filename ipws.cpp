@@ -147,7 +147,7 @@ void write_sorted(ofstream &f,
     write_config(f);
     write(f, static_cast<uint32_t>(ws_list.size()));
     for (const auto &ws : ws_list)
-        write(f, ws);
+        write_varint(f, ws);
 }
 
 void weight_systems_from_pair(unordered_set<WeightSystem> &weight_systems,
@@ -323,7 +323,7 @@ void check_ip(ifstream &ws_in)
     unsigned ip_count = 0;
     for (unsigned i = 0; i < ws_count; ++i) {
         WeightSystem ws{};
-        read(ws_in, ws);
+        read_varint(ws_in, ws);
 
         if (has_ip(ws)) {
             ++ip_count;
@@ -352,35 +352,35 @@ void combine_ws_files(ifstream &in1, ifstream &in2, ofstream &out)
     WeightSystem ws2{};
 
     if (count1 > 0)
-        read(in1, ws1);
+        read_varint(in1, ws1);
     if (count2 > 0)
-        read(in2, ws2);
+        read_varint(in2, ws2);
 
     while (count1 > 0 && count2 > 0) {
         if (ws1 < ws2) {
-            write(out, ws1);
+            write_varint(out, ws1);
             if (--count1 > 0)
-                read(in1, ws1);
+                read_varint(in1, ws1);
         } else if (ws2 < ws1) {
-            write(out, ws2);
+            write_varint(out, ws2);
             if (--count2 > 0)
-                read(in2, ws2);
+                read_varint(in2, ws2);
         } else {
             if (--count1 > 0)
-                read(in1, ws1);
+                read_varint(in1, ws1);
         }
     }
 
     while (count1 > 0) {
-        write(out, ws1);
+        write_varint(out, ws1);
         if (--count1 > 0)
-            read(in1, ws1);
+            read_varint(in1, ws1);
     }
 
     while (count2 > 0) {
-        write(out, ws2);
+        write_varint(out, ws2);
         if (--count2 > 0)
-            read(in2, ws2);
+            read_varint(in2, ws2);
     }
 }
 
