@@ -11,12 +11,12 @@ Requirements:
 - boost library
 
 The dimension `d` and the index `r` of the weight systems are determined at compile time.
-For an ordinary release build with `d=4` and `r=1/2` run:
+For an ordinary release build with `d=6` and `r=3/2` run:
 
 ```
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DDIMENSION=4 -DR_NUMERATOR=1 -DR_DENOMINATOR=2 ..
+cmake -DCMAKE_BUILD_TYPE=Release -DDIMENSION=6 -DR_NUMERATOR=3 -DR_DENOMINATOR=2 ..
 make
 ```
 
@@ -34,7 +34,7 @@ Then run:
 ```
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DLINK_STATICALLY=ON -DDIMENSION=4 -DR_NUMERATOR=1 -DR_DENOMINATOR=2 ..
+cmake -DCMAKE_BUILD_TYPE=Release -DLINK_STATICALLY=ON -DDIMENSION=6 -DR_NUMERATOR=3 -DR_DENOMINATOR=2 ..
 make
 ```
 
@@ -46,7 +46,7 @@ Usage
 This does all in one run, and is feasible for `d - 2r < 4`.
 
 ```
-./ipws --find-candidates --print-ws
+./ipws-6-3-2 --find-candidates --print-ws
 ```
 
 ### Print all IP weight systems
@@ -54,7 +54,7 @@ This does all in one run, and is feasible for `d - 2r < 4`.
 This does all in one run, and is feasible for `d - 2r < 4`.
 
 ```
-./ipws --find-ip --print-ws
+./ipws-6-3-2 --find-ip --print-ws
 ```
 
 ### Find all IP weight systems, parallelizable
@@ -62,20 +62,20 @@ This does all in one run, and is feasible for `d - 2r < 4`.
 First, generate a list of weight system pairs and the list of weight systems found along the way:
 
 ```
-./ipws --find-pairs --pairs-out pairs --ws-out ws
+./ipws-6-3-2 --find-pairs --pairs-out pairs --ws-out ws
 ```
 
 Next iterate over all the weight system pairs and generate weight systems:
 
 ```
-./ipws --find-candidates --start 0 --count 100 --pairs-in pairs --ws-out ws-0
-./ipws --find-candidates --start 100 --count 100 --pairs-in pairs --ws-out ws-100
+./ipws-6-3-2 --find-candidates --start 0 --count 100 --pairs-in pairs --ws-out ws-0
+./ipws-6-3-2 --find-candidates --start 100 --count 100 --pairs-in pairs --ws-out ws-100
 ...
 ```
 
 Combine all the so found weight systems into one big list, two at a time:
 
 ```
-./ipws --combine-ws ws-0 --ws-in ws-100 --ws-out ws-a
+./ipws-6-3-2 --combine-ws ws-0 --ws-in ws-100 --ws-out ws-a
 ...
 ```

@@ -6,6 +6,8 @@ set(DIMENSION 4 CACHE STRING "Dimension")
 set(R_NUMERATOR 1 CACHE STRING "Index numerator")
 set(R_DENOMINATOR 1 CACHE STRING "Index denominator")
 
+set(SUFFIX ${DIMENSION}-${R_NUMERATOR}-${R_DENOMINATOR})
+
 option(LINK_STATICALLY "Link statically" OFF)
 if(LINK_STATICALLY)
   link_libraries(-static)
@@ -59,5 +61,5 @@ add_library(common io.cpp history.cpp point.cpp settings.cpp weight_system.cpp
   weight_system_builder.cpp weight_system_pair.cpp)
 target_link_libraries(common ip_check)
 
-add_executable(ipws ipws.cpp)
-target_link_libraries(ipws common)
+add_executable(ipws-${SUFFIX} ipws.cpp)
+target_link_libraries(ipws-${SUFFIX} common)
