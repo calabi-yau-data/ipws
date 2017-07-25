@@ -1,0 +1,26 @@
+---
+- name: Create directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  with_items:
+    - "{{ work_dir }}/data"
+
+- name: Copy ipws
+  copy:
+    src: build/ipws
+    dest: "{{ ipws_path }}"
+    mode: 0755
+
+- name: Copy pairs
+  copy:
+    src: data/pairs-{{ suffix }}
+    dest: "{{ pairs_path }}"
+    mode: 0644
+
+- name: Create ipws run script
+  template:
+    src: run-ipws
+    dest: "{{ work_dir }}/run-ipws"
+    mode: 0644
