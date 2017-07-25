@@ -44,3 +44,40 @@ void write(std::ostream &f, int32_t data)
 {
     write(f, static_cast<uint32_t>(data));
 }
+
+void write_varint(std::ostream &f, unsigned long i)
+{
+    while (i > 127) {
+        unsigned char v = static_cast<unsigned char>(i) | 128;
+        f.write(reinterpret_cast<char *>(&v), sizeof(v));
+        i >>= 7;
+    }
+
+    unsigned char v = static_cast<unsigned char>(i);
+    f.write(reinterpret_cast<char *>(&v), sizeof(v));
+}
+
+boost::optional<unsigned long> read_varint(std::istream &f)
+{
+    unsigned long ret = 0;
+    unsigned pos = 0;
+
+    while (true) {
+        unsigned char v;
+        f.read(reinterpret_cast<char *>(&v), sizeof(v));
+
+        unsigned long w = v & 127;
+
+        ret |= w << pos;
+
+        if (ret >> pos != w)
+            return {};
+
+        if ((v & 128) == 0)
+            break;
+
+        pos += 7;
+    }
+
+    return ret;
+}
