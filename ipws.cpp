@@ -143,12 +143,14 @@ void write_sorted(ostream &f, const unordered_set<WeightSystem> &weight_systems)
 {
     vector<WeightSystem> ws_list{};
     ws_list.reserve(weight_systems.size());
+
     std::copy(weight_systems.begin(), weight_systems.end(),
               std::back_inserter(ws_list));
 
-    write_config(f);
+    std::sort(ws_list.begin(), ws_list.end());
 
-    write(f, static_cast<uint32_t>(weight_systems.size()));
+    write_config(f);
+    write(f, static_cast<uint32_t>(ws_list.size()));
     for (const auto &ws : ws_list)
         write(f, ws);
 }
