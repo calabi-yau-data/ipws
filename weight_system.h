@@ -62,9 +62,9 @@ void write_varint(std::ostream &f, const WeightSystem &ws);
 
 // Returns the weight system q that is a linear combination of q1 and q2
 // such that its distance to x is zero. Equivalently:
-// 1) q.distance_from(x) == 0
-// 2) q1.distance_from(y) == 0 && q2.distance_from(y) == 0 implies
-//    q.distance_from(y) == 0 for all y
+// 1) distance(q, x) == 0
+// 2) for any y, distance(q1, y) == 0 && distance(q2, y) == 0 implies
+//    distance(q, y) == 0
 const WeightSystem intersect(const WeightSystem &q1, const WeightSystem &q2,
                              const Point &x);
 
