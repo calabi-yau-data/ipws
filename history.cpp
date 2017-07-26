@@ -12,7 +12,7 @@ bool last_point_redundant(int n, const History &history)
         if (rel > 0)
             return true;
         if (!g_settings.debug_disable_lex_order && rel == 0 &&
-            history.points[i] < x)
+            x > history.points[i])
             return true;
     }
 
@@ -67,8 +67,10 @@ bool last_point_redundant2(const WeightSystemBuilder &builder, int n,
         for (int i = 0; i < n; ++i) {
             Ring diff = history.point_weight_system_distances[i][i] -
                         distance(history.weight_systems[i], x);
-            if (diff > 0 || (!g_settings.debug_disable_lex_order && diff == 0 &&
-                             x > history.points[i]))
+            if (diff > 0)
+                return true;
+            if (!g_settings.debug_disable_lex_order && diff == 0 &&
+                x > history.points[i])
                 return true;
         }
     }
