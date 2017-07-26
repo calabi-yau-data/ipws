@@ -1,5 +1,5 @@
-/build/
-/deploy/build-*
+/build*
+/deploy/build*
 /deploy/data
 /deploy/inventory
 /deploy/*.retry
