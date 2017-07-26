@@ -1,5 +1,4 @@
 #include "Global.h"
-// Must come after Global.h
 #include "Rat.h"
 
 Rat  rI(Long a) 			       		      /*  a -> a/1  */

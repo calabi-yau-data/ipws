@@ -55,7 +55,8 @@ include_directories(${Boost_INCLUDE_DIRS})
 add_library(ip_check ip_check.c palp/Polynf.c palp/Coord.c palp/Rat.c
   palp/Vertex.c)
 target_compile_options(ip_check PRIVATE -Wno-conversion -Wno-unused-parameter
-  -Wno-misleading-indentation -Wno-unused-but-set-variable)
+  -Wno-misleading-indentation -Wno-unused-but-set-variable -Wno-parentheses
+  -Wno-int-in-bool-context)
 
 add_library(common io.cpp history.cpp point.cpp settings.cpp weight_system.cpp
   weight_system_builder.cpp weight_system_pair.cpp)
