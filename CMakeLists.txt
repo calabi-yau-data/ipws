@@ -41,10 +41,10 @@ else()
   add_definitions("-DGIT_REVISION=\"${GIT_HASH}(dirty)\"")
 endif()
 
-include_directories("${PROJECT_SOURCE_DIR}/include")
+include_directories("${PROJECT_SOURCE_DIR}/src/include")
 
 configure_file(
-  "${PROJECT_SOURCE_DIR}/config.h.in"
+  "${PROJECT_SOURCE_DIR}/src/config.h.in"
   "${PROJECT_BINARY_DIR}/config.h"
   )
 include_directories("${PROJECT_BINARY_DIR}")
@@ -52,15 +52,13 @@ include_directories("${PROJECT_BINARY_DIR}")
 find_package(Boost 1.46 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
-add_library(ip_check ip_check.c palp/Polynf.c palp/Coord.c palp/Rat.c
-  palp/Vertex.c)
+add_library(ip_check src/ip_check.c src/palp/Polynf.c src/palp/Coord.c
+  src/palp/Rat.c src/palp/Vertex.c)
 target_compile_options(ip_check PRIVATE -Wno-conversion -Wno-unused-parameter
   -Wno-misleading-indentation -Wno-unused-but-set-variable -Wno-parentheses
   -Wno-int-in-bool-context)
 
-add_library(common io.cpp history.cpp point.cpp settings.cpp weight_system.cpp
-  weight_system_builder.cpp weight_system_pair.cpp)
-target_link_libraries(common ip_check)
-
-add_executable(ipws-${SUFFIX} ipws.cpp)
-target_link_libraries(ipws-${SUFFIX} common)
+add_executable(ipws-${SUFFIX} src/ipws.cpp src/io.cpp src/history.cpp
+  src/point.cpp src/settings.cpp src/weight_system.cpp
+  src/weight_system_builder.cpp src/weight_system_pair.cpp)
+target_link_libraries(ipws-${SUFFIX} ip_check)
