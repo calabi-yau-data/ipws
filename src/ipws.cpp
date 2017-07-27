@@ -567,7 +567,7 @@ bool run(int argc, char *argv[])
             ifstream ws_in(ws_in_arg.getValue(), std::ios::binary);
             ws_in.exceptions(fstream::failbit);
             ifstream ws_in2(combine_ws_arg.getValue(), std::ios::binary);
-            ws_in.exceptions(fstream::failbit);
+            ws_in2.exceptions(fstream::failbit);
             ofstream ws_out(ws_out_arg.getValue(), std::ios::binary);
             ws_out.exceptions(fstream::failbit);
             combine_ws_files(ws_in, ws_in2, ws_out);
