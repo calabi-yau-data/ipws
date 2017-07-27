@@ -1,6 +1,3 @@
-clean:
-	rm -rf build-*
-
 3-1-2:
 	rm -rf build-3-1-2
 	mkdir build-3-1-2
@@ -35,3 +32,6 @@ clean:
 	rm -rf build-6-1-1
 	mkdir build-6-1-1
 	cd build-6-1-1 && cmake -DCMAKE_BUILD_TYPE=Release -DLINK_STATICALLY=ON -DDIMENSION=6 -DR_NUMERATOR=1 -DR_DENOMINATOR=1 ..
+
+clean:
+	rm -rf build-*
