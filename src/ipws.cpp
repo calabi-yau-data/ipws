@@ -351,6 +351,8 @@ void check_ip(ifstream &ws_in)
 
 void combine_ws_files(ifstream &in1, ifstream &in2, ofstream &out)
 {
+    Stopwatch stopwatch{};
+
     check_config(in1);
     check_config(in2);
 
@@ -358,6 +360,9 @@ void combine_ws_files(ifstream &in1, ifstream &in2, ofstream &out)
     uint32_t count2;
     read(in1, count1);
     read(in2, count2);
+
+    cerr << stopwatch << " - weight systems: " << count1
+         << " and " << count2 << endl;
 
     write_config(out);
 
@@ -407,6 +412,8 @@ void combine_ws_files(ifstream &in1, ifstream &in2, ofstream &out)
     out.seekp(0);
     write_config(out);
     write(out, count);
+
+    cerr << stopwatch << " - combined weight systems: " << count << endl;
 }
 
 void print_count(ifstream &in)
