@@ -2,6 +2,8 @@
 #define WEIGHT_SYSTEM_H
 
 #include <array>
+#include "buffered_reader.h"
+#include "buffered_writer.h"
 #include "config.h"
 #include "point.h"
 #include "vector_mixin.h"
@@ -55,10 +57,10 @@ void cancel(WeightSystem &ws);
 void sort(WeightSystem &ws);
 Ring norm(const WeightSystem &ws);
 bool good_weight_system(const WeightSystem &ws);
-void read(std::istream &f, WeightSystem &ws);
-void write(std::ostream &f, const WeightSystem &ws);
-void read_varint(std::istream &f, WeightSystem &ws);
-void write_varint(std::ostream &f, const WeightSystem &ws);
+void read(BufferedReader &f, WeightSystem &ws);
+void write(BufferedWriter &f, const WeightSystem &ws);
+void read_varint(BufferedReader &f, WeightSystem &ws);
+void write_varint(BufferedWriter &f, const WeightSystem &ws);
 
 // Returns the weight system q that is a linear combination of q1 and q2
 // such that its distance to x is zero. Equivalently:

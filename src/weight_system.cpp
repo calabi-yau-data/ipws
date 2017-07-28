@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <boost/math/common_factor.hpp>
 #include <gsl/gsl>
-#include "io.h"
 #include "settings.h"
 
 extern "C" {
@@ -203,7 +202,7 @@ bool good_weight_system(const WeightSystem &ws)
     return true;
 }
 
-void read(std::istream &f, WeightSystem &ws)
+void read(BufferedReader &f, WeightSystem &ws)
 {
     static_assert(weight_system_storage_size == dim * sizeof(int32_t),
                   "The constant 'weight_system_storage_size' does not have the "
@@ -215,7 +214,7 @@ void read(std::istream &f, WeightSystem &ws)
     }
 }
 
-void write(std::ostream &f, const WeightSystem &ws)
+void write(BufferedWriter &f, const WeightSystem &ws)
 {
     for (unsigned i = 0; i < dim; ++i) {
         auto v = ws.weights[i];
@@ -224,7 +223,7 @@ void write(std::ostream &f, const WeightSystem &ws)
     }
 }
 
-void read_varint(std::istream &f, WeightSystem &ws)
+void read_varint(BufferedReader &f, WeightSystem &ws)
 {
     for (unsigned i = 0; i < dim; ++i) {
         auto v = read_varint(f);
@@ -233,7 +232,7 @@ void read_varint(std::istream &f, WeightSystem &ws)
     }
 }
 
-void write_varint(std::ostream &f, const WeightSystem &ws)
+void write_varint(BufferedWriter &f, const WeightSystem &ws)
 {
     for (unsigned i = 0; i < dim; ++i)
         write_varint(f, ws.weights[i]);

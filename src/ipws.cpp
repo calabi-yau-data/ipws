@@ -8,9 +8,10 @@
 #include <set>
 #include <sstream>
 #include <unordered_set>
+#include "buffered_reader.h"
+#include "buffered_writer.h"
 #include "config.h"
 #include "history.h"
-#include "io.h"
 #include "point.h"
 #include "settings.h"
 #include "stl_utils.h"
@@ -27,8 +28,6 @@ using std::endl;
 using std::unordered_set;
 using std::string;
 using std::vector;
-using std::ofstream;
-using std::ifstream;
 using std::unique_ptr;
 using std::make_unique;
 
@@ -116,14 +115,14 @@ void rec(const WeightSystemBuilder &builder,
     }
 }
 
-void write_config(ofstream &f)
+void write_config(BufferedWriter &f)
 {
     write(f, static_cast<uint32_t>(dim));
     write(f, static_cast<uint32_t>(r_numerator));
     write(f, static_cast<uint32_t>(r_denominator));
 }
 
-void check_config(ifstream &f)
+void check_config(BufferedReader &f)
 {
     uint32_t v;
 
@@ -135,7 +134,7 @@ void check_config(ifstream &f)
     assert(v == r_denominator);
 }
 
-void write_sorted(ofstream &f,
+void write_sorted(BufferedWriter &f,
                   const unordered_set<WeightSystem> &weight_systems)
 {
     vector<WeightSystem> sorted{};
@@ -152,7 +151,8 @@ void write_sorted(ofstream &f,
         write_varint(f, ws);
 }
 
-void write_randomized(ofstream &f, const unordered_set<WeightSystemPair> &pairs)
+void write_randomized(BufferedWriter &f,
+                      const unordered_set<WeightSystemPair> &pairs)
 {
     vector<WeightSystemPair> sorted{};
     sorted.reserve(pairs.size());
@@ -233,7 +233,7 @@ void find_weight_systems(bool ip_only)
     }
 }
 
-void find_pairs(ofstream *ws_out, ofstream *pairs_out)
+void find_pairs(BufferedWriter *ws_out, BufferedWriter *pairs_out)
 {
     Stopwatch stopwatch{};
     History history{};
@@ -252,21 +252,21 @@ void find_pairs(ofstream *ws_out, ofstream *pairs_out)
     if (ws_out) {
         cerr << stopwatch << " - writing weight systems\n";
         write_sorted(*ws_out, weight_systems);
-        ws_out->close();
+        ws_out->flush();
         cerr << stopwatch << " - writing complete\n";
     }
 
     if (pairs_out) {
         cerr << stopwatch << " - writing pairs\n";
         write_randomized(*pairs_out, pairs);
-        pairs_out->close();
+        pairs_out->flush();
         cerr << stopwatch << " - writing complete\n";
     }
 }
 
-void find_weight_systems_from_pairs(ifstream &pairs_in, unsigned start,
+void find_weight_systems_from_pairs(BufferedReader &pairs_in, unsigned start,
                                     optional<unsigned> count_opt,
-                                    ofstream *ws_out)
+                                    BufferedWriter *ws_out)
 {
     constexpr unsigned pair_storage_size = 2 * weight_system_storage_size;
     unordered_set<WeightSystem> weight_systems{};
@@ -286,13 +286,12 @@ void find_weight_systems_from_pairs(ifstream &pairs_in, unsigned start,
          << ", pairs used: " << count << endl;
 
     assert(start + count <= pair_count);
-    pairs_in.seekg(pair_storage_size * start, std::ios_base::cur);
+    pairs_in.seek_relative(pair_storage_size * start);
 
     // srand(1234);
     for (unsigned i = 0; i < count; ++i) {
-        // pairs_in.seekg((rand() % (pair_count / pair_storage_size)) *
-        //                    pair_storage_size,
-        //                std::ios_base::cur);
+        // pairs_in.seek_relative((rand() % (pair_count / pair_storage_size)) *
+        //                        pair_storage_size);
 
         WeightSystemPair pair{};
 
@@ -315,7 +314,7 @@ void find_weight_systems_from_pairs(ifstream &pairs_in, unsigned start,
     if (ws_out) {
         cerr << stopwatch << " - writing weight systems\n";
         write_sorted(*ws_out, weight_systems);
-        ws_out->close();
+        ws_out->flush();
         cerr << stopwatch << " - writing complete\n";
     }
 
@@ -324,7 +323,7 @@ void find_weight_systems_from_pairs(ifstream &pairs_in, unsigned start,
             print_with_denominator(ws);
 }
 
-void check_ip(ifstream &ws_in)
+void check_ip(BufferedReader &ws_in)
 {
     Stopwatch stopwatch{};
 
@@ -349,7 +348,8 @@ void check_ip(ifstream &ws_in)
          << ", ip: " << ip_count << endl;
 }
 
-void combine_ws_files(ifstream &in1, ifstream &in2, ofstream &out)
+void combine_ws_files(BufferedReader &in1, BufferedReader &in2,
+                      BufferedWriter &out)
 {
     Stopwatch stopwatch{};
 
@@ -361,8 +361,8 @@ void combine_ws_files(ifstream &in1, ifstream &in2, ofstream &out)
     read(in1, count1);
     read(in2, count2);
 
-    cerr << stopwatch << " - weight systems: " << count1
-         << " and " << count2 << endl;
+    cerr << stopwatch << " - weight systems: " << count1 << " and " << count2
+         << endl;
 
     write_config(out);
 
@@ -409,14 +409,14 @@ void combine_ws_files(ifstream &in1, ifstream &in2, ofstream &out)
     }
 
     // Write header again, now with correct count
-    out.seekp(0);
+    out.seek(0);
     write_config(out);
     write(out, count);
 
     cerr << stopwatch << " - combined weight systems: " << count << endl;
 }
 
-void print_count(ifstream &in)
+void print_count(BufferedReader &in)
 {
     check_config(in);
     uint32_t count;
@@ -512,14 +512,11 @@ bool run(int argc, char *argv[])
 
     if (find_candidates_arg.getValue()) {
         if (pairs_in_arg.isSet()) {
-            ifstream pairs_in(pairs_in_arg.getValue(), fstream::binary);
-            pairs_in.exceptions(fstream::failbit);
+            BufferedReader pairs_in(pairs_in_arg.getValue());
 
-            unique_ptr<ofstream> ws_out{};
+            unique_ptr<BufferedWriter> ws_out{};
             if (ws_out_arg.isSet()) {
-                ws_out = make_unique<ofstream>(ws_out_arg.getValue(),
-                                               std::ios::binary);
-                ws_out->exceptions(fstream::failbit);
+                ws_out = make_unique<BufferedWriter>(ws_out_arg.getValue());
             }
 
             find_weight_systems_from_pairs(pairs_in, start, count,
@@ -529,47 +526,37 @@ bool run(int argc, char *argv[])
         }
     } else if (find_ip_arg.getValue()) {
         if (ws_in_arg.isSet()) {
-            ifstream ws_in(ws_in_arg.getValue(), std::ios::binary);
-            ws_in.exceptions(fstream::failbit);
+            BufferedReader ws_in(ws_in_arg.getValue());
             check_ip(ws_in);
         } else {
             find_weight_systems(true);
         }
     } else if (find_pairs_arg.getValue()) {
-        unique_ptr<ofstream> ws_out{};
+        unique_ptr<BufferedWriter> ws_out{};
         if (ws_out_arg.isSet()) {
-            ws_out =
-                make_unique<ofstream>(ws_out_arg.getValue(), std::ios::binary);
-            ws_out->exceptions(fstream::failbit);
+            ws_out = make_unique<BufferedWriter>(ws_out_arg.getValue());
         }
 
-        unique_ptr<ofstream> pairs_out{};
+        unique_ptr<BufferedWriter> pairs_out{};
         if (pairs_out_arg.isSet()) {
-            pairs_out = make_unique<ofstream>(pairs_out_arg.getValue(),
-                                              std::ios::binary);
-            pairs_out->exceptions(fstream::failbit);
+            pairs_out = make_unique<BufferedWriter>(pairs_out_arg.getValue());
         }
 
         find_pairs(ws_out.get(), pairs_out.get());
     } else if (print_count_arg.getValue()) {
         if (ws_in_arg.isSet()) {
-            ifstream in(ws_in_arg.getValue(), std::ios::binary);
-            in.exceptions(fstream::failbit);
+            BufferedReader in(ws_in_arg.getValue());
             print_count(in);
         }
         if (pairs_in_arg.isSet()) {
-            ifstream in(pairs_in_arg.getValue(), std::ios::binary);
-            in.exceptions(fstream::failbit);
+            BufferedReader in(pairs_in_arg.getValue());
             print_count(in);
         }
     } else if (combine_ws_arg.isSet()) {
         if (ws_in_arg.isSet() && ws_out_arg.isSet()) {
-            ifstream ws_in(ws_in_arg.getValue(), std::ios::binary);
-            ws_in.exceptions(fstream::failbit);
-            ifstream ws_in2(combine_ws_arg.getValue(), std::ios::binary);
-            ws_in2.exceptions(fstream::failbit);
-            ofstream ws_out(ws_out_arg.getValue(), std::ios::binary);
-            ws_out.exceptions(fstream::failbit);
+            BufferedReader ws_in(ws_in_arg.getValue());
+            BufferedReader ws_in2(combine_ws_arg.getValue());
+            BufferedWriter ws_out(ws_out_arg.getValue());
             combine_ws_files(ws_in, ws_in2, ws_out);
         }
     }

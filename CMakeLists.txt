@@ -58,7 +58,8 @@ target_compile_options(ip_check PRIVATE -Wno-conversion -Wno-unused-parameter
   -Wno-misleading-indentation -Wno-unused-but-set-variable -Wno-parentheses
   -Wno-int-in-bool-context)
 
-add_executable(ipws-${SUFFIX} src/ipws.cpp src/io.cpp src/history.cpp
-  src/point.cpp src/settings.cpp src/weight_system.cpp
-  src/weight_system_builder.cpp src/weight_system_pair.cpp)
+add_executable(ipws-${SUFFIX} src/ipws.cpp src/buffered_reader.cpp
+  src/buffered_writer.cpp src/history.cpp src/point.cpp src/settings.cpp
+  src/weight_system.cpp src/weight_system_builder.cpp
+  src/weight_system_pair.cpp)
 target_link_libraries(ipws-${SUFFIX} ip_check)
