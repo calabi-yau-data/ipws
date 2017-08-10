@@ -16,11 +16,11 @@ const char *BufferedReader::OpenError::what() const noexcept
 BufferedReader::BufferedReader(const std::string &path)
         : stream{}, buffer{}, buffer_data_start{0}, buffer_data_size{0}
 {
-    stream.open(path, std::ios::binary);
+    buffer.resize(100000);
 
+    stream.open(path, std::ios::binary);
     if (!stream)
         throw OpenError{};
-
     stream.exceptions(std::ios::badbit);
 }
 

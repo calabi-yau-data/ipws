@@ -1,9 +1,9 @@
 #ifndef BUFFERED_READER_H
 #define BUFFERED_READER_H
 
-#include <array>
 #include <exception>
 #include <fstream>
+#include <vector>
 
 struct VarintReadError : std::exception {
     virtual const char *what() const noexcept { return "Varint read error"; }
@@ -34,7 +34,7 @@ public:
 
 private:
     std::ifstream stream;
-    std::array<char, 1024> buffer;
+    std::vector<char> buffer;
     unsigned buffer_data_start;
     unsigned buffer_data_size;
 };

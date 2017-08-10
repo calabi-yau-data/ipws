@@ -1,9 +1,9 @@
 #ifndef BUFFERED_WRITER_H
 #define BUFFERED_WRITER_H
 
-#include <array>
 #include <exception>
 #include <fstream>
+#include <vector>
 
 class BufferedWriter {
 public:
@@ -30,7 +30,7 @@ private:
     void flush_to_stream();
 
     std::ofstream stream;
-    std::array<char, 1024> buffer;
+    std::vector<char> buffer;
     unsigned buffer_data_end;
 };
 

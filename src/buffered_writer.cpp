@@ -11,11 +11,11 @@ const char *BufferedWriter::OpenError::what() const noexcept
 BufferedWriter::BufferedWriter(const std::string &path)
         : stream{}, buffer{}, buffer_data_end{0}
 {
-    stream.open(path, std::ios::binary);
+    buffer.resize(100000);
 
+    stream.open(path, std::ios::binary);
     if (!stream)
         throw OpenError{};
-
     stream.exceptions(std::ios::badbit);
 }
 
