@@ -1,11 +1,5 @@
 ---
-- name: Create directory
-  file:
-    path: "{{ ws_dir_after_combine }}"
-    state: directory
-    mode: 0755
-
 - name: Combine candidates
   shell: >
     "{{ combine_candidates_path }}" "{{ ipws_path }}" "{{ ws_path_start }}"
-    "{{ ws_dir_after_combine }}" >>"{{ log_path }}" 2>&1
+    >>"{{ log_path }}" 2>&1

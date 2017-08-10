@@ -6,12 +6,12 @@ import os
 import subprocess
 import sys
 
-if len(sys.argv) != 4:
-    print("Usage: {} <ipws_path> <ws_path_start> <move_old_dir>" \
+if len(sys.argv) != 3:
+    print("Usage: {} <ipws_path> <ws_path_start>" \
           .format(sys.argv[0]))
     sys.exit(1)
 
-ipws_path, ws_path_start, move_old_dir = sys.argv[1:]
+ipws_path, ws_path_start = sys.argv[1:]
 
 weight_system_files = glob.glob(glob.escape(ws_path_start) + "*")
 
@@ -34,8 +34,8 @@ while len(weight_system_files) >= 2:
 
     if subprocess.call(cmd, stderr=sys.stdout) == 0:
         os.rename(ws_tmp_path, ws_path)
-        os.rename(path1, os.path.join(move_old_dir, fn1))
-        os.rename(path2, os.path.join(move_old_dir, fn2))
+        os.remove(path1)
+        os.remove(path2)
     else:
         print("failed")
         sys.stdout.flush()
