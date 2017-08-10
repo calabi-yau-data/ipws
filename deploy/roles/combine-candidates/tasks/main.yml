@@ -1,5 +1,5 @@
 ---
 - name: Combine candidates
   shell: >
-    "{{ combine_candidates_path }}" "{{ ipws_path }}" "{{ ws_path_start }}"
-    >>"{{ log_path }}" 2>&1
+    nohup "{{ combine_candidates_path }}" "{{ ipws_path }}"
+    "{{ ws_path_start }}" >>"{{ log_path }}" 2>&1 &
