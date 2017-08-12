@@ -13,29 +13,32 @@ if len(sys.argv) != 3:
 
 ipws_path, ws_path_start = sys.argv[1:]
 
-weight_system_files = glob.glob(glob.escape(ws_path_start) + "*")
+while True:
+    weight_system_files = glob.glob(glob.escape(ws_path_start) + "*")
+    if len(weight_system_files) < 2:
+        break;
 
-while len(weight_system_files) >= 2:
-    path1 = weight_system_files.pop(0)
-    path2 = weight_system_files.pop(0)
+    while len(weight_system_files) >= 2:
+        path1 = weight_system_files.pop(0)
+        path2 = weight_system_files.pop(0)
 
-    fn1 = os.path.basename(path1)
-    fn2 = os.path.basename(path2)
-    dir = os.path.dirname(path1)
+        fn1 = os.path.basename(path1)
+        fn2 = os.path.basename(path2)
+        dir = os.path.dirname(path1)
 
-    ws_path = os.path.join(dir, fn1 + "+")
-    ws_tmp_path = ws_path + ".tmp"
+        ws_path = os.path.join(dir, fn1 + "+")
+        ws_tmp_path = ws_path + ".tmp"
 
-    cmd = [ipws_path, "--combine-ws", path1, "--ws-in", path2,
-           "--ws-out", ws_tmp_path]
+        cmd = [ipws_path, "--combine-ws", path1, "--ws-in", path2,
+               "--ws-out", ws_tmp_path]
 
-    print(datetime.datetime.utcnow(), cmd)
-    sys.stdout.flush()
-
-    if subprocess.call(cmd, stderr=sys.stdout) == 0:
-        os.rename(ws_tmp_path, ws_path)
-        os.remove(path1)
-        os.remove(path2)
-    else:
-        print("failed")
+        print(datetime.datetime.utcnow(), cmd)
         sys.stdout.flush()
+
+        if subprocess.call(cmd, stderr=sys.stdout) == 0:
+            os.rename(ws_tmp_path, ws_path)
+            os.remove(path1)
+            os.remove(path2)
+        else:
+            print("failed")
+            sys.stdout.flush()
