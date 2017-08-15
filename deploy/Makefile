@@ -12,6 +12,10 @@ usage:
 	@echo "Usage: make ipws pairs deploy copy-pairs find-candidates"
 	@echo "       make combine-candidates"
 
+.PHONY: sum
+sum:
+	$(ansible) all -a "bash -c \"cat /media/data/schoeller/log-5-1-2 | grep unique | awk '{ print $$$$7; }' | paste -sd+ | bc\""
+
 .PHONY: ipws
 ipws:
 	rm -rf build-$(suffix) && mkdir build-$(suffix) && cd build-$(suffix) && \
@@ -52,3 +56,7 @@ df:
 .PHONY: du
 du:
 	$(ansible) all -a 'du -hs "{{ work_dir }}"'
+
+# .PHONY: delete-data
+# delete-data:
+# 	$(ansible) all -a 'rm -r "{{ data_dir }}"'
