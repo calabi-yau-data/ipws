@@ -13,10 +13,10 @@ if len(sys.argv) != 3:
 
 ipws_path, ws_path_start = sys.argv[1:]
 
-while True:
-    weight_system_files = glob.glob(glob.escape(ws_path_start) + "*")
-    if len(weight_system_files) < 2:
-        break;
+weight_system_files = glob.glob(glob.escape(ws_path_start) + "*")
+
+while len(weight_system_files) >= 2:
+    next_files = []
 
     while len(weight_system_files) >= 2:
         path1 = weight_system_files.pop(0)
@@ -39,6 +39,11 @@ while True:
             os.rename(ws_tmp_path, ws_path)
             os.remove(path1)
             os.remove(path2)
+
+            next_files.append(ws_path)
         else:
             print("failed")
             sys.stdout.flush()
+            sys.exit(1)
+
+    weight_system_files = next_files
