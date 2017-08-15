@@ -16,10 +16,10 @@ public:
     BufferedWriter(BufferedWriter &&other) = default;
     BufferedWriter &operator=(BufferedWriter &&rhs) = default;
 
-    void seek(unsigned pos);
-    void seek_relative(int offset);
+    void seek(size_t pos);
+    void seek_relative(ptrdiff_t offset);
 
-    void write(const void *data, unsigned size);
+    void write(const void *data, size_t size);
     void flush();
 
     struct OpenError : std::exception {
@@ -31,13 +31,15 @@ private:
 
     std::ofstream stream;
     std::vector<char> buffer;
-    unsigned buffer_data_end;
+    size_t buffer_data_end;
 };
 
 void write(BufferedWriter &f, uint16_t data);
 void write(BufferedWriter &f, uint32_t data);
+void write(BufferedWriter &f, uint64_t data);
 void write(BufferedWriter &f, int16_t data);
 void write(BufferedWriter &f, int32_t data);
+void write(BufferedWriter &f, int64_t data);
 
 void write_varint(BufferedWriter &f, unsigned long i);
 

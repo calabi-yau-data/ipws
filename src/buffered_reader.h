@@ -19,10 +19,10 @@ public:
     BufferedReader(BufferedReader &&other) = default;
     BufferedReader &operator=(BufferedReader &&rhs) = default;
 
-    void seek(unsigned pos);
-    void seek_relative(int offset);
+    void seek(size_t pos);
+    void seek_relative(ptrdiff_t offset);
 
-    void read(void *data, unsigned size);
+    void read(void *data, size_t size);
 
     struct EofError : std::exception {
         virtual const char *what() const noexcept;
@@ -35,14 +35,16 @@ public:
 private:
     std::ifstream stream;
     std::vector<char> buffer;
-    unsigned buffer_data_start;
-    unsigned buffer_data_size;
+    size_t buffer_data_start;
+    size_t buffer_data_size;
 };
 
 void read(BufferedReader &f, uint16_t &data);
 void read(BufferedReader &f, uint32_t &data);
+void read(BufferedReader &f, uint64_t &data);
 void read(BufferedReader &f, int16_t &data);
 void read(BufferedReader &f, int32_t &data);
+void read(BufferedReader &f, int64_t &data);
 
 unsigned long read_varint(BufferedReader &f);
 

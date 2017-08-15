@@ -1,5 +1,5 @@
 #include "buffered_writer.h"
-#include <arpa/inet.h>
+#include <endian.h>
 #include <memory.h>
 #include <algorithm>
 
@@ -24,13 +24,12 @@ BufferedWriter::~BufferedWriter()
     flush();
 }
 
-void BufferedWriter::write(const void *data, unsigned size)
+void BufferedWriter::write(const void *data, size_t size)
 {
     const char *src = reinterpret_cast<const char *>(data);
 
     while (true) {
-        unsigned copy_now = std::min(
-            size, static_cast<unsigned>(buffer.size()) - buffer_data_end);
+        size_t copy_now = std::min(size, buffer.size() - buffer_data_end);
 
         // std::copy(src, src + copy_now, buffer.data() + buffer_data_end);
         memcpy(buffer.data() + buffer_data_end, src, copy_now);
@@ -58,13 +57,13 @@ void BufferedWriter::flush_to_stream()
     buffer_data_end = 0;
 }
 
-void BufferedWriter::seek(unsigned pos)
+void BufferedWriter::seek(size_t pos)
 {
     flush_to_stream();
     stream.seekp(pos);
 }
 
-void BufferedWriter::seek_relative(int offset)
+void BufferedWriter::seek_relative(ptrdiff_t offset)
 {
     flush_to_stream();
     stream.seekp(offset, std::ios_base::cur);
@@ -72,13 +71,19 @@ void BufferedWriter::seek_relative(int offset)
 
 void write(BufferedWriter &f, uint16_t data)
 {
-    data = htons(data);
+    data = htobe16(data);
     f.write(&data, sizeof(data));
 }
 
 void write(BufferedWriter &f, uint32_t data)
 {
-    data = htonl(data);
+    data = htobe32(data);
+    f.write(&data, sizeof(data));
+}
+
+void write(BufferedWriter &f, uint64_t data)
+{
+    data = htobe64(data);
     f.write(&data, sizeof(data));
 }
 
@@ -90,6 +95,11 @@ void write(BufferedWriter &f, int16_t data)
 void write(BufferedWriter &f, int32_t data)
 {
     write(f, static_cast<uint32_t>(data));
+}
+
+void write(BufferedWriter &f, int64_t data)
+{
+    write(f, static_cast<uint64_t>(data));
 }
 
 void write_varint(BufferedWriter &f, unsigned long i)

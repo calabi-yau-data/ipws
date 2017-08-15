@@ -4,7 +4,7 @@
 #include <boost/math/common_factor.hpp>
 #include <iostream>
 
-template <class T, class Container, unsigned D>
+template <class T, class Container, size_t D>
 class VectorMixin {
     using R = typename Container::value_type;
 
@@ -24,7 +24,7 @@ public:
 
     friend int compare(const T &a, const T &b)
     {
-        for (unsigned i = 0; i < D; ++i) {
+        for (size_t i = 0; i < D; ++i) {
             if (a.vector_container()[i] < b.vector_container()[i])
                 return -1;
             if (a.vector_container()[i] > b.vector_container()[i])
@@ -52,7 +52,7 @@ public:
 
     friend T &operator/=(T &lhs, const R &rhs)
     {
-        for (unsigned i = 0; i < D; ++i)
+        for (size_t i = 0; i < D; ++i)
             lhs.vector_container()[i] /= rhs;
         return lhs;
     }
@@ -60,7 +60,7 @@ public:
     friend const T operator-(const T &lhs, const T &rhs)
     {
         T ret{};
-        for (unsigned i = 0; i < D; ++i)
+        for (size_t i = 0; i < D; ++i)
             ret.vector_container()[i] =
                 lhs.vector_container()[i] - rhs.vector_container()[i];
         return ret;
@@ -69,7 +69,7 @@ public:
     friend const T operator*(const R &lhs, const T &rhs)
     {
         T ret{};
-        for (unsigned i = 0; i < D; ++i)
+        for (size_t i = 0; i < D; ++i)
             ret.vector_container()[i] = rhs.vector_container()[i] * lhs;
         return ret;
     }
@@ -79,7 +79,7 @@ public:
         os << "(";
         if (D != 0)
             os << rhs.vector_container()[0];
-        for (unsigned i = 1; i < D; ++i)
+        for (size_t i = 1; i < D; ++i)
             os << ", " << rhs.vector_container()[i];
         return os << ")";
     }

@@ -1,5 +1,5 @@
 #include "buffered_reader.h"
-#include <arpa/inet.h>
+#include <endian.h>
 #include <memory.h>
 #include <algorithm>
 
@@ -24,12 +24,12 @@ BufferedReader::BufferedReader(const std::string &path)
     stream.exceptions(std::ios::badbit);
 }
 
-void BufferedReader::read(void *data, unsigned size)
+void BufferedReader::read(void *data, size_t size)
 {
     char *dest = reinterpret_cast<char *>(data);
 
     while (true) {
-        unsigned copy_now = std::min(size, buffer_data_size);
+        size_t copy_now = std::min(size, buffer_data_size);
 
         // std::copy(buffer.data() + buffer_data_start,
         //           buffer.data() + buffer_data_start + copy_now, dest);
@@ -46,20 +46,20 @@ void BufferedReader::read(void *data, unsigned size)
         stream.read(buffer.data(), buffer.size());
 
         buffer_data_start = 0;
-        buffer_data_size = static_cast<unsigned>(stream.gcount());
+        buffer_data_size = stream.gcount();
 
         if (buffer_data_size == 0)
             throw EofError{};
     }
 }
 
-void BufferedReader::seek(unsigned pos)
+void BufferedReader::seek(size_t pos)
 {
     buffer_data_size = 0;
     stream.seekg(pos);
 }
 
-void BufferedReader::seek_relative(int offset)
+void BufferedReader::seek_relative(ptrdiff_t offset)
 {
     buffer_data_size = 0;
     stream.seekg(offset, std::ios_base::cur);
@@ -68,13 +68,19 @@ void BufferedReader::seek_relative(int offset)
 void read(BufferedReader &f, uint16_t &data)
 {
     f.read(&data, sizeof(data));
-    data = ntohs(data);
+    data = be16toh(data);
 }
 
 void read(BufferedReader &f, uint32_t &data)
 {
     f.read(&data, sizeof(data));
-    data = ntohl(data);
+    data = be32toh(data);
+}
+
+void read(BufferedReader &f, uint64_t &data)
+{
+    f.read(&data, sizeof(data));
+    data = be64toh(data);
 }
 
 void read(BufferedReader &f, int16_t &data)
@@ -85,6 +91,11 @@ void read(BufferedReader &f, int16_t &data)
 void read(BufferedReader &f, int32_t &data)
 {
     read(f, *reinterpret_cast<uint32_t *>(&data));
+}
+
+void read(BufferedReader &f, int64_t &data)
+{
+    read(f, *reinterpret_cast<uint64_t *>(&data));
 }
 
 unsigned long read_varint(BufferedReader &f)
