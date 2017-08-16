@@ -1,0 +1,22 @@
+# A12-2, Gelfand
+jpsi.itp.tuwien.ac.at tasks="[0, 1]"
+
+# DB03E23-9, Stanzer
+beauty.itp.tuwien.ac.at tasks="[2, 3]"
+
+# L07-6, Skarke
+rgc.itp.tuwien.ac.at tasks="[4, 5]"
+
+# C16-6, Guest
+down.itp.tuwien.ac.at tasks="[6, 7]"
+
+# A14-7, Preis
+gluino.itp.tuwien.ac.at tasks="[8, 9]"
+
+# A14-5
+wino.itp.tuwien.ac.at tasks="[10, 11]"
+
+[all:vars]
+work_dir = /media/data/schoeller
+task_count = 12
+chunk_size = 1000

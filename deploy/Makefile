@@ -1,11 +1,12 @@
 dimension=6
 r_numerator=3
 r_denominator=2
+inventory=inventory-tu
 
 suffix=$(dimension)-$(r_numerator)-$(r_denominator)
 
-ansible=ansible -i inventory
-ansible-playbook=ansible-playbook -i inventory
+ansible=ansible -i "$(inventory)"
+ansible-playbook=ansible-playbook -i "$(inventory)"
 
 .PHONY: usage
 usage:
