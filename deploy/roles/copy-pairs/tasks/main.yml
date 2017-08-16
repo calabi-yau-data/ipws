@@ -1,7 +1,7 @@
 ---
 - name: Create directory
   file:
-    path: "{{ data_dir }}"
+    path: "{{ pairs_dir }}"
     state: directory
     mode: 0755
 

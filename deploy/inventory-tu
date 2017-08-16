@@ -18,5 +18,7 @@ wino.itp.tuwien.ac.at tasks="[10, 11]"
 
 [all:vars]
 work_dir = /media/data/schoeller
+pairs_dir = /media/data/schoeller/data
+ws_dir = /media/data/schoeller/data
 task_count = 12
 chunk_size = 1000

@@ -1,8 +1,7 @@
 ---
-data_dir: "{{ work_dir }}/data"
 ipws_path: "{{ work_dir }}/ipws-{{ suffix }}"
 find_candidates_path: "{{ work_dir }}/find-candidates"
 combine_candidates_path: "{{ work_dir }}/combine-candidates"
-pairs_path: "{{ data_dir }}/pairs-{{ suffix }}"
-ws_path_start: "{{ data_dir }}/ws-{{ suffix }}"
+pairs_path: "{{ pairs_dir }}/pairs-{{ suffix }}"
+ws_path_start: "{{ ws_dir }}/ws-{{ suffix }}"
 log_path: "{{ work_dir }}/log-{{ suffix }}"

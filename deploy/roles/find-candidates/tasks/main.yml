@@ -1,4 +1,10 @@
 ---
+- name: Create directory
+  file:
+    path: "{{ ws_dir }}"
+    state: directory
+    mode: 0755
+
 - name: Read pair count
   command: >
     "{{ ipws_path }}" --print-count --pairs-in "{{ pairs_path }}"
