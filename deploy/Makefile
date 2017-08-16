@@ -1,5 +1,5 @@
-dimension=6
-r_numerator=3
+dimension=5
+r_numerator=1
 r_denominator=2
 inventory=inventory-tu
 
