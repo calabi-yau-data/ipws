@@ -57,6 +57,10 @@ df:
 du:
 	$(ansible) all -a 'du -hs "{{ work_dir }}"'
 
+.PHONY: pairs-used
+pairs-used:
+	$(ansible) all -a "bash -c 'ls /media/data/schoeller/data/ws-$(suffix)-*'" | awk --field-separator=- '{s+=$$6-$$5+1}END{print s}'
+
 # .PHONY: delete-data
 # delete-data:
 # 	$(ansible) all -a 'rm -r "{{ data_dir }}"'
