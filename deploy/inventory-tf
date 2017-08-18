@@ -6,4 +6,4 @@ compute4 ansible_user=ipws ws_dir=/home/ipws/ceph/ipws/ws4 tasks="[6, 7, 8]"
 work_dir = /home/ipws/
 pairs_dir = /home/ipws/pairs
 task_count = 9
-chunk_size = 10000
+chunk_size = 2000
