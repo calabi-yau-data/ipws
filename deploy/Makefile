@@ -57,9 +57,13 @@ df:
 du:
 	$(ansible) all -a 'du -hs "{{ work_dir }}"'
 
-.PHONY: pairs-used
-pairs-used:
+.PHONY: count-pairs-used
+count-pairs-used:
 	$(ansible) all -a "bash -c 'ls /media/data/schoeller/data/ws-$(suffix)-*'" | awk --field-separator=- '{s+=$$6-$$5+1}END{print s}'
+
+.PHONY: count-candidates
+count-candidates:
+	$(ansible) all -a "bash -c 'cat /media/data/schoeller/log-$(suffix)-*'" | grep unique | awk '{s+=$$7}END{print s}'
 
 # .PHONY: delete-data
 # delete-data:
