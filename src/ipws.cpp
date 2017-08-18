@@ -348,64 +348,64 @@ void check_ip(BufferedReader &ws_in)
          << ", ip: " << ip_count << endl;
 }
 
-void combine_ws_files(BufferedReader &in1, BufferedReader &in2,
-                      BufferedWriter &out)
+void combine_ws_files(span<BufferedReader> ins, BufferedWriter &out)
 {
     Stopwatch stopwatch{};
 
-    check_config(in1);
-    check_config(in2);
+    vector<size_t> counts{};
+    size_t total = 0;
 
-    uint64_t count1;
-    uint64_t count2;
-    read(in1, count1);
-    read(in2, count2);
+    for (auto &in : ins) {
+        check_config(in);
 
-    cerr << stopwatch << " - weight systems: " << count1 << " and " << count2
-         << endl;
+        uint64_t count;
+        read(in, count);
+        counts.push_back(count);
+        total += count;
+
+        cerr << "input weight systems: " << count << endl;
+    }
+
+    cerr << stopwatch << " - total input weight systems: " << total << endl;
 
     write_config(out);
 
     uint64_t count = 0;
     write(out, count);
 
-    WeightSystem ws1{};
-    WeightSystem ws2{};
+    vector<WeightSystem> ws{};
+    ws.resize(ins.size());
 
-    if (count1 > 0)
-        read_varint(in1, ws1);
-    if (count2 > 0)
-        read_varint(in2, ws2);
+    for (size_t i = 0; i < counts.size(); ++i)
+        if (counts[i] > 0)
+            read_varint(ins[i], ws[i]);
 
-    while (count1 > 0 && count2 > 0) {
-        if (ws1 < ws2) {
-            write_varint(out, ws1);
-            ++count;
-            if (--count1 > 0)
-                read_varint(in1, ws1);
-        } else if (ws2 < ws1) {
-            write_varint(out, ws2);
-            ++count;
-            if (--count2 > 0)
-                read_varint(in2, ws2);
-        } else {
-            if (--count1 > 0)
-                read_varint(in1, ws1);
+    WeightSystem prev;
+
+    while (true) {
+        WeightSystem *smallest = nullptr;
+        size_t smallest_index = 0;
+        for (size_t i = 0; i < counts.size(); ++i) {
+            if (counts[i] == 0)
+                continue;
+
+            if (smallest && *smallest < ws[i])
+                continue;
+
+            smallest = &ws[i];
+            smallest_index = i;
         }
-    }
+        if (!smallest)
+            break;
 
-    while (count1 > 0) {
-        write_varint(out, ws1);
-        ++count;
-        if (--count1 > 0)
-            read_varint(in1, ws1);
-    }
+        if (count == 0 || prev != *smallest) {
+            ++count;
+            write_varint(out, *smallest);
+            prev = *smallest;
+        }
 
-    while (count2 > 0) {
-        write_varint(out, ws2);
-        ++count;
-        if (--count2 > 0)
-            read_varint(in2, ws2);
+        if (--counts[smallest_index] > 0)
+            read_varint(ins[smallest_index], ws[smallest_index]);
     }
 
     // Write header again, now with correct count
@@ -448,9 +448,8 @@ bool run(int argc, char *argv[])
         "Find weight system pairs in the penultimate recursion");
     SwitchArg print_count_arg( //
         "", "print-count", "Print the number entries in the given file");
-    ValueArg<string> combine_ws_arg( //
-        "", "combine-ws", "Combine given weight systems file with a second one",
-        false, "", "file");
+    SwitchArg combine_ws_arg( //
+        "", "combine-ws", "Combine given weight systems file with a second one");
 
     vector<Arg *> arg_list;
     arg_list.push_back(&find_candidates_arg);
@@ -493,6 +492,9 @@ bool run(int argc, char *argv[])
                                     "Ignore symmetries (for debugging)", cmd);
     SwitchArg no_lex_order_arg(
         "", "no-lex-order", "Disable lexicographic order (for debugging)", cmd);
+
+    TCLAP::UnlabeledMultiArg<string> files_arg( //
+        "", "Additional files", false, "file", cmd);
 
     cmd.parse(argc, argv);
 
@@ -553,11 +555,14 @@ bool run(int argc, char *argv[])
             print_count(in);
         }
     } else if (combine_ws_arg.isSet()) {
-        if (ws_in_arg.isSet() && ws_out_arg.isSet()) {
-            BufferedReader ws_in(ws_in_arg.getValue());
-            BufferedReader ws_in2(combine_ws_arg.getValue());
+        if (ws_out_arg.isSet()) {
             BufferedWriter ws_out(ws_out_arg.getValue());
-            combine_ws_files(ws_in, ws_in2, ws_out);
+
+            vector<BufferedReader> ws_in{};
+            for (const auto &filename : files_arg.getValue())
+                ws_in.push_back(BufferedReader{filename});
+
+            combine_ws_files(span<BufferedReader>(ws_in), ws_out);
         }
     }
     return true;
