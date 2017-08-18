@@ -55,7 +55,7 @@ df:
 
 .PHONY: du
 du:
-	$(ansible) all -a 'du -hs "{{ work_dir }}"'
+	$(ansible) all -a 'du -hs "{{ ws_dir }}"'
 
 .PHONY: count-pairs-used
 count-pairs-used:
