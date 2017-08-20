@@ -29,7 +29,8 @@ while len(weight_system_files) >= 2:
         ws_path = os.path.join(dir, fn1 + "+")
         ws_tmp_path = ws_path + ".tmp"
 
-        cmd = [ipws_path, "--ws-out", ws_tmp_path, path1, path2]
+        cmd = [ipws_path, "--combine-ws", "--ws-out", ws_tmp_path,
+               path1, path2]
 
         print(datetime.datetime.utcnow(), cmd)
         sys.stdout.flush()
