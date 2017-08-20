@@ -3,7 +3,7 @@ compute3 ansible_user=ipws ws_dir=/home/ipws/ceph/ipws/ws3 tasks="[3, 4, 5]"
 compute4 ansible_user=ipws ws_dir=/home/ipws/ceph/ipws/ws4 tasks="[6, 7, 8]"
 
 [all:vars]
-work_dir = /home/ipws/
+work_dir = /home/ipws
 pairs_dir = /home/ipws/pairs
 task_count = 9
 chunk_size = 2000
