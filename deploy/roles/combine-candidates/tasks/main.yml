@@ -1,5 +1,7 @@
 ---
 - name: Combine candidates
   shell: >
-    nohup "{{ combine_candidates_path }}" "{{ ipws_path }}"
-    "{{ ws_path_start }}" >>"{{ log_path }}" 2>&1 &
+    "{{ combine_candidates_path }}" "{{ ipws_path }}"
+    "{{ ws_path_start }}" >>"{{ log_path }}" 2>&1
+  async: 100000000
+  poll: 0

@@ -16,8 +16,10 @@
 
 - name: Find candidates
   shell: >
-    nohup "{{ find_candidates_path }}" "{{ ipws_path }}" "{{ pairs_path }}"
+    "{{ find_candidates_path }}" "{{ ipws_path }}" "{{ pairs_path }}"
     "{{ ws_path_start }}" "{{ pair_count }}"
     "{{ task_count }}" "{{ item }}" "{{ chunk_size }}"
-    >>"{{ log_path }}-{{ item }}" 2>&1 &
+    >>"{{ log_path }}-{{ item }}" 2>&1
+  async: 3600
+  poll: 0
   with_items: "{{ tasks }}"
