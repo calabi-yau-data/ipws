@@ -45,4 +45,4 @@ while len(weight_system_files) >= 2:
             sys.stdout.flush()
             sys.exit(1)
 
-    weight_system_files = next_files
+    weight_system_files.extend(next_files)
