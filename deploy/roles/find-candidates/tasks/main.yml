@@ -20,6 +20,6 @@
     "{{ ws_path_start }}" "{{ pair_count }}"
     "{{ task_count }}" "{{ item }}" "{{ chunk_size }}"
     >>"{{ log_path }}-{{ item }}" 2>&1
-  async: 3600
+  async: 100000000
   poll: 0
   with_items: "{{ tasks }}"
