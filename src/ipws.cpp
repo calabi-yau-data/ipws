@@ -449,7 +449,8 @@ bool run(int argc, char *argv[])
     SwitchArg print_count_arg( //
         "", "print-count", "Print the number entries in the given file");
     SwitchArg combine_ws_arg( //
-        "", "combine-ws", "Combine given weight systems file with a second one");
+        "", "combine-ws",
+        "Combine given weight systems file with a second one");
 
     vector<Arg *> arg_list;
     arg_list.push_back(&find_candidates_arg);
