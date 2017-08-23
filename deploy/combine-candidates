@@ -19,26 +19,24 @@ while len(weight_system_files) >= 2:
     next_files = []
 
     while len(weight_system_files) >= 2:
-        path1 = weight_system_files.pop(0)
-        path2 = weight_system_files.pop(0)
+        paths = weight_system_files[0:30]
+        del weight_system_files[0:30]
 
-        fn1 = os.path.basename(path1)
-        fn2 = os.path.basename(path2)
-        dir = os.path.dirname(path1)
+        fns = [os.path.basename(path) for path in paths]
+        dir = os.path.dirname(paths[0])
 
-        ws_path = os.path.join(dir, fn1 + "+")
+        ws_path = os.path.join(dir, fns[0] + "+")
         ws_tmp_path = ws_path + ".tmp"
 
-        cmd = [ipws_path, "--combine-ws", "--ws-out", ws_tmp_path,
-               path1, path2]
+        cmd = [ipws_path, "--combine-ws", "--ws-out", ws_tmp_path] + paths
 
         print(datetime.datetime.utcnow(), cmd)
         sys.stdout.flush()
 
         if subprocess.call(cmd, stderr=sys.stdout) == 0:
             os.rename(ws_tmp_path, ws_path)
-            os.remove(path1)
-            os.remove(path2)
+            # for path in paths:
+            #     os.remove(path)
 
             next_files.append(ws_path)
         else:
