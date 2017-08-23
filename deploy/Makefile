@@ -59,7 +59,7 @@ du:
 
 .PHONY: count-pairs-used
 count-pairs-used:
-	$(ansible) all -a "bash -c 'ls /media/data/schoeller/data/ws-$(suffix)-*'" | awk --field-separator=- '{s+=$$6-$$5+1}END{print s}'
+	$(ansible) all -a "bash -c 'ls {{ ws_dir }}/ws-$(suffix)-*'" | grep "ws-$(suffix)" | awk --field-separator=- '{s+=$$6-$$5+1}END{print s}'
 
 .PHONY: count-candidates
 count-candidates:
