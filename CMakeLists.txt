@@ -52,9 +52,9 @@ include_directories("${PROJECT_BINARY_DIR}")
 find_package(Boost 1.46 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
-add_library(ip_check src/ip_check.c src/palp/Polynf.c src/palp/Coord.c
+add_library(palp src/palp_glue.cpp src/palp/Polynf.c src/palp/Coord.c
   src/palp/Rat.c src/palp/Vertex.c)
-target_compile_options(ip_check PRIVATE -Wno-conversion -Wno-unused-parameter
+target_compile_options(palp PRIVATE -Wno-conversion -Wno-unused-parameter
   -Wno-misleading-indentation -Wno-unused-but-set-variable -Wno-parentheses
   -Wno-int-in-bool-context)
 
@@ -62,4 +62,4 @@ add_executable(ipws-${SUFFIX} src/ipws.cpp src/buffered_reader.cpp
   src/buffered_writer.cpp src/history.cpp src/point.cpp src/settings.cpp
   src/weight_system.cpp src/weight_system_builder.cpp
   src/weight_system_pair.cpp)
-target_link_libraries(ipws-${SUFFIX} ip_check)
+target_link_libraries(ipws-${SUFFIX} palp)

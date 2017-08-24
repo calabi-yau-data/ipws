@@ -2,11 +2,8 @@
 #include <algorithm>
 #include <boost/math/common_factor.hpp>
 #include <gsl/gsl>
-#include "settings.h"
-
-extern "C" {
 #include "palp/Global.h"
-}
+#include "settings.h"
 
 using gsl::span;
 using std::array;
