@@ -199,3 +199,84 @@ bool good_weight_system(const WeightSystem<dim> &ws)
 
     return true;
 }
+
+struct PairMatStruct {
+    PairMat pm;
+};
+
+void checko(const WeightSystem &ws, Ring &picard_number,
+            std::array<Ring, dim - 1> &hodge_numbers)
+{
+    using std::make_unique;
+
+    assert(r_denominator == 1);
+    assert(dim <= POLY_Dmax + 1);
+
+    VertexNumList V;
+    BaHo BH;
+
+    // allocate large structures on the heap once
+    static auto CW = make_unique<CWS>();
+    static auto E = make_unique<EqList>();
+    static auto DE = make_unique<EqList>();
+    static auto P = make_unique<PolyPointList>();
+    static auto DP = make_unique<PolyPointList>();
+    static auto PM = make_unique<PairMatStruct>();
+    static auto DPM = make_unique<PairMatStruct>();
+
+    CW->N = dim;
+    CW->index = r_numerator;
+    CW->nw = 1;
+    Ring norm = 0;
+    for (ptrdiff_t i = 0; i < CW->N; i++) {
+        CW->W[0][i] = ws.weights[i] * r_numerator;
+        norm += ws.weights[i];
+    }
+    CW->d[0] = norm;
+    CW->nz = 0;
+
+    Make_CWS_Points(&*CW, &*P);
+
+    bool reflexive = false;
+    bool ip = Find_Equations(&*P, &V, &*E);
+    if (!ip)
+        return;
+
+    reflexive = EL_to_PPL(&*E, &*DP, &P->n);
+
+    // Sort_VL(&V); // unnecessary?
+
+    Make_VEPM(&*P, &V, &*E, PM->pm);
+
+    if (reflexive) {
+        int ret = Transpose_PM(PM->pm, DPM->pm, V.nv, E->ne);
+        assert(ret);
+        VNL_to_DEL(&*P, &V, &*DE);
+        Complete_Poly(DPM->pm, &*DE, E->ne, &*DP);
+        RC_Calc_BaHo(&*P, &V, &*E, &*DP, &BH);
+    } else {
+        BH.mp = P->np;
+        BH.mv = V.nv;
+        BH.np = 0;
+        BH.nv = E->ne;
+    }
+
+    assert(BH.n == dim - 1);
+
+    for (size_t i = 0; i < hodge_numbers.size(); ++i)
+        hodge_numbers[i] = BH.h1[i + 1];
+
+    switch (dim) {
+    case 4:
+        picard_number = BH.pic;
+        break;
+    case 5:
+        picard_number = 2 * (BH.h1[1] - BH.h1[2]);
+        break;
+    case 6:
+        picard_number = 48 + 6 * (BH.h1[1] - BH.h1[2] + BH.h1[3]);
+        break;
+    default:
+        assert(false);
+    }
+}

@@ -249,6 +249,7 @@ As an example, the complete output for the quintic threefold reads
 5 1 1 1 1 1 M:126 5 N:6 5 H:1,101 [-200].
 */
 
+void Make_CWS_Points(CWS *Cin, PolyPointList *_P);
 
 /*  ==========              From Polynf.c                        ========== */
 
