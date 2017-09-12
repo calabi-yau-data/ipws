@@ -416,6 +416,61 @@ void combine_ws_files(span<BufferedReader> ins, BufferedWriter &out)
     cerr << stopwatch << " - combined weight systems: " << count << endl;
 }
 
+void diff_ws_files(BufferedReader &in1, BufferedReader &in2)
+{
+    Stopwatch stopwatch{};
+
+    vector<size_t> counts{};
+
+    check_config(in1);
+    check_config(in2);
+
+    uint64_t count1;
+    read(in1, count1);
+    uint64_t count2;
+    read(in2, count2);
+
+    cerr << stopwatch << " - input weight systems: " << count1 << " and "
+         << count2 << endl;
+
+    WeightSystem ws1{};
+    WeightSystem ws2{};
+
+    if (count1 > 0)
+        read_varint(in1, ws1);
+    if (count2 > 0)
+        read_varint(in2, ws2);
+
+    while (count1 > 0 && count2 > 0) {
+        if (ws1 < ws2) {
+            cout << "- " << ws1 << endl;
+            if (--count1 > 0)
+                read_varint(in1, ws1);
+        } else if (ws2 < ws1) {
+            cout << "+ " << ws2 << endl;
+            if (--count2 > 0)
+                read_varint(in2, ws2);
+        } else {
+            if (--count1 > 0)
+                read_varint(in1, ws1);
+            if (--count2 > 0)
+                read_varint(in2, ws2);
+        }
+    }
+
+    while (count1 > 0) {
+        cout << "- " << ws1 << endl;
+        if (--count1 > 0)
+            read_varint(in1, ws1);
+    }
+
+    while (count2 > 0) {
+        cout << "+ " << ws2 << endl;
+        if (--count2 > 0)
+            read_varint(in2, ws2);
+    }
+}
+
 void print_count(BufferedReader &in)
 {
     check_config(in);
@@ -449,8 +504,9 @@ bool run(int argc, char *argv[])
     SwitchArg print_count_arg( //
         "", "print-count", "Print the number entries in the given file");
     SwitchArg combine_ws_arg( //
-        "", "combine-ws",
-        "Combine given weight systems file with a second one");
+        "", "combine-ws", "Combine given weight system file with a second one");
+    SwitchArg diff_ws_arg( //
+        "", "diff-ws", "Diff two given weight system files");
 
     vector<Arg *> arg_list;
     arg_list.push_back(&find_candidates_arg);
@@ -458,6 +514,7 @@ bool run(int argc, char *argv[])
     arg_list.push_back(&find_pairs_arg);
     arg_list.push_back(&print_count_arg);
     arg_list.push_back(&combine_ws_arg);
+    arg_list.push_back(&diff_ws_arg);
     cmd.xorAdd(arg_list);
 
     SwitchArg print_ws_arg( //
@@ -565,6 +622,11 @@ bool run(int argc, char *argv[])
 
             combine_ws_files(span<BufferedReader>(ws_in), ws_out);
         }
+    } else if (diff_ws_arg.isSet() && files_arg.getValue().size() == 2) {
+        BufferedReader ws1_in{files_arg.getValue()[0]};
+        BufferedReader ws2_in{files_arg.getValue()[1]};
+
+        diff_ws_files(ws1_in, ws2_in);
     }
     return true;
 }
