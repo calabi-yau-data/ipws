@@ -138,7 +138,7 @@ const WeightSystemBuilder WeightSystemBuilder::restrict(const Point &x) const
     return ret;
 }
 
-bool WeightSystemBuilder::average_if_nonzero(WeightSystem &q) const
+bool WeightSystemBuilder::average_if_nonzero(WeightSystem<dim> &q) const
 {
     size_t size = generators.size();
     if (size == 0)

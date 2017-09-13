@@ -37,7 +37,7 @@ struct Statistics {
     size_t ip_weight_systems;
 };
 
-void print_with_denominator(const WeightSystem &ws)
+void print_with_denominator(const WeightSystem<dim> &ws)
 {
     Ring n = norm(ws);
     cout << n * r_denominator;
@@ -46,8 +46,8 @@ void print_with_denominator(const WeightSystem &ws)
     cout << endl;
 }
 
-bool add_maybe(unordered_set<WeightSystem> &weight_systems, WeightSystem ws,
-               Statistics &statistics)
+bool add_maybe(unordered_set<WeightSystem<dim>> &weight_systems,
+               WeightSystem<dim> ws, Statistics &statistics)
 {
     if (!good_weight_system(ws))
         return false;
@@ -60,11 +60,11 @@ bool add_maybe(unordered_set<WeightSystem> &weight_systems, WeightSystem ws,
 }
 
 void rec(const WeightSystemBuilder &builder,
-         unordered_set<WeightSystem> *weight_systems,
+         unordered_set<WeightSystem<dim>> *weight_systems,
          unordered_set<WeightSystemPair> &pairs, unsigned n, History &history,
          Statistics &statistics, const Stopwatch &stopwatch)
 {
-    WeightSystem ws{};
+    WeightSystem<dim> ws{};
     if (!builder.average_if_nonzero(ws))
         return;
 
@@ -135,9 +135,9 @@ void check_config(BufferedReader &f)
 }
 
 void write_sorted(BufferedWriter &f,
-                  const unordered_set<WeightSystem> &weight_systems)
+                  const unordered_set<WeightSystem<dim>> &weight_systems)
 {
-    vector<WeightSystem> sorted{};
+    vector<WeightSystem<dim>> sorted{};
     sorted.reserve(weight_systems.size());
 
     std::copy(weight_systems.begin(), weight_systems.end(),
@@ -171,11 +171,11 @@ void write_randomized(BufferedWriter &f,
     }
 }
 
-void weight_systems_from_pair(unordered_set<WeightSystem> &weight_systems,
+void weight_systems_from_pair(unordered_set<WeightSystem<dim>> &weight_systems,
                               const WeightSystemPair &pair,
                               Statistics &statistics)
 {
-    WeightSystem ws = average(pair);
+    WeightSystem<dim> ws = average(pair);
 
     // auto sym = symmetries(pair);
 
@@ -188,7 +188,7 @@ void weight_systems_from_pair(unordered_set<WeightSystem> &weight_systems,
             )
             continue;
 
-        WeightSystem final_ws{};
+        WeightSystem<dim> final_ws{};
         if (restrict(pair, x, final_ws))
             add_maybe(weight_systems, final_ws, statistics);
     }
@@ -199,7 +199,7 @@ void find_weight_systems(bool ip_only)
     Stopwatch stopwatch{};
     History history{};
     Statistics statistics{};
-    unordered_set<WeightSystem> weight_systems{};
+    unordered_set<WeightSystem<dim>> weight_systems{};
     unordered_set<WeightSystemPair> pairs{};
 
     rec(WeightSystemBuilder{}, &weight_systems, pairs, 0, history, statistics,
@@ -238,7 +238,7 @@ void find_pairs(BufferedWriter *ws_out, BufferedWriter *pairs_out)
     Stopwatch stopwatch{};
     History history{};
     Statistics statistics{};
-    unordered_set<WeightSystem> weight_systems{};
+    unordered_set<WeightSystem<dim>> weight_systems{};
     unordered_set<WeightSystemPair> pairs{};
 
     rec(WeightSystemBuilder{}, &weight_systems, pairs, 0, history, statistics,
@@ -269,7 +269,7 @@ void find_weight_systems_from_pairs(BufferedReader &pairs_in, size_t start,
                                     BufferedWriter *ws_out)
 {
     constexpr size_t pair_storage_size = 2 * weight_system_storage_size;
-    unordered_set<WeightSystem> weight_systems{};
+    unordered_set<WeightSystem<dim>> weight_systems{};
     Statistics statistics{};
     Stopwatch stopwatch{};
     unordered_set<WeightSystemPair> pairs{};
@@ -334,7 +334,7 @@ void check_ip(BufferedReader &ws_in)
 
     size_t ip_count = 0;
     for (size_t i = 0; i < ws_count; ++i) {
-        WeightSystem ws{};
+        WeightSystem<dim> ws{};
         read_varint(ws_in, ws);
 
         if (has_ip(ws)) {
@@ -373,17 +373,17 @@ void combine_ws_files(span<BufferedReader> ins, BufferedWriter &out)
     uint64_t count = 0;
     write(out, count);
 
-    vector<WeightSystem> ws{};
+    vector<WeightSystem<dim>> ws{};
     ws.resize(ins.size());
 
     for (size_t i = 0; i < counts.size(); ++i)
         if (counts[i] > 0)
             read_varint(ins[i], ws[i]);
 
-    WeightSystem prev;
+    WeightSystem<dim> prev;
 
     while (true) {
-        WeightSystem *smallest = nullptr;
+        WeightSystem<dim> *smallest = nullptr;
         size_t smallest_index = 0;
         for (size_t i = 0; i < counts.size(); ++i) {
             if (counts[i] == 0)
@@ -433,8 +433,8 @@ void diff_ws_files(BufferedReader &in1, BufferedReader &in2)
     cerr << stopwatch << " - input weight systems: " << count1 << " and "
          << count2 << endl;
 
-    WeightSystem ws1{};
-    WeightSystem ws2{};
+    WeightSystem<dim> ws1{};
+    WeightSystem<dim> ws2{};
 
     if (count1 > 0)
         read_varint(in1, ws1);

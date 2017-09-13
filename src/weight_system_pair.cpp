@@ -33,12 +33,12 @@ const WeightSystemPair canonicalize(const WeightSystemPair &pair)
     return ret;
 }
 
-const WeightSystem average(const WeightSystemPair &pair)
+const WeightSystem<dim> average(const WeightSystemPair &pair)
 {
     Ring norm1 = norm(pair.first);
     Ring norm2 = norm(pair.second);
 
-    WeightSystem ret{};
+    WeightSystem<dim> ret{};
 
     for (unsigned i = 0; i < dim; ++i)
         ret.weights[i] =
@@ -48,7 +48,8 @@ const WeightSystem average(const WeightSystemPair &pair)
     return ret;
 }
 
-bool restrict(const WeightSystemPair &pair, const Point &x, WeightSystem &ws)
+bool restrict(const WeightSystemPair &pair, const Point &x,
+              WeightSystem<dim> &ws)
 {
     Ring e1 = distance(pair.first, x);
     Ring e2 = distance(pair.second, x);

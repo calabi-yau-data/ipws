@@ -8,7 +8,7 @@
 using gsl::span;
 using std::array;
 
-Ring distance(const WeightSystem &ws, const Point &x)
+Ring distance(const WeightSystem<dim> &ws, const Point &x)
 {
     Ring ret = 0;
     for (unsigned i = 0; i < dim; ++i)
@@ -16,7 +16,7 @@ Ring distance(const WeightSystem &ws, const Point &x)
     return ret;
 }
 
-void cancel(WeightSystem &ws)
+void cancel(WeightSystem<dim> &ws)
 {
     if (dim == 0)
         return;
@@ -30,18 +30,18 @@ void cancel(WeightSystem &ws)
         ws /= gcd;
 }
 
-void sort(WeightSystem &ws)
+void sort(WeightSystem<dim> &ws)
 {
     std::sort(ws.weights.begin(), ws.weights.end());
 }
 
-Ring norm(const WeightSystem &ws)
+Ring norm(const WeightSystem<dim> &ws)
 {
     return std::accumulate(ws.weights.begin(), ws.weights.end(), 0);
 }
 
-const WeightSystem intersect(const WeightSystem &q1, const WeightSystem &q2,
-                             const Point &x)
+const WeightSystem<dim> intersect(const WeightSystem<dim> &q1,
+                                  const WeightSystem<dim> &q2, const Point &x)
 {
     Ring e1 = distance(q1, x);
     Ring e2 = distance(q2, x);
@@ -50,7 +50,7 @@ const WeightSystem intersect(const WeightSystem &q1, const WeightSystem &q2,
     // e1 /= gcd;
     // e2 /= gcd;
 
-    WeightSystem ret{};
+    WeightSystem<dim> ret{};
     if (e1 < 0)
         ret = e2 * q1 - e1 * q2;
     else
@@ -60,7 +60,8 @@ const WeightSystem intersect(const WeightSystem &q1, const WeightSystem &q2,
     return ret;
 }
 
-WeightSystemPointsBelow::WeightSystemPointsBelow(const WeightSystem &q) : q{q}
+WeightSystemPointsBelow::WeightSystemPointsBelow(const WeightSystem<dim> &q)
+        : q{q}
 {
     x.coords.fill(0);
     ax.fill(-norm(q) * r_denominator);
@@ -87,7 +88,7 @@ bool WeightSystemPointsBelow::find_next()
     return true;
 }
 
-WeightSystemPointsOn::WeightSystemPointsOn(const WeightSystem &q) : q{q}
+WeightSystemPointsOn::WeightSystemPointsOn(const WeightSystem<dim> &q) : q{q}
 {
     x.coords.fill(0);
     ax.fill(-norm(q) * r_denominator);
@@ -125,7 +126,7 @@ static void add_point(const Point &x, PolyPointList *P)
     P->np++;
 }
 
-static PolyPointList *new_point_list(const WeightSystem &ws)
+static PolyPointList *new_point_list(const WeightSystem<dim> &ws)
 {
     PolyPointList *P = (PolyPointList *)malloc(sizeof(PolyPointList));
     assert(P != nullptr);
@@ -142,7 +143,7 @@ static PolyPointList *new_point_list(const WeightSystem &ws)
     return P;
 }
 
-bool has_ip(const WeightSystem &ws)
+bool has_ip(const WeightSystem<dim> &ws)
 {
     PolyPointList *P = new_point_list(ws);
 
@@ -175,7 +176,7 @@ bool has_ip(const WeightSystem &ws)
     return ret;
 }
 
-bool good_weight_system(const WeightSystem &ws)
+bool good_weight_system(const WeightSystem<dim> &ws)
 {
     Ring n = norm(ws);
 
@@ -199,7 +200,7 @@ bool good_weight_system(const WeightSystem &ws)
     return true;
 }
 
-void read(BufferedReader &f, WeightSystem &ws)
+void read(BufferedReader &f, WeightSystem<dim> &ws)
 {
     static_assert(weight_system_storage_size == dim * sizeof(int32_t),
                   "The constant 'weight_system_storage_size' does not have the "
@@ -211,7 +212,7 @@ void read(BufferedReader &f, WeightSystem &ws)
     }
 }
 
-void write(BufferedWriter &f, const WeightSystem &ws)
+void write(BufferedWriter &f, const WeightSystem<dim> &ws)
 {
     for (unsigned i = 0; i < dim; ++i) {
         auto v = ws.weights[i];
@@ -220,7 +221,7 @@ void write(BufferedWriter &f, const WeightSystem &ws)
     }
 }
 
-void read_varint(BufferedReader &f, WeightSystem &ws)
+void read_varint(BufferedReader &f, WeightSystem<dim> &ws)
 {
     for (unsigned i = 0; i < dim; ++i) {
         auto v = read_varint(f);
@@ -229,7 +230,7 @@ void read_varint(BufferedReader &f, WeightSystem &ws)
     }
 }
 
-void write_varint(BufferedWriter &f, const WeightSystem &ws)
+void write_varint(BufferedWriter &f, const WeightSystem<dim> &ws)
 {
     for (unsigned i = 0; i < dim; ++i)
         write_varint(f, ws.weights[i]);

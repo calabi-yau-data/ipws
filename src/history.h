@@ -11,7 +11,7 @@ struct History {
     using array = std::array<T, D>;
 
     array<Point, dim - 1> points{};
-    array<WeightSystem, dim> weight_systems{};
+    array<WeightSystem<dim>, dim> weight_systems{};
     array<array<Ring, dim - 1>, dim - 1> point_weight_system_distances{};
 };
 

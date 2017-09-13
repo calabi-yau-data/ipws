@@ -17,7 +17,7 @@ public:
     unsigned generator_count() const;
 
     const WeightSystemBuilder restrict(const Point &x) const;
-    bool average_if_nonzero(WeightSystem &q) const;
+    bool average_if_nonzero(WeightSystem<dim> &q) const;
     bool allows(const Point &x) const;
 
     friend std::ostream &operator<<(std::ostream &os,
@@ -27,7 +27,7 @@ public:
 
 private:
     struct Generator {
-        WeightSystem eq;
+        WeightSystem<dim> eq;
         std::bitset<dim> incidences;
     };
     std::vector<Generator> generators;
