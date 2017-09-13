@@ -16,6 +16,8 @@ struct WeightSystem : VectorMixin<WeightSystem<D>, std::array<Ring, D>, D> {
 
     Container &vector_container() { return weights; }
     const Container &vector_container() const { return weights; }
+
+    static constexpr size_t storage_size = D * sizeof(uint32_t);
 };
 
 namespace std {
@@ -58,10 +60,46 @@ void cancel(WeightSystem<dim> &ws);
 void sort(WeightSystem<dim> &ws);
 Ring norm(const WeightSystem<dim> &ws);
 bool good_weight_system(const WeightSystem<dim> &ws);
-void read(BufferedReader &f, WeightSystem<dim> &ws);
-void write(BufferedWriter &f, const WeightSystem<dim> &ws);
-void read_varint(BufferedReader &f, WeightSystem<dim> &ws);
-void write_varint(BufferedWriter &f, const WeightSystem<dim> &ws);
+
+template <unsigned D>
+void read(BufferedReader &f, WeightSystem<D> &ws)
+{
+    static_assert(WeightSystem<D>::storage_size == D * sizeof(int32_t),
+                  "The constant WeightSystem::storage_size does not have the "
+                  "right value");
+    for (unsigned i = 0; i < D; ++i) {
+        int32_t v;
+        read(f, v);
+        ws.weights[i] = v;
+    }
+}
+
+template <unsigned D>
+void write(BufferedWriter &f, const WeightSystem<D> &ws)
+{
+    for (unsigned i = 0; i < D; ++i) {
+        auto v = ws.weights[i];
+        assert(v >= 0 && v <= INT32_MAX);
+        write(f, static_cast<int32_t>(v));
+    }
+}
+
+template <unsigned D>
+void read_varint(BufferedReader &f, WeightSystem<D> &ws)
+{
+    for (unsigned i = 0; i < D; ++i) {
+        auto v = read_varint(f);
+        assert(v <= std::numeric_limits<Ring>::max());
+        ws.weights[i] = static_cast<Ring>(v);
+    }
+}
+
+template <unsigned D>
+void write_varint(BufferedWriter &f, const WeightSystem<D> &ws)
+{
+    for (unsigned i = 0; i < D; ++i)
+        write_varint(f, ws.weights[i]);
+}
 
 // Returns the weight system q that is a linear combination of q1 and q2
 // such that its distance to x is zero. Equivalently:
@@ -72,7 +110,5 @@ const WeightSystem<dim> intersect(const WeightSystem<dim> &q1,
                                   const WeightSystem<dim> &q2, const Point &x);
 
 bool has_ip(const WeightSystem<dim> &ws);
-
-constexpr size_t weight_system_storage_size = dim * sizeof(uint32_t);
 
 #endif

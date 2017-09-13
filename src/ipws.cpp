@@ -268,7 +268,7 @@ void find_weight_systems_from_pairs(BufferedReader &pairs_in, size_t start,
                                     optional<size_t> count_opt,
                                     BufferedWriter *ws_out)
 {
-    constexpr size_t pair_storage_size = 2 * weight_system_storage_size;
+    constexpr size_t pair_storage_size = 2 * WeightSystem<dim>::storage_size;
     unordered_set<WeightSystem<dim>> weight_systems{};
     Statistics statistics{};
     Stopwatch stopwatch{};

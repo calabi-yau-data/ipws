@@ -199,39 +199,3 @@ bool good_weight_system(const WeightSystem<dim> &ws)
 
     return true;
 }
-
-void read(BufferedReader &f, WeightSystem<dim> &ws)
-{
-    static_assert(weight_system_storage_size == dim * sizeof(int32_t),
-                  "The constant 'weight_system_storage_size' does not have the "
-                  "right value");
-    for (unsigned i = 0; i < dim; ++i) {
-        int32_t v;
-        read(f, v);
-        ws.weights[i] = v;
-    }
-}
-
-void write(BufferedWriter &f, const WeightSystem<dim> &ws)
-{
-    for (unsigned i = 0; i < dim; ++i) {
-        auto v = ws.weights[i];
-        assert(v >= 0 && v <= INT32_MAX);
-        write(f, static_cast<int32_t>(v));
-    }
-}
-
-void read_varint(BufferedReader &f, WeightSystem<dim> &ws)
-{
-    for (unsigned i = 0; i < dim; ++i) {
-        auto v = read_varint(f);
-        assert(v <= std::numeric_limits<Ring>::max());
-        ws.weights[i] = static_cast<Ring>(v);
-    }
-}
-
-void write_varint(BufferedWriter &f, const WeightSystem<dim> &ws)
-{
-    for (unsigned i = 0; i < dim; ++i)
-        write_varint(f, ws.weights[i]);
-}
