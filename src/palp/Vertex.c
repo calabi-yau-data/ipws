@@ -732,35 +732,14 @@ void add_for_completion(Long *yDen, Long Den,
   _CP->np++;
 }
 
-void Complete_Poly(PairMat VPM, EqList *_E, int nv, 
-			     PolyPointList *_CP){
-  int i,j,k,l,InsPoint,rank=0,n=_CP->n,old_np=_CP->np;
-  Long MaxDist[EQUA_Nmax], InvMat[POLY_Dmax][POLY_Dmax], Den=1;
-  Long yDen[POLY_Dmax];
-  int OrdFac[VERT_Nmax], 
-    BasFac[POLY_Dmax], one[POLY_Dmax], position[POLY_Dmax];
-  LRat ind[POLY_Dmax][POLY_Dmax], x[POLY_Dmax], y[POLY_Dmax], f, 
-    PInvMat[POLY_Dmax][POLY_Dmax];
-
-  /*_CP->np=0;*/
-
-  /* Calculate maximal distances from facets of Delta^* (Vertices of Delta) */
-
-  for (i=0;i<_E->ne;i++) {  
-    MaxDist[i]=0;
-    for (j=0;j<nv;j++) 
-    if (MaxDist[i]<VPM[i][j]) MaxDist[i]=VPM[i][j];}
-
-  /* Order facets of Delta^* (Vertices of Delta) w.r.t. MaxDist   */
-
-  OrdFac[0]=0;
-  for (i=1;i<_E->ne;i++){
-    InsPoint=i; 
-    while (InsPoint&&(MaxDist[i]<MaxDist[OrdFac[InsPoint-1]])) InsPoint--;
-    for (j=i;j>InsPoint;j--) OrdFac[j]=OrdFac[j-1];
-    OrdFac[InsPoint]=i; }
-
+void Compute_InvMat(int n, EqList *_E, int OrdFac[VERT_Nmax],
+		    int BasFac[POLY_Dmax], Long *Den,
+		    Long InvMat[POLY_Dmax][POLY_Dmax]){
   /* Find first POLY_Dmax linearly independent facets + Inverse Matrix */
+
+  LRat ind[POLY_Dmax][POLY_Dmax], x[POLY_Dmax], y[POLY_Dmax], f,
+    PInvMat[POLY_Dmax][POLY_Dmax];
+  int i, j, k, l, rank=0, one[POLY_Dmax];
 
   for (i=0;i<n;i++) for (j=0;j<n;j++) PInvMat[i][j]=LrI(0);
   for (i=0;i<n;i++) PInvMat[i][i]=LrI(1);
@@ -789,19 +768,49 @@ void Complete_Poly(PairMat VPM, EqList *_E, int nv,
       rank++; }  
     i++; }
   for (i=0;i<n;i++) for (j=0;j<n;j++) 
-    Den=(Den/LFgcd(Den,PInvMat[i][j].D))*PInvMat[i][j].D;
+    *Den=(*Den/LFgcd(*Den,PInvMat[i][j].D))*PInvMat[i][j].D;
   for (i=0;i<n;i++) for (j=0;j<n;j++) 
-    InvMat[one[i]][j]=(Den/PInvMat[i][j].D)*PInvMat[i][j].N;
+    InvMat[one[i]][j]=(*Den/PInvMat[i][j].D)*PInvMat[i][j].N;
 
   for (i=0;i<n;i++){
     for (j=0;j<n;j++) {
       long long s=0;
       for(k=0;k<n;k++) s+=((long long) (InvMat[k][i]))*
 			 ((long long) (_E->e[BasFac[j]].a[k]));
-      if (s!=Den*(i==j)) {
+      if (s!=*Den*(i==j)) {
 	puts("something wrong in Make_Dual_Poly");
 	exit(0);}}} 
+}
 
+void Complete_Poly(PairMat VPM, EqList *_E, int nv, 
+			     PolyPointList *_CP){
+  int i,j,k,InsPoint,n=_CP->n,old_np=_CP->np;
+  Long MaxDist[EQUA_Nmax], InvMat[POLY_Dmax][POLY_Dmax], Den=1;
+  Long yDen[POLY_Dmax];
+  int OrdFac[VERT_Nmax], BasFac[POLY_Dmax], position[POLY_Dmax];
+
+  /*_CP->np=0;*/
+
+  /* Calculate maximal distances from facets of Delta^* (Vertices of Delta) */
+
+  for (i=0;i<_E->ne;i++) {  
+    MaxDist[i]=0;
+    for (j=0;j<nv;j++) 
+    if (MaxDist[i]<VPM[i][j]) MaxDist[i]=VPM[i][j];}
+
+  /* Order facets of Delta^* (Vertices of Delta) w.r.t. MaxDist   */
+
+  OrdFac[0]=0;
+  for (i=1;i<_E->ne;i++){
+    InsPoint=i; 
+    while (InsPoint&&(MaxDist[i]<MaxDist[OrdFac[InsPoint-1]])) InsPoint--;
+    for (j=i;j>InsPoint;j--) OrdFac[j]=OrdFac[j-1];
+    OrdFac[InsPoint]=i; }
+
+  Compute_InvMat(n, _E, OrdFac, BasFac, &Den, InvMat);
+
+  /* printf("Den=%ld  ", Den); mostly 1 or 2!!! */
+  
   /* Examine all integer points of parallelogram:                         */
   /* The basic structure of the algorithm is:
   for (k=0;k<n-1;k++) position[k]=-1;      / * sets k=n-1; important!      *
@@ -840,6 +849,19 @@ void Complete_Poly(PairMat VPM, EqList *_E, int nv,
 /*  ==========							==========  */ 
 /*  ======================================================================  */
 
+void RaiseDip(INCI x, FaceInfo *_I, int n, int mult){
+  int i, j;
+  for(i=0;i<n;i++)
+    for(j=0;j<_I->nf[i];j++) 
+      if(INCI_EQ(x,_I->v[i][j])) {_I->dip[i][j] += mult; return;}
+}
+
+void RaiseNip(INCI x, FaceInfo *_I, int n){
+  int i, j;
+  for(i=n-1;i>=0;i--)
+    for(j=0;j<_I->nf[i];j++) 
+      if(INCI_EQ(x,_I->f[i][j])) {_I->nip[i][j]++; return;}	
+}
 
 void Make_FaceIPs(PolyPointList *_P, VertexNumList *_V, EqList *_E, 
 		  PolyPointList *_DP, FaceInfo *_I){    
@@ -854,14 +876,12 @@ void Make_FaceIPs(PolyPointList *_P, VertexNumList *_V, EqList *_E,
     x=INCI_0(); 
     for(i=0;i<_E->ne;i++) 
       x=INCI_PN(x,Eval_Eq_on_V(&(_E->e[i]),_P->x[k],_P->n)); 
-    for(i=0;i<_P->n;i++) for(j=0;j<_I->nf[i];j++) 
-      if(INCI_EQ(x,_I->f[i][j])) _I->nip[i][j]++; }	
+    RaiseNip(x, _I, _P->n);}	
   for (k=0;k<_DP->np;k++){
     x=INCI_0(); 
     for(i=0;i<_V->nv;i++) 
       x=INCI_PN(x,DualBraP1(_P->x[_V->v[i]],_DP->x[k],_P->n));
-    for(i=0;i<_P->n;i++) for(j=0;j<_I->nf[i];j++) 
-      if(INCI_EQ(x,_I->v[i][j])) _I->dip[i][j]++;}
+    RaiseDip(x, _I, _P->n, 1);}
 }
 
 void PrintFaceIPs(PolyPointList *_P,FaceInfo *_I){
@@ -905,4 +925,167 @@ void RC_Calc_BaHo(PolyPointList *_P, VertexNumList *_V, EqList *_E,
   Make_FaceIPs(_P, _V, _E, _DP, _FI);
   Eval_BaHo(_FI, _BH);
   free(_FI);
+}
+
+
+
+
+void Qadd_for_completion(Long *yDen, Long Den, int n, int *np, EqList *_E,
+			 FaceInfo *_I){
+  int i;
+  Long y[POLY_Dmax];
+  INCI x = INCI_0();
+  for(i=0;i<n;i++) if(yDen[i]%Den) return;
+  for(i=0;i<n;i++) y[i] = yDen[i]/Den;
+  for(i=0;i<_E->ne;i++) x=INCI_PN(x,Eval_Eq_on_V(&(_E->e[i]),y,n));
+  RaiseDip(x, _I, n, 1);
+  (*np)++;
+}
+
+void lastline(Long *EyD, Long *yDen, Long Den, EqList *_E, int n, int *np, 
+	      Long MD /*MaxDist[BasFac[n-1]*/, Long IME[POLY_Dmax][EQUA_Nmax],
+	      Long InvMat[POLY_Dmax][POLY_Dmax], FaceInfo *_I){
+  int i, j, l, lmin=0, lmax=MD;
+  INCI xmin, xmax;
+  Long y[POLY_Dmax];
+  for (j=0;j<_E->ne;j++) if ((EyD[j]<0)&&(IME[n-1][j]<=0)) return;
+  for (j=0;(j<_E->ne)&&(lmax >=lmin);j++)
+    if (IME[n-1][j]<0) {
+      l = EyD[j]/(-IME[n-1][j]);
+      if (lmax > l) lmax = l;}
+    else if ((IME[n-1][j]>0)&&(EyD[j]<0)){
+      l = 1 + (-1-EyD[j])/IME[n-1][j];
+      if (lmin < l) lmin = l;}
+  if (lmax < lmin) return;
+
+  if(Den>1) {
+    for(i=0;i<n;i++)
+      yDen[i] += InvMat[i][n-1] * lmin;
+    for (l=lmin;l<=lmax;l++){ 
+      Qadd_for_completion(yDen, Den, n, np, _E, _I);
+      for (i=0;i<n;i++) yDen[i]+=InvMat[i][n-1];}
+    for(i=0;i<n;i++)
+      yDen[i] -= InvMat[i][n-1] * (lmax+1);
+    return;}
+  
+  for(i=0;i<n;i++)
+    y[i] = yDen[i] + InvMat[i][n-1] * lmin;
+  xmin=INCI_0();
+  for(i=0;i<_E->ne;i++) 
+    xmin=INCI_PN(xmin,Eval_Eq_on_V(&(_E->e[i]),y,n));
+  RaiseDip(xmin, _I, n, 1);
+  (*np)++;
+  if (lmax == lmin) return;
+  for(i=0;i<n;i++)
+    y[i] = yDen[i] + InvMat[i][n-1] * lmax;
+  xmax=INCI_0();
+  for(i=0;i<_E->ne;i++) 
+    xmax=INCI_PN(xmax,Eval_Eq_on_V(&(_E->e[i]),y,n));
+  RaiseDip(xmax, _I, n, 1);
+  (*np)++;
+  if (lmax == lmin +1) return;
+  RaiseDip(INCI_AND(xmin,xmax), _I, n, lmax - lmin - 1);
+  (*np) +=  lmax - lmin - 1;
+}
+    
+void QComplete_Poly(PairMat VPM, EqList *_E, int nv, int n, int *np,
+		    FaceInfo *_I){
+  int i,j,k,InsPoint;
+  Long MaxDist[EQUA_Nmax], InvMat[POLY_Dmax][POLY_Dmax], Den=1;
+  Long yDen[POLY_Dmax], EyD[EQUA_Nmax], IME[POLY_Dmax][EQUA_Nmax];
+  /* IME[k][j] = InvMat [k] * _E[j] */
+  int OrdFac[VERT_Nmax], BasFac[POLY_Dmax], position[POLY_Dmax];
+
+  for(i=0;i<n;i++) for(j=0;j<_I->nf[i];j++) _I->dip[i][j]=0;
+  
+  (*np) = 0;
+
+  /* Calculate maximal distances from facets of Delta^* (Vertices of Delta) */
+
+  for (i=0;i<_E->ne;i++) {  
+    MaxDist[i]=0;
+    for (j=0;j<nv;j++) 
+    if (MaxDist[i]<VPM[i][j]) MaxDist[i]=VPM[i][j];}
+
+  /* Order facets of Delta^* (Vertices of Delta) w.r.t. MaxDist   */
+
+  OrdFac[0]=0;
+  for (i=1;i<_E->ne;i++){
+    InsPoint=i; 
+    while (InsPoint&&(MaxDist[i]<MaxDist[OrdFac[InsPoint-1]])) InsPoint--;
+    for (j=i;j>InsPoint;j--) OrdFac[j]=OrdFac[j-1];
+    OrdFac[InsPoint]=i; }
+
+  Compute_InvMat(n, _E, OrdFac, BasFac, &Den, InvMat);
+
+  for (k=0;k<n;k++)
+    for (j=0;j<_E->ne;j++){
+      IME[k][j] = 0;
+      for(i=0;i<n;i++) IME[k][j] += InvMat[i][k] * _E->e[j].a[i];}
+  /* Examine all integer points of parallelogram:                         */
+  /* The basic structure of the algorithm is:
+  for (k=0;k<n-1;k++) position[k]=-1;      / * sets k=n-1; important!      *
+  position[n-1]=-2;  / * starting point just outside the parallelogram     *
+  while(k>=0){
+    position[k]++;
+    DO AT position;
+    for(k=n-1;((position[k]==MaxDist[BasFac[k]]-1)&&(k>=0));k--) 
+       position[k]=-1;  }
+         / * sets k to the highest value where pos.[k] wasn't the max value; 
+            resets the following max values to min values                 */
+  /* Quantities linear in position can be changed with every change of
+     position (here: yDen)                                                */
+  for(i=0;i<n;i++) yDen[i]=0;
+  for (k=0;k<n-2;k++) {   /* sets k=n-2; important!   */
+    position[k]=-_E->e[BasFac[k]].c; 
+    for(i=0;i<n;i++) yDen[i]-=_E->e[BasFac[k]].c*InvMat[i][k];}
+  position[n-2]=-_E->e[BasFac[n-2]].c-1;
+  for(i=0;i<n;i++) {
+    yDen[i]-=(_E->e[BasFac[k]].c+1)*InvMat[i][k];
+    yDen[i]-=_E->e[BasFac[n-1]].c*InvMat[i][n-1];}
+  for (j=0;j<_E->ne;j++) {
+    EyD[j]=_E->e[i].c * Den;
+    for(i=0;i<n;i++) EyD[j] += yDen[i] * _E->e[j].a[i];  }
+  while(k>=0){
+    position[k]++;
+    for (i=0;i<n;i++) yDen[i]+=InvMat[i][k];
+    for (j=0;j<_E->ne;j++) EyD[j] += IME[k][j];
+    lastline(EyD, yDen, Den, _E, n, np, MaxDist[BasFac[n-1]], IME, InvMat, _I);
+  for (k=n-2;(k>=0);k--){
+      if (position[k]!=MaxDist[BasFac[k]]-_E->e[BasFac[k]].c) break;
+      position[k]=-_E->e[BasFac[k]].c;
+      for (i=0;i<n;i++) yDen[i]-=MaxDist[BasFac[k]]*InvMat[i][k];
+      for (j=0;j<_E->ne;j++)
+	EyD[j] -= MaxDist[BasFac[k]] * IME[k][j];}}
+}
+
+void Compute_nip(PolyPointList *_P, EqList *_E,  FaceInfo *_I){
+  /*   compute IP's of faces by computing Incidences for all points and
+   *   comparing with Incidences of dual faces                             */
+  int i, j, k;
+  INCI x;
+  for(i=0;i<_P->n;i++) for(j=0;j<_I->nf[i];j++) _I->nip[i][j]=0;
+  for(k=0;k<_P->np;k++){	
+    x=INCI_0(); 
+    for(i=0;i<_E->ne;i++) 
+      x=INCI_PN(x,Eval_Eq_on_V(&(_E->e[i]),_P->x[k],_P->n)); 
+    RaiseNip(x, _I, _P->n);}	
+}
+
+int QuickAnalysis(PolyPointList *_P, BaHo *_BH, FaceInfo *_FI){
+  VertexNumList V; EqList E; EqList DE; PairMat PM; PairMat DPM; //FaceInfo FI;
+  int i;
+  if (!IP_Check(_P,&V,&E)) return 0;
+  _BH->mp=_P->np; _BH->mv=V.nv; _BH->nv=E.ne; _BH->np = 0; _BH->n=_P->n;
+  for(i = 0; i < E.ne; i++) if (E.e[i].c != 1) return 1;
+  Make_VEPM(_P,&V,&E,PM);
+  if (!Transpose_PM(PM, DPM, V.nv, E.ne)) {
+    fprintf(stderr,"Transpose_PM failed because #eq=%d > VERT_Nmax\n", E.ne);
+    exit(0);}
+  VNL_to_DEL(_P, &V, &DE);
+  Make_Incidence(_P, &V, &E, _FI);
+  Compute_nip(_P, &E, _FI);
+  QComplete_Poly(DPM, &DE, E.ne, _P->n, &_BH->np, _FI);
+  Eval_BaHo(_FI, _BH);
+  return 1;
 }
