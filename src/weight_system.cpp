@@ -204,31 +204,75 @@ struct PairMatStruct {
     PairMat pm;
 };
 
-void checko(const WeightSystem &ws, Ring &picard_number,
-            std::array<Ring, dim - 1> &hodge_numbers)
+#define MAXLD (26)
+
+typedef struct {
+    long n_nonIP, n_IP_nonRef, n_ref, // numbers of WS of certain types
+        max_w, nr_max_w, // maximum weight in the reflexive/non-reflexive cases
+        nr_n_w[MAXLD], n_w[MAXLD]; // numbers of weights of given [ld]
+    int nr_max_mp, nr_max_mv, nr_max_nv, max_mp, max_mv, max_np, max_nv,
+        max_h22, max_h1[POLY_Dmax - 1], // max values of certain entries of BH
+        min_chi, max_chi,
+        max_nf[POLY_Dmax + 1]; // range for chi, max facet numbers
+} C5stats;
+
+int int_ld(Long w)
+{
+    int i = -1;
+    while (w) {
+        w /= 2;
+        i++;
+    }
+    return i;
+}
+
+void Initialize_C5S(C5stats *_C5S, int n)
+{
+    int k;
+    _C5S->n_nonIP = 0;
+    _C5S->n_IP_nonRef = 0;
+    _C5S->n_ref = 0;
+    _C5S->nr_max_mp = 0;
+    _C5S->nr_max_mv = 0;
+    _C5S->nr_max_nv = 0;
+    _C5S->nr_max_w = 0;
+    for (k = 0; k < MAXLD; k++) {
+        _C5S->n_w[k] = 0;
+        _C5S->nr_n_w[k] = 0;
+    }
+    _C5S->max_mp = 0;
+    _C5S->max_mv = 0;
+    _C5S->max_np = 0;
+    _C5S->max_nv = 0;
+    _C5S->max_h22 = 0;
+    _C5S->max_w = 0;
+    for (k = 1; k < n - 1; k++)
+        _C5S->max_h1[k] = 0;
+    for (k = 0; k <= n; k++)
+        _C5S->max_nf[k] = 0;
+    _C5S->max_chi = -100000000;
+    _C5S->min_chi = 100000000;
+}
+
+extern "C" int QuickAnalysis(PolyPointList *_P, BaHo *_BH, FaceInfo *_FI);
+
+void checko(const WeightSystem<dim> &ws, Ring &picard_number,
+            std::array<Ring, dim - 1> &hodge_numbers, bool &reflexive)
 {
     using std::make_unique;
 
     assert(r_denominator == 1);
     assert(dim <= POLY_Dmax + 1);
 
-    VertexNumList V;
-    BaHo BH;
-
     // allocate large structures on the heap once
     static auto CW = make_unique<CWS>();
-    static auto E = make_unique<EqList>();
-    static auto DE = make_unique<EqList>();
     static auto P = make_unique<PolyPointList>();
-    static auto DP = make_unique<PolyPointList>();
-    static auto PM = make_unique<PairMatStruct>();
-    static auto DPM = make_unique<PairMatStruct>();
 
     CW->N = dim;
     CW->index = r_numerator;
     CW->nw = 1;
     Ring norm = 0;
-    for (ptrdiff_t i = 0; i < CW->N; i++) {
+    for (size_t i = 0; i < dim; i++) {
         CW->W[0][i] = ws.weights[i] * r_numerator;
         norm += ws.weights[i];
     }
@@ -237,46 +281,101 @@ void checko(const WeightSystem &ws, Ring &picard_number,
 
     Make_CWS_Points(&*CW, &*P);
 
-    bool reflexive = false;
-    bool ip = Find_Equations(&*P, &V, &*E);
-    if (!ip)
+    BaHo BH;
+    FaceInfo FI;
+    C5stats C5S;
+
+    if (!QuickAnalysis(&*P, &BH, &FI)) { // non-IP
+        C5S.n_nonIP++;
         return;
+    }
+    Print_CWH(&*CW, &BH);
 
-    reflexive = EL_to_PPL(&*E, &*DP, &P->n);
-
-    // Sort_VL(&V); // unnecessary?
-
-    Make_VEPM(&*P, &V, &*E, PM->pm);
+    reflexive = BH.np > 0;
 
     if (reflexive) {
-        int ret = Transpose_PM(PM->pm, DPM->pm, V.nv, E->ne);
-        assert(ret);
-        VNL_to_DEL(&*P, &V, &*DE);
-        Complete_Poly(DPM->pm, &*DE, E->ne, &*DP);
-        RC_Calc_BaHo(&*P, &V, &*E, &*DP, &BH);
+        int i, chi = 48 + 6 * (BH.h1[1] - BH.h1[2] + BH.h1[3]),
+            ld = int_ld(CW->W[0][5]);
+        assert(0 <= ld);
+        assert(ld < MAXLD);
+        if (BH.mp > C5S.max_mp)
+            C5S.max_mp = BH.mp;
+        if (BH.mv > C5S.max_mv)
+            C5S.max_mv = BH.mv;
+        if (BH.np > C5S.max_np)
+            C5S.max_np = BH.np;
+        if (BH.nv > C5S.max_nv)
+            C5S.max_nv = BH.nv;
+        if (BH.h22 > C5S.max_h22)
+            C5S.max_h22 = BH.h22;
+        for (i = 1; i < BH.n - 1; i++)
+            if (BH.h1[i] > C5S.max_h1[i])
+                C5S.max_h1[i] = BH.h1[i];
+        for (i = 0; i <= BH.n; i++)
+            if (FI.nf[i] > C5S.max_nf[i])
+                C5S.max_nf[i] = FI.nf[i];
+        if (chi > C5S.max_chi)
+            C5S.max_chi = chi;
+        if (chi < C5S.min_chi)
+            C5S.min_chi = chi;
+        C5S.n_ref++;
+        C5S.n_w[ld]++;
+        if (CW->W[0][5] > C5S.max_w)
+            C5S.max_w = CW->W[0][5];
     } else {
-        BH.mp = P->np;
-        BH.mv = V.nv;
-        BH.np = 0;
-        BH.nv = E->ne;
+        if (BH.mp > C5S.nr_max_mp)
+            C5S.nr_max_mp = BH.mp;
+        if (BH.mv > C5S.nr_max_mv)
+            C5S.nr_max_mv = BH.mv;
+        if (BH.nv > C5S.nr_max_nv)
+            C5S.nr_max_nv = BH.nv;
+        C5S.n_IP_nonRef++;
+        C5S.nr_n_w[int_ld(CW->W[0][5])]++;
+        if (CW->W[0][5] > C5S.nr_max_w)
+            C5S.nr_max_w = CW->W[0][5];
     }
 
-    assert(BH.n == dim - 1);
+    printf("non-IP: #=%ld\n", C5S.n_nonIP);
+    printf(
+        "IP, non-reflexive: #=%ld, max_mp=%d, max_mv=%d, max_nv=%d, "
+        "max_w=%ld\n",
+        C5S.n_IP_nonRef, C5S.nr_max_mp, C5S.nr_max_mv, C5S.nr_max_nv,
+        C5S.nr_max_w);
+    printf("  #(w5) of given ld: ");
+    for (int i = 0; i < MAXLD; i++)
+        printf(" %d:%ld", i, C5S.nr_n_w[i]);
+    puts("");
+    printf(
+        "reflexive: #=%ld, max_mp=%d, max_mv=%d, max_np=%d, max_nv=%d, "
+        "max_w=%ld\n",
+        C5S.n_ref, C5S.max_mp, C5S.max_mv, C5S.max_np, C5S.max_nv,
+        C5S.max_w);
+    printf("  #(w5) of given ld: ");
+    for (int i = 0; i < MAXLD; i++)
+        printf(" %d:%ld", i, C5S.n_w[i]);
+    puts("");
+    printf("  max #(faces): %d %d %d %d %d\n", C5S.max_nf[0], C5S.max_nf[1],
+           C5S.max_nf[2], C5S.max_nf[3], C5S.max_nf[4]);
+    printf("  h11<=%d, h12<=%d, h13<=%d, h22<=%d, %d<=chi<=%d\n",
+           C5S.max_h1[1], C5S.max_h1[2], C5S.max_h1[3], C5S.max_h22,
+           C5S.min_chi, C5S.max_chi);
 
-    for (size_t i = 0; i < hodge_numbers.size(); ++i)
-        hodge_numbers[i] = BH.h1[i + 1];
+    // assert(BH.n == dim - 1);
 
-    switch (dim) {
-    case 4:
-        picard_number = BH.pic;
-        break;
-    case 5:
-        picard_number = 2 * (BH.h1[1] - BH.h1[2]);
-        break;
-    case 6:
-        picard_number = 48 + 6 * (BH.h1[1] - BH.h1[2] + BH.h1[3]);
-        break;
-    default:
-        assert(false);
-    }
+    // for (size_t i = 0; i < hodge_numbers.size(); ++i)
+    //     hodge_numbers[i] = BH.h1[i + 1];
+
+    // switch (dim) {
+    // case 4:
+    //     picard_number = BH.pic;
+    //     break;
+    // case 5:
+    //     picard_number = 2 * (BH.h1[1] - BH.h1[2]);
+    //     break;
+    // case 6:
+    //     picard_number = 48 + 6 * (BH.h1[1] - BH.h1[2] + BH.h1[3]);
+    //     break;
+    // default:
+    //     assert(false);
+    // }
 }
