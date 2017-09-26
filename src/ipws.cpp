@@ -32,9 +32,9 @@ using std::unique_ptr;
 using std::make_unique;
 
 struct Statistics {
-    size_t weight_systems_found;
-    size_t pairs_found;
-    size_t ip_weight_systems;
+    unsigned long weight_systems_found;
+    unsigned long pairs_found;
+    unsigned long ip_weight_systems;
 };
 
 void print_with_denominator(const WeightSystem<dim> &ws)
@@ -264,8 +264,9 @@ void find_pairs(BufferedWriter *ws_out, BufferedWriter *pairs_out)
     }
 }
 
-void find_weight_systems_from_pairs(BufferedReader &pairs_in, size_t start,
-                                    optional<size_t> count_opt,
+void find_weight_systems_from_pairs(BufferedReader &pairs_in,
+                                    unsigned long start,
+                                    optional<unsigned long> count_opt,
                                     BufferedWriter *ws_out)
 {
     constexpr size_t pair_storage_size = 2 * WeightSystem<dim>::storage_size;
@@ -273,14 +274,14 @@ void find_weight_systems_from_pairs(BufferedReader &pairs_in, size_t start,
     Statistics statistics{};
     Stopwatch stopwatch{};
     unordered_set<WeightSystemPair> pairs{};
-    // size_t candidate_count = 0;
+    // unsigned long candidate_count = 0;
 
     check_config(pairs_in);
 
     uint64_t pair_count;
     read(pairs_in, pair_count);
 
-    size_t count = count_opt ? *count_opt : pair_count - start;
+    unsigned long count = count_opt ? *count_opt : pair_count - start;
 
     cerr << stopwatch << " - total pairs: " << pair_count
          << ", pairs used: " << count << endl;
@@ -289,7 +290,7 @@ void find_weight_systems_from_pairs(BufferedReader &pairs_in, size_t start,
     pairs_in.seek_relative(pair_storage_size * start);
 
     // srand(1234);
-    for (size_t i = 0; i < count; ++i) {
+    for (unsigned long i = 0; i < count; ++i) {
         // pairs_in.seek_relative((rand() % (pair_count / pair_storage_size)) *
         //                        pair_storage_size);
 
@@ -300,7 +301,8 @@ void find_weight_systems_from_pairs(BufferedReader &pairs_in, size_t start,
 
         weight_systems_from_pair(weight_systems, pair, statistics);
 
-        // size_t new_candidate_count = candidate_count + weight_systems.size();
+        // unsigned long new_candidate_count = candidate_count +
+        // weight_systems.size();
         // if (candidate_count / 100000 != new_candidate_count / 100000)
         //     cerr << stopwatch << " - weight systems: " << new_candidate_count
         //          << endl;
@@ -332,8 +334,8 @@ void check_ip(BufferedReader &ws_in)
     uint64_t ws_count;
     read(ws_in, ws_count);
 
-    size_t ip_count = 0;
-    for (size_t i = 0; i < ws_count; ++i) {
+    unsigned long ip_count = 0;
+    for (unsigned long i = 0; i < ws_count; ++i) {
         WeightSystem<dim> ws{};
         read_varint(ws_in, ws);
 
@@ -352,8 +354,8 @@ void combine_ws_files(span<BufferedReader> ins, BufferedWriter &out)
 {
     Stopwatch stopwatch{};
 
-    vector<size_t> counts{};
-    size_t total = 0;
+    vector<unsigned long> counts{};
+    unsigned long total = 0;
 
     for (auto &in : ins) {
         check_config(in);
@@ -420,7 +422,7 @@ void diff_ws_files(BufferedReader &in1, BufferedReader &in2)
 {
     Stopwatch stopwatch{};
 
-    vector<size_t> counts{};
+    vector<unsigned long> counts{};
 
     check_config(in1);
     check_config(in2);
@@ -528,9 +530,9 @@ bool run(int argc, char *argv[])
         "", "pairs-in", "Pairs source file", false, "", "file", cmd);
     ValueArg<string> pairs_out_arg( //
         "", "pairs-out", "Pairs destination file", false, "", "file", cmd);
-    ValueArg<size_t> start_arg( //
+    ValueArg<unsigned long> start_arg( //
         "", "start", "", false, 0, "number", cmd);
-    ValueArg<ptrdiff_t> count_arg( //
+    ValueArg<long> count_arg( //
         "", "count", "", false, -1, "number", cmd);
 
     ValueArg<unsigned> skip_redundancy_check_arg(
@@ -565,8 +567,8 @@ bool run(int argc, char *argv[])
     g_settings.debug_ignore_symmetries = ignore_symmetries_arg.getValue();
     g_settings.debug_disable_lex_order = no_lex_order_arg.getValue();
 
-    size_t start = start_arg.getValue();
-    optional<size_t> count{};
+    unsigned long start = start_arg.getValue();
+    optional<unsigned long> count{};
     if (count_arg.getValue() >= 0)
         count = count_arg.getValue();
 

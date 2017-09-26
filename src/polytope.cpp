@@ -80,7 +80,7 @@ void analyze(const WeightSystem<dim> &ws, PolytopeInfo &info,
     CW->index = r_numerator;
     CW->nw = 1;
     Ring norm = 0;
-    for (size_t i = 0; i < dim; i++) {
+    for (unsigned i = 0; i < dim; i++) {
         CW->W[0][i] = ws.weights[i] * r_numerator;
         norm += ws.weights[i];
         update_max(greatest_weight, ws.weights[i]);

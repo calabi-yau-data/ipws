@@ -63,7 +63,7 @@ void add_half(BufferedReader &in, BufferedWriter &out)
     write_config(out, dim + 1, (r_numerator + 1) / 2, 1);
     write(out, count);
 
-    for (size_t i = 0; i < count; ++i) {
+    for (unsigned long i = 0; i < count; ++i) {
         WeightSystem<dim> ws_in;
         WeightSystem<dim + 1> ws_out;
 
