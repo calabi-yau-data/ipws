@@ -61,11 +61,11 @@ target_compile_options(palp PRIVATE -Wno-conversion -Wno-unused-parameter
 add_executable(ipws-${SUFFIX} src/ipws.cpp src/buffered_reader.cpp
   src/buffered_writer.cpp src/history.cpp src/point.cpp src/settings.cpp
   src/weight_system.cpp src/weight_system_builder.cpp
-  src/weight_system_pair.cpp)
+  src/weight_system_pair.cpp src/polytope.cpp)
 target_link_libraries(ipws-${SUFFIX} palp)
 
 add_executable(add-half-${SUFFIX} src/add-half.cpp src/buffered_reader.cpp
   src/buffered_writer.cpp src/history.cpp src/point.cpp src/settings.cpp
   src/weight_system.cpp src/weight_system_builder.cpp
-  src/weight_system_pair.cpp)
+  src/weight_system_pair.cpp src/polytope.cpp)
 target_link_libraries(add-half-${SUFFIX} palp)
