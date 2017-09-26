@@ -17,7 +17,7 @@ endif()
 set(FLAGS "${FLAGS} -fsanitize=signed-integer-overflow -fsanitize-undefined-trap-on-error")
 set(FLAGS "${FLAGS} -pedantic -Wall -Wextra -Wconversion -Wno-maybe-uninitialized")
 
-set(FLAGS_DEBUG "-O0 -g")
+set(FLAGS_DEBUG "-O0 -g") # -fsanitize=address
 set(FLAGS_RELEASE "-O3")
 set(CMAKE_C_FLAGS "${FLAGS}")
 set(CMAKE_CXX_FLAGS "${FLAGS}")
