@@ -10,7 +10,7 @@ set(SUFFIX ${DIMENSION}-${R_NUMERATOR}-${R_DENOMINATOR})
 
 option(LINK_STATICALLY "Link statically" OFF)
 if(LINK_STATICALLY)
-  link_libraries(-static)
+  link_libraries(-static) # valgrind reports problems with this!?
 endif()
 
 # Signed integer overflow check for the types 'int' and 'long'.
