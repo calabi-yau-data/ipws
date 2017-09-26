@@ -487,6 +487,8 @@ void analyze(BufferedReader &in, BufferedWriter *out)
     Stopwatch stopwatch{};
     PolytopeStatistics stats{};
 
+    check_config(in);
+
     uint64_t count;
     read(in, count);
 
@@ -506,7 +508,7 @@ void analyze(BufferedReader &in, BufferedWriter *out)
         }
     }
 
-    cout << stopwatch << " - statistics:\n" << stats;
+    cerr << stopwatch << " - statistics:\n" << stats;
 }
 
 bool run(int argc, char *argv[])
