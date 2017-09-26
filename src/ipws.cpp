@@ -13,6 +13,7 @@
 #include "config.h"
 #include "history.h"
 #include "point.h"
+#include "polytope.h"
 #include "settings.h"
 #include "stl_utils.h"
 #include "stopwatch.h"
@@ -481,6 +482,33 @@ void print_count(BufferedReader &in)
     cout << count << endl;
 }
 
+void analyze(BufferedReader &in, BufferedWriter *out)
+{
+    Stopwatch stopwatch{};
+    PolytopeStatistics stats{};
+
+    uint64_t count;
+    read(in, count);
+
+    cerr << stopwatch << " - input weight systems: " << count << endl;
+
+    for (unsigned long i = 0; i < count; ++i) {
+        WeightSystem<dim> ws{};
+        read_varint(in, ws);
+
+        PolytopeInfo info{};
+        analyze(ws, info, stats);
+
+        if (out) {
+            // TODO
+        } else {
+            cout << ws << " " << info << endl;
+        }
+    }
+
+    cout << stopwatch << " - statistics:\n" << stats;
+}
+
 bool run(int argc, char *argv[])
 {
     using std::fstream;
@@ -509,6 +537,8 @@ bool run(int argc, char *argv[])
         "", "combine-ws", "Combine given weight system file with a second one");
     SwitchArg diff_ws_arg( //
         "", "diff-ws", "Diff two given weight system files");
+    SwitchArg analyze_ws_arg( //
+        "", "analyze-ws", "Analyze polytopes from given weight system file");
 
     vector<Arg *> arg_list;
     arg_list.push_back(&find_candidates_arg);
@@ -517,6 +547,7 @@ bool run(int argc, char *argv[])
     arg_list.push_back(&print_count_arg);
     arg_list.push_back(&combine_ws_arg);
     arg_list.push_back(&diff_ws_arg);
+    arg_list.push_back(&analyze_ws_arg);
     cmd.xorAdd(arg_list);
 
     SwitchArg print_ws_arg( //
@@ -534,6 +565,9 @@ bool run(int argc, char *argv[])
         "", "start", "", false, 0, "number", cmd);
     ValueArg<long> count_arg( //
         "", "count", "", false, -1, "number", cmd);
+    ValueArg<string> polytope_info_out_arg( //
+        "", "polytope-info-out", "Polytope info destination file", false, "",
+        "file", cmd);
 
     ValueArg<unsigned> skip_redundancy_check_arg(
         "", "skip-redundancy-check",
@@ -629,6 +663,14 @@ bool run(int argc, char *argv[])
         BufferedReader ws2_in{files_arg.getValue()[1]};
 
         diff_ws_files(ws1_in, ws2_in);
+    } else if (analyze_ws_arg.isSet() && ws_in_arg.isSet()) {
+        BufferedReader in(ws_in_arg.getValue());
+
+        unique_ptr<BufferedWriter> out{};
+        if (polytope_info_out_arg.isSet())
+            out = make_unique<BufferedWriter>(polytope_info_out_arg.getValue());
+
+        analyze(in, out.get());
     }
     return true;
 }

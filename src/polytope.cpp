@@ -96,15 +96,15 @@ void analyze(const WeightSystem<dim> &ws, PolytopeInfo &info,
     info = PolytopeInfo{};
 
     info.ip = QuickAnalysis(&*P, &BH, &FI);
-    assert(BH.n == dim - 1);
 
     if (!info.ip) {
         stats.n_nonIP++;
         return;
     }
 
+    assert(BH.n == dim - 1);
+
     info.reflexive = BH.np > 0;
-    Print_CWH(&*CW, &BH);
 
     int log_w = log2(CW->W[0][5]);
     assert(0 <= log_w && log_w < PolytopeStatistics::max_log2);
