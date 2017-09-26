@@ -109,12 +109,13 @@ void analyze(const WeightSystem<dim> &ws, PolytopeInfo &info,
     int log_w = log2(CW->W[0][5]);
     assert(0 <= log_w && log_w < PolytopeStatistics::max_log2);
 
+    info.vertex_count = BH.mv;
+    info.facet_count = BH.nv;
+
     if (info.reflexive) {
         stats.n_ref++;
         stats.n_w[log_w]++;
 
-        info.vertex_count = BH.mv;
-        info.facet_count = BH.nv;
         for (unsigned i = 1; i < info.hodge_numbers_1.size(); ++i)
             info.hodge_numbers_1[i] = BH.h1[i];
 
