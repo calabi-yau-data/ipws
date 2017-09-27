@@ -25,8 +25,8 @@ struct PolytopeStatistics {
     std::array<unsigned long, max_log2>
         nr_n_w{}; // numbers of weights of given log2
     std::array<unsigned long, max_log2>
-        n_w{};                     // numbers of weights of given log2
-    std::array<int, dim> max_nf{}; // max facet numbers
+        n_w{};                         // numbers of weights of given log2
+    std::array<int, dim - 1> max_nf{}; // max facet numbers
 
     // max values of certain entries of BH
     int nr_max_mp{};
@@ -40,8 +40,8 @@ struct PolytopeStatistics {
     std::array<int, dim - 2> max_h1{};
 
     // range for chi (picard number)
-    int min_chi{std::numeric_limits<int>::min()};
-    int max_chi{std::numeric_limits<int>::max()};
+    int min_chi{std::numeric_limits<int>::max()};
+    int max_chi{std::numeric_limits<int>::min()};
 };
 
 int picard_number(const PolytopeInfo &info);

@@ -134,7 +134,6 @@ void analyze(const WeightSystem<dim> &ws, PolytopeInfo &info,
             update_max(stats.max_h1[i], BH.h1[i]);
         for (unsigned i = 0; i < stats.max_nf.size(); ++i)
             update_max(stats.max_nf[i], FI.nf[i]);
-
     } else {
         stats.n_IP_nonRef++;
         stats.nr_n_w[log_w]++;
@@ -170,11 +169,11 @@ std::ostream &operator<<(std::ostream &os, const PolytopeStatistics &stats)
 
     os << "  max #(faces): ";
     for (auto nf : stats.max_nf)
-        os << nf << ", ";
+        os << nf << " ";
     os << endl;
 
     for (unsigned i = 1; i < stats.max_h1.size(); ++i)
-        os << "  h1" << i << "<=" << stats.max_h1[i] << ", ";
+        os << "h1" << i << "<=" << stats.max_h1[i] << ", ";
 
     os << stats.min_chi << "<=chi<=" << stats.max_chi << endl;
 
