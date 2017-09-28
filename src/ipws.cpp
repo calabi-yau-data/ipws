@@ -38,7 +38,6 @@ struct Statistics {
     unsigned long ip_weight_systems;
 };
 
-
 void print_with_denominator(std::ostream &os, const WeightSystem<dim> &ws)
 {
     Ring n = norm(ws);
@@ -490,7 +489,8 @@ void print_count(BufferedReader &in)
     cout << count << endl;
 }
 
-void analyze(BufferedReader &in, BufferedWriter *out)
+void analyze(BufferedReader &in, BufferedReader *info_in,
+             BufferedWriter *info_out)
 {
     Stopwatch stopwatch{};
     PolytopeStatistics stats{};
@@ -507,11 +507,14 @@ void analyze(BufferedReader &in, BufferedWriter *out)
         read_varint(in, ws);
 
         PolytopeInfo info{};
-        analyze(ws, info, stats);
 
-        if (out) {
-            write(*out, info);
+        if (info_in)
+            read(*info_in, info);
+        else
+            analyze(ws, info, stats);
 
+        if (info_out) {
+            write(*info_out, info);
         } else {
             print_with_denominator(cout, ws);
             cout << " " << info << endl;
@@ -580,6 +583,9 @@ bool run(int argc, char *argv[])
     ValueArg<string> polytope_info_out_arg( //
         "", "polytope-info-out", "Polytope info destination file", false, "",
         "file", cmd);
+    ValueArg<string> polytope_info_in_arg( //
+        "", "polytope-info-in", "Polytope info source file", false, "", "file",
+        cmd);
 
     ValueArg<unsigned> skip_redundancy_check_arg(
         "", "skip-redundancy-check",
@@ -678,11 +684,17 @@ bool run(int argc, char *argv[])
     } else if (analyze_ws_arg.isSet() && ws_in_arg.isSet()) {
         BufferedReader in(ws_in_arg.getValue());
 
-        unique_ptr<BufferedWriter> out{};
+        unique_ptr<BufferedWriter> info_out{};
         if (polytope_info_out_arg.isSet())
-            out = make_unique<BufferedWriter>(polytope_info_out_arg.getValue());
+            info_out =
+                make_unique<BufferedWriter>(polytope_info_out_arg.getValue());
 
-        analyze(in, out.get());
+        unique_ptr<BufferedReader> info_in{};
+        if (polytope_info_in_arg.isSet())
+            info_in =
+                make_unique<BufferedReader>(polytope_info_in_arg.getValue());
+
+        analyze(in, info_in.get(), info_out.get());
     }
     return true;
 }

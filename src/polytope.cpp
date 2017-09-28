@@ -31,6 +31,36 @@ std::ostream &operator<<(std::ostream &os, const PolytopeInfo &info)
     return os;
 }
 
+void read(BufferedReader &f, PolytopeInfo &info)
+{
+    info = PolytopeInfo{};
+
+    uint8_t type{};
+    read(f, type);
+
+    switch (type) {
+    case 0:
+        info.ip = false;
+        return;
+    case 1:
+        info.ip = true;
+        info.reflexive = false;
+        break;
+    case 2:
+        info.ip = true;
+        info.reflexive = true;
+        break;
+    }
+
+    info.vertex_count = static_cast<unsigned>(read_varint(f));
+    info.facet_count = static_cast<unsigned>(read_varint(f));
+
+    if (info.reflexive) {
+        for (unsigned i = 1; i < info.hodge_numbers_1.size(); ++i)
+            info.hodge_numbers_1[i] = static_cast<unsigned>(read_varint(f));
+    }
+}
+
 void write(BufferedWriter &f, const PolytopeInfo &info)
 {
     if (!info.ip) {
