@@ -521,7 +521,10 @@ void analyze(BufferedReader &in, BufferedReader *info_in,
         }
     }
 
-    cerr << stopwatch << " - statistics:\n" << stats;
+    if (info_in)
+        cerr << stopwatch << endl;
+    else
+        cerr << stopwatch << " - statistics:\n" << stats;
 }
 
 bool run(int argc, char *argv[])
