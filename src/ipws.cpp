@@ -38,13 +38,13 @@ struct Statistics {
     unsigned long ip_weight_systems;
 };
 
-void print_with_denominator(const WeightSystem<dim> &ws)
+
+void print_with_denominator(std::ostream &os, const WeightSystem<dim> &ws)
 {
     Ring n = norm(ws);
-    cout << n * r_denominator;
+    os << n * r_denominator;
     for (const auto &w : ws.weights)
-        cout << " " << w * r_numerator;
-    cout << endl;
+        os << " " << w * r_numerator;
 }
 
 bool add_maybe(unordered_set<WeightSystem<dim>> &weight_systems,
@@ -220,8 +220,10 @@ void find_weight_systems(bool ip_only)
         for (const auto &ws : weight_systems) {
             if (has_ip(ws)) {
                 ++statistics.ip_weight_systems;
-                if (g_settings.print_weight_systems)
-                    print_with_denominator(ws);
+                if (g_settings.print_weight_systems) {
+                    print_with_denominator(cout, ws);
+                    cout << endl;
+                }
             }
         }
         cerr << stopwatch
@@ -229,8 +231,10 @@ void find_weight_systems(bool ip_only)
              << ", unique: " << weight_systems.size()
              << ", ip: " << statistics.ip_weight_systems << endl;
     } else if (g_settings.print_weight_systems) {
-        for (const auto &ws : weight_systems)
-            print_with_denominator(ws);
+        for (const auto &ws : weight_systems) {
+            print_with_denominator(cout, ws);
+            cout << endl;
+        }
     }
 }
 
@@ -322,8 +326,10 @@ void find_weight_systems_from_pairs(BufferedReader &pairs_in,
     }
 
     if (g_settings.print_weight_systems)
-        for (const auto &ws : weight_systems)
-            print_with_denominator(ws);
+        for (const auto &ws : weight_systems) {
+            print_with_denominator(cout, ws);
+            cout << endl;
+        }
 }
 
 void check_ip(BufferedReader &ws_in)
@@ -342,8 +348,10 @@ void check_ip(BufferedReader &ws_in)
 
         if (has_ip(ws)) {
             ++ip_count;
-            if (g_settings.print_weight_systems)
-                print_with_denominator(ws);
+            if (g_settings.print_weight_systems) {
+                print_with_denominator(cout, ws);
+                cout << endl;
+            }
         }
     }
 
@@ -504,7 +512,8 @@ void analyze(BufferedReader &in, BufferedWriter *out)
         if (out) {
             // TODO
         } else {
-            cout << ws << " " << info << endl;
+            print_with_denominator(cout, ws);
+            cout << " " << info << endl;
         }
     }
 
