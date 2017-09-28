@@ -44,8 +44,8 @@ void write(BufferedWriter &f, const PolytopeInfo &info)
     write_varint(f, info.facet_count);
 
     if (info.reflexive) {
-        for (auto nr : info.hodge_numbers_1)
-            write_varint(f, nr);
+        for (unsigned i = 1; i < info.hodge_numbers_1.size(); ++i)
+            write_varint(f, info.hodge_numbers_1[i]);
     }
 }
 
