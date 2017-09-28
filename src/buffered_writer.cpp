@@ -69,6 +69,11 @@ void BufferedWriter::seek_relative(ptrdiff_t offset)
     stream.seekp(offset, std::ios_base::cur);
 }
 
+void write(BufferedWriter &f, uint8_t data)
+{
+    f.write(&data, sizeof(data));
+}
+
 void write(BufferedWriter &f, uint16_t data)
 {
     data = htobe16(data);
@@ -85,6 +90,11 @@ void write(BufferedWriter &f, uint64_t data)
 {
     data = htobe64(data);
     f.write(&data, sizeof(data));
+}
+
+void write(BufferedWriter &f, int8_t data)
+{
+    write(f, static_cast<uint8_t>(data));
 }
 
 void write(BufferedWriter &f, int16_t data)

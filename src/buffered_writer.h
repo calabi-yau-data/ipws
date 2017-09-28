@@ -34,9 +34,11 @@ private:
     size_t buffer_data_end;
 };
 
+void write(BufferedWriter &f, uint8_t data);
 void write(BufferedWriter &f, uint16_t data);
 void write(BufferedWriter &f, uint32_t data);
 void write(BufferedWriter &f, uint64_t data);
+void write(BufferedWriter &f, int8_t data);
 void write(BufferedWriter &f, int16_t data);
 void write(BufferedWriter &f, int32_t data);
 void write(BufferedWriter &f, int64_t data);

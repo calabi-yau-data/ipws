@@ -67,6 +67,11 @@ void BufferedReader::seek_relative(ptrdiff_t offset)
     buffer_data_size = 0;
 }
 
+void read(BufferedReader &f, uint8_t &data)
+{
+    f.read(&data, sizeof(data));
+}
+
 void read(BufferedReader &f, uint16_t &data)
 {
     f.read(&data, sizeof(data));
@@ -83,6 +88,11 @@ void read(BufferedReader &f, uint64_t &data)
 {
     f.read(&data, sizeof(data));
     data = be64toh(data);
+}
+
+void read(BufferedReader &f, int8_t &data)
+{
+    read(f, *reinterpret_cast<uint8_t *>(&data));
 }
 
 void read(BufferedReader &f, int16_t &data)

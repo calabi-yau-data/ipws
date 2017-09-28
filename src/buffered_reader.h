@@ -39,9 +39,11 @@ private:
     size_t buffer_data_size;
 };
 
+void read(BufferedReader &f, uint8_t &data);
 void read(BufferedReader &f, uint16_t &data);
 void read(BufferedReader &f, uint32_t &data);
 void read(BufferedReader &f, uint64_t &data);
+void read(BufferedReader &f, int8_t &data);
 void read(BufferedReader &f, int16_t &data);
 void read(BufferedReader &f, int32_t &data);
 void read(BufferedReader &f, int64_t &data);
