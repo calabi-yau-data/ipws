@@ -15,7 +15,7 @@ struct PolytopeInfo {
 };
 
 struct PolytopeStatistics {
-    static constexpr int max_log2 = 26;
+    static constexpr int max_log2 = sizeof(Ring) * 8;
 
     unsigned long n_nonIP{};     // number of non IP weight systems
     unsigned long n_IP_nonRef{}; // number of non-reflexive IP weight systems
