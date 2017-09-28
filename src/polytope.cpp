@@ -121,6 +121,7 @@ void analyze(const WeightSystem<dim> &ws, PolytopeInfo &info,
     // allocate large structures on the heap once
     static auto CW = make_unique<CWS>();
     static auto P = make_unique<PolyPointList>();
+    static auto FI = make_unique<FaceInfo>();
 
     Ring greatest_weight = 0;
 
@@ -139,11 +140,10 @@ void analyze(const WeightSystem<dim> &ws, PolytopeInfo &info,
     Make_CWS_Points(&*CW, &*P);
 
     BaHo BH;
-    FaceInfo FI;
 
     info = PolytopeInfo{};
 
-    info.ip = QuickAnalysis(&*P, &BH, &FI);
+    info.ip = QuickAnalysis(&*P, &BH, &*FI);
 
     if (!info.ip) {
         stats.n_nonIP++;
@@ -181,7 +181,7 @@ void analyze(const WeightSystem<dim> &ws, PolytopeInfo &info,
         for (unsigned i = 1; i < stats.max_h1.size(); ++i)
             update_max(stats.max_h1[i], BH.h1[i]);
         for (unsigned i = 0; i < stats.max_nf.size(); ++i)
-            update_max(stats.max_nf[i], FI.nf[i]);
+            update_max(stats.max_nf[i], FI->nf[i]);
     } else {
         stats.n_IP_nonRef++;
         stats.nr_n_w[log_w]++;
