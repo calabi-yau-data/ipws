@@ -172,8 +172,10 @@ std::ostream &operator<<(std::ostream &os, const PolytopeStatistics &stats)
         os << nf << " ";
     os << endl;
 
+    os << "  ";
     for (unsigned i = 1; i < stats.max_h1.size(); ++i)
         os << "h1" << i << "<=" << stats.max_h1[i] << ", ";
+    os << "h22" << "<=" << stats.max_h22 << ", ";
 
     os << stats.min_chi << "<=chi<=" << stats.max_chi << endl;
 
