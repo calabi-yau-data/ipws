@@ -4,6 +4,7 @@
 #include <array>
 #include <limits>
 #include <ostream>
+#include "buffered_writer.h"
 #include "weight_system.h"
 
 struct PolytopeInfo {
@@ -48,6 +49,7 @@ int picard_number(const PolytopeInfo &info);
 void analyze(const WeightSystem<dim> &ws, PolytopeInfo &info,
              PolytopeStatistics &stats);
 std::ostream &operator<<(std::ostream &os, const PolytopeInfo &info);
+void write(BufferedWriter &f, const PolytopeInfo &info);
 
 std::ostream &operator<<(std::ostream &os, const PolytopeStatistics &stats);
 

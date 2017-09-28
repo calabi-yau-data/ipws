@@ -31,6 +31,24 @@ std::ostream &operator<<(std::ostream &os, const PolytopeInfo &info)
     return os;
 }
 
+void write(BufferedWriter &f, const PolytopeInfo &info)
+{
+    if (!info.ip) {
+        write(f, static_cast<uint8_t>(0));
+        return;
+    }
+
+    write(f, static_cast<uint8_t>(info.reflexive ? 2 : 1));
+
+    write_varint(f, info.vertex_count);
+    write_varint(f, info.facet_count);
+
+    if (info.reflexive) {
+        for (auto nr : info.hodge_numbers_1)
+            write_varint(f, nr);
+    }
+}
+
 extern "C" int QuickAnalysis(PolyPointList *_P, BaHo *_BH, FaceInfo *_FI);
 
 template <typename T>

@@ -510,7 +510,8 @@ void analyze(BufferedReader &in, BufferedWriter *out)
         analyze(ws, info, stats);
 
         if (out) {
-            // TODO
+            write(*out, info);
+
         } else {
             print_with_denominator(cout, ws);
             cout << " " << info << endl;
