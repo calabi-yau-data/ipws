@@ -426,6 +426,43 @@ void combine_ws_files(span<BufferedReader> ins, BufferedWriter &out)
     cerr << stopwatch << " - combined weight systems: " << count << endl;
 }
 
+
+void split_ws_file(BufferedReader &in, span<BufferedWriter> outs)
+{
+    Stopwatch stopwatch{};
+
+    check_config(in);
+
+    uint64_t count;
+    read(in, count);
+    cerr << stopwatch << " - input weight systems: " << count << endl;
+
+    unsigned long part_size = count / outs.size();
+    unsigned long leftover = count % outs.size();
+    unsigned long count_check = count;
+    for (unsigned long i = 0; i < outs.size(); ++i) {
+        write_config(outs[i]);
+        uint64_t out_count = i < leftover ? part_size + 1 : part_size;
+        count_check -= out_count;
+        write(outs[i], out_count);
+    }
+    assert(count_check == 0);
+
+    while (count) {
+        for (auto &out : outs) {
+            WeightSystem<dim> ws;
+            read_varint(in, ws);
+            write_varint(out, ws);
+
+            --count;
+            if (count == 0)
+                break;
+        }
+    }
+
+    cerr << stopwatch << " - " << outs.size() << " files written\n";
+}
+
 void diff_ws_files(BufferedReader &in1, BufferedReader &in2)
 {
     Stopwatch stopwatch{};
@@ -557,6 +594,8 @@ bool run(int argc, char *argv[])
         "", "diff-ws", "Diff two given weight system files");
     SwitchArg analyze_ws_arg( //
         "", "analyze-ws", "Analyze polytopes from given weight system file");
+    SwitchArg split_ws_arg( //
+        "", "split-ws", "Split weight system file into multiple files");
 
     vector<Arg *> arg_list;
     arg_list.push_back(&find_candidates_arg);
@@ -566,6 +605,7 @@ bool run(int argc, char *argv[])
     arg_list.push_back(&combine_ws_arg);
     arg_list.push_back(&diff_ws_arg);
     arg_list.push_back(&analyze_ws_arg);
+    arg_list.push_back(&split_ws_arg);
     cmd.xorAdd(arg_list);
 
     SwitchArg print_ws_arg( //
@@ -698,6 +738,14 @@ bool run(int argc, char *argv[])
                 make_unique<BufferedReader>(polytope_info_in_arg.getValue());
 
         analyze(in, info_in.get(), info_out.get());
+    } else if (split_ws_arg.isSet() && ws_in_arg.isSet()) {
+        BufferedReader in(ws_in_arg.getValue());
+
+        vector<BufferedWriter> out{};
+        for (const auto &filename : files_arg.getValue())
+            out.push_back(BufferedWriter{filename});
+
+        split_ws_file(in, span<BufferedWriter>(out));
     }
     return true;
 }
