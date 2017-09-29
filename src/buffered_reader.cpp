@@ -60,7 +60,7 @@ void BufferedReader::seek(size_t pos)
     stream.seekg(pos);
 }
 
-void BufferedReader::seek_relative(ptrdiff_t offset)
+void BufferedReader::seek_relative(std::ptrdiff_t offset)
 {
     stream.clear();
     stream.seekg(offset - buffer_data_size, std::ios_base::cur);

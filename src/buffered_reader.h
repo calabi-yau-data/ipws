@@ -20,7 +20,7 @@ public:
     BufferedReader &operator=(BufferedReader &&rhs) = default;
 
     void seek(size_t pos);
-    void seek_relative(ptrdiff_t offset);
+    void seek_relative(std::ptrdiff_t offset);
 
     void read(void *data, size_t size);
 

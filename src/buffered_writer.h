@@ -17,7 +17,7 @@ public:
     BufferedWriter &operator=(BufferedWriter &&rhs) = default;
 
     void seek(size_t pos);
-    void seek_relative(ptrdiff_t offset);
+    void seek_relative(std::ptrdiff_t offset);
 
     void write(const void *data, size_t size);
     void flush();

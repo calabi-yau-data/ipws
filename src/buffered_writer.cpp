@@ -63,7 +63,7 @@ void BufferedWriter::seek(size_t pos)
     stream.seekp(pos);
 }
 
-void BufferedWriter::seek_relative(ptrdiff_t offset)
+void BufferedWriter::seek_relative(std::ptrdiff_t offset)
 {
     flush_to_stream();
     stream.seekp(offset, std::ios_base::cur);
