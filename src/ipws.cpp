@@ -439,7 +439,8 @@ void split_ws_file(BufferedReader &in, span<BufferedWriter> outs)
     unsigned long part_size = count / outs.size();
     unsigned long leftover = count % outs.size();
     unsigned long count_check = count;
-    for (unsigned long i = 0; i < outs.size(); ++i) {
+    for (unsigned long i = 0; i < static_cast<unsigned long>(outs.size());
+         ++i) {
         write_config(outs[i]);
         uint64_t out_count = i < leftover ? part_size + 1 : part_size;
         count_check -= out_count;
