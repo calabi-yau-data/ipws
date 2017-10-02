@@ -380,8 +380,9 @@ void combine_ws_files(span<BufferedReader> ins, BufferedWriter &out)
 
     write_config(out);
 
-    uint64_t count = 0;
+    uint64_t count = total;
     write(out, count);
+    count = 0;
 
     vector<WeightSystem<dim>> ws{};
     ws.resize(ins.size());
@@ -418,10 +419,12 @@ void combine_ws_files(span<BufferedReader> ins, BufferedWriter &out)
             read_varint(ins[smallest_index], ws[smallest_index]);
     }
 
-    // Write header again, now with correct count
-    out.seek(0);
-    write_config(out);
-    write(out, count);
+    if (total != count) {
+        // Write header again, now with correct count
+        out.seek(0);
+        write_config(out);
+        write(out, count);
+    }
 
     cerr << stopwatch << " - combined weight systems: " << count << endl;
 }
