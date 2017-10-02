@@ -16,16 +16,18 @@ std::ostream &operator<<(std::ostream &os, const PolytopeInfo &info)
     if (!info.ip)
         return os << "not ip";
 
-    os << "V:" << info.vertex_count;
-    os << " F:" << info.facet_count;
+    os << "M:" << info.point_count << " " << info.vertex_count;
 
     if (info.reflexive) {
+        os << " N:" << info.dual_point_count << " " << info.facet_count;
         os << " H:" << info.hodge_numbers_1[1];
         for (unsigned i = 2; i < info.hodge_numbers_1.size(); ++i)
             os << "," << info.hodge_numbers_1[i];
 
         if (dim == 6)
             os << " [" << picard_number(info) << "]";
+    } else {
+        os << " F:" << info.facet_count;
     }
 
     return os;
@@ -54,8 +56,10 @@ void read(BufferedReader &f, PolytopeInfo &info)
 
     info.vertex_count = static_cast<unsigned>(read_varint(f));
     info.facet_count = static_cast<unsigned>(read_varint(f));
+    info.point_count = static_cast<unsigned>(read_varint(f));
 
     if (info.reflexive) {
+        info.dual_point_count = static_cast<unsigned>(read_varint(f));
         for (unsigned i = 1; i < info.hodge_numbers_1.size(); ++i)
             info.hodge_numbers_1[i] = static_cast<unsigned>(read_varint(f));
     }
@@ -72,8 +76,10 @@ void write(BufferedWriter &f, const PolytopeInfo &info)
 
     write_varint(f, info.vertex_count);
     write_varint(f, info.facet_count);
+    write_varint(f, info.point_count);
 
     if (info.reflexive) {
+        write_varint(f, info.dual_point_count);
         for (unsigned i = 1; i < info.hodge_numbers_1.size(); ++i)
             write_varint(f, info.hodge_numbers_1[i]);
     }
@@ -159,10 +165,13 @@ void analyze(const WeightSystem<dim> &ws, PolytopeInfo &info,
 
     info.vertex_count = BH.mv;
     info.facet_count = BH.nv;
+    info.point_count = BH.mp;
 
     if (info.reflexive) {
         stats.n_ref++;
         stats.n_w[log_w]++;
+
+        info.dual_point_count = BH.np;
 
         for (unsigned i = 1; i < info.hodge_numbers_1.size(); ++i)
             info.hodge_numbers_1[i] = BH.h1[i];

@@ -12,6 +12,8 @@ struct PolytopeInfo {
     bool reflexive{};
     unsigned vertex_count{};
     unsigned facet_count{};
+    unsigned dual_point_count{};
+    unsigned point_count{};
     std::array<unsigned, dim - 2> hodge_numbers_1{}; // starts from index 1
 };
 

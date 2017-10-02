@@ -426,7 +426,6 @@ void combine_ws_files(span<BufferedReader> ins, BufferedWriter &out)
     cerr << stopwatch << " - combined weight systems: " << count << endl;
 }
 
-
 void split_ws_file(BufferedReader &in, span<BufferedWriter> outs)
 {
     Stopwatch stopwatch{};
