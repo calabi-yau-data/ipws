@@ -17,30 +17,6 @@ Ring distance(const WeightSystem<dim> &ws, const Point &x)
     return ret;
 }
 
-void cancel(WeightSystem<dim> &ws)
-{
-    if (dim == 0)
-        return;
-
-    Ring gcd = std::abs(ws.weights[0]);
-
-    for (unsigned i = 1; i < dim; ++i)
-        gcd = boost::math::gcd(gcd, ws.weights[i]);
-
-    if (gcd != 1 && gcd != 0)
-        ws /= gcd;
-}
-
-void sort(WeightSystem<dim> &ws)
-{
-    std::sort(ws.weights.begin(), ws.weights.end());
-}
-
-Ring norm(const WeightSystem<dim> &ws)
-{
-    return std::accumulate(ws.weights.begin(), ws.weights.end(), 0);
-}
-
 const WeightSystem<dim> intersect(const WeightSystem<dim> &q1,
                                   const WeightSystem<dim> &q2, const Point &x)
 {

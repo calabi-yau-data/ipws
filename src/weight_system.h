@@ -56,10 +56,34 @@ public:
 };
 
 Ring distance(const WeightSystem<dim> &ws, const Point &x);
-void cancel(WeightSystem<dim> &ws);
-void sort(WeightSystem<dim> &ws);
-Ring norm(const WeightSystem<dim> &ws);
 bool good_weight_system(const WeightSystem<dim> &ws);
+
+template <unsigned D>
+void cancel(WeightSystem<D> &ws)
+{
+    if (D == 0)
+        return;
+
+    Ring gcd = std::abs(ws.weights[0]);
+
+    for (unsigned i = 1; i < D; ++i)
+        gcd = boost::math::gcd(gcd, ws.weights[i]);
+
+    if (gcd != 1 && gcd != 0)
+        ws /= gcd;
+}
+
+template <unsigned D>
+void sort(WeightSystem<D> &ws)
+{
+    std::sort(ws.weights.begin(), ws.weights.end());
+}
+
+template <unsigned D>
+Ring norm(const WeightSystem<D> &ws)
+{
+    return std::accumulate(ws.weights.begin(), ws.weights.end(), 0);
+}
 
 template <unsigned D>
 void read(BufferedReader &f, WeightSystem<D> &ws)
