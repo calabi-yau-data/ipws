@@ -122,16 +122,23 @@ void write_config(BufferedWriter &f)
     write(f, static_cast<uint32_t>(r_denominator));
 }
 
+void check_config(BufferedReader &f, unsigned dim1, Ring r_numerator1,
+                  Ring r_denominator1)
+{
+    uint32_t u;
+    int32_t i;
+
+    read(f, u);
+    assert(u == dim1);
+    read(f, i);
+    assert(i == r_numerator1);
+    read(f, i);
+    assert(i == r_denominator1);
+}
+
 void check_config(BufferedReader &f)
 {
-    uint32_t v;
-
-    read(f, v);
-    assert(v == dim);
-    read(f, v);
-    assert(v == r_numerator);
-    read(f, v);
-    assert(v == r_denominator);
+    check_config(f, dim, r_numerator, r_denominator);
 }
 
 void write_sorted(BufferedWriter &f,
@@ -466,6 +473,86 @@ void split_ws_file(BufferedReader &in, span<BufferedWriter> outs)
     cerr << stopwatch << " - " << outs.size() << " files written\n";
 }
 
+WeightSystem<dim> add_half(const WeightSystem<dim - 1> &ws)
+{
+    assert(r_numerator == 1);
+    assert(r_denominator == 1);
+
+    WeightSystem<dim> ret{};
+    for (unsigned j = 0; j < dim - 1; ++j)
+        ret.weights[j] = ws.weights[j];
+
+    ret.weights[dim - 1] = norm(ws);
+
+    return ret;
+}
+
+void read_varint_lower(BufferedReader &in, WeightSystem<dim> &ws)
+{
+    WeightSystem<dim - 1> lower;
+    read_varint(in, lower);
+    ws = add_half(lower);
+}
+
+void split_two_ws_files(BufferedReader &in1, BufferedReader &in2,
+                        span<BufferedWriter> outs)
+{
+    assert(r_denominator == 1);
+
+    Stopwatch stopwatch{};
+
+    check_config(in1);
+    uint64_t count1;
+    read(in1, count1);
+    cerr << stopwatch << " - input weight systems: " << count1 << endl;
+
+    check_config(in2, dim - 1, 2 * r_numerator - 1, 2);
+    uint64_t count2;
+    read(in2, count2);
+    cerr << stopwatch << " - lower dimensional input weight systems: " << count2
+         << endl;
+
+    unsigned long total = count1 + count2;
+
+    unsigned long part_size = total / outs.size();
+    unsigned long leftover = total % outs.size();
+    unsigned long count_check = total;
+    for (unsigned long i = 0; i < static_cast<unsigned long>(outs.size());
+         ++i) {
+        write_config(outs[i]);
+        uint64_t out_count = i < leftover ? part_size + 1 : part_size;
+        count_check -= out_count;
+        write(outs[i], out_count);
+    }
+    assert(count_check == 0);
+
+    WeightSystem<dim> ws1{};
+    WeightSystem<dim> ws2{};
+    if (count1 > 0)
+        read_varint(in1, ws1);
+    if (count2 > 0)
+        read_varint_lower(in2, ws2);
+
+    while (count1 > 0 || count2 > 0) {
+        for (auto &out : outs) {
+            if ((count1 > 0 && count2 > 0 && ws1 < ws2) || count2 == 0) {
+                write_varint(out, ws1);
+                if (--count1 > 0)
+                    read_varint(in1, ws1);
+            } else {
+                write_varint(out, ws2);
+                if (--count2 > 0)
+                    read_varint_lower(in2, ws2);
+            }
+
+            if (count1 == 0 && count2 == 0)
+                break;
+        }
+    }
+
+    cerr << stopwatch << " - " << outs.size() << " files written\n";
+}
+
 void diff_ws_files(BufferedReader &in1, BufferedReader &in2)
 {
     Stopwatch stopwatch{};
@@ -618,6 +705,9 @@ bool run(int argc, char *argv[])
         cmd);
     ValueArg<string> ws_in_arg( //
         "", "ws-in", "Weight systems source file", false, "", "file", cmd);
+    ValueArg<string> ws_lower_in_arg( //
+        "", "ws-lower-in", "Lower dimensional weight systems source file",
+        false, "", "file", cmd);
     ValueArg<string> pairs_in_arg( //
         "", "pairs-in", "Pairs source file", false, "", "file", cmd);
     ValueArg<string> pairs_out_arg( //
@@ -748,7 +838,12 @@ bool run(int argc, char *argv[])
         for (const auto &filename : files_arg.getValue())
             out.push_back(BufferedWriter{filename});
 
-        split_ws_file(in, span<BufferedWriter>(out));
+        if (ws_lower_in_arg.isSet()) {
+            BufferedReader lower_in{ws_lower_in_arg.getValue()};
+            split_two_ws_files(in, lower_in, span<BufferedWriter>(out));
+        } else {
+            split_ws_file(in, span<BufferedWriter>(out));
+        }
     }
     return true;
 }
