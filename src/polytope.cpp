@@ -3,7 +3,7 @@
 
 using std::endl;
 
-int picard_number(const PolytopeInfo &info)
+int euler_number(const PolytopeInfo &info)
 {
     assert(dim == 6);
     return 48 +
@@ -25,7 +25,7 @@ std::ostream &operator<<(std::ostream &os, const PolytopeInfo &info)
             os << "," << info.hodge_numbers_1[i];
 
         if (dim == 6)
-            os << " [" << picard_number(info) << "]";
+            os << " [" << euler_number(info) << "]";
     } else {
         os << " F:" << info.facet_count;
     }
@@ -176,7 +176,7 @@ void analyze(const WeightSystem<dim> &ws, PolytopeInfo &info,
         for (unsigned i = 1; i < info.hodge_numbers_1.size(); ++i)
             info.hodge_numbers_1[i] = BH.h1[i];
 
-        int chi = picard_number(info);
+        int chi = euler_number(info);
 
         update_max(stats.max_mp, BH.mp);
         update_max(stats.max_mv, BH.mv);
