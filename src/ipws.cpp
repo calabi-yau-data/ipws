@@ -365,6 +365,28 @@ void check_ip(BufferedReader &ws_in)
          << ", ip: " << ip_count << endl;
 }
 
+void read_ws(BufferedReader &ws_in)
+{
+    Stopwatch stopwatch{};
+
+    check_config(ws_in);
+
+    uint64_t ws_count;
+    read(ws_in, ws_count);
+
+    for (unsigned long i = 0; i < ws_count; ++i) {
+        WeightSystem<dim> ws{};
+        read_varint(ws_in, ws);
+
+        if (g_settings.print_weight_systems) {
+            print_with_denominator(cout, ws);
+            cout << endl;
+        }
+    }
+
+    cerr << stopwatch << " - weight systems: " << ws_count << endl;
+}
+
 void combine_ws_files(span<BufferedReader> ins, BufferedWriter &out)
 {
     Stopwatch stopwatch{};
@@ -686,6 +708,8 @@ bool run(int argc, char *argv[])
         "", "analyze-ws", "Analyze polytopes from given weight system file");
     SwitchArg split_ws_arg( //
         "", "split-ws", "Split weight system file into multiple files");
+    SwitchArg read_ws_arg( //
+        "", "read-ws", "Read weight systems from file");
 
     vector<Arg *> arg_list;
     arg_list.push_back(&find_candidates_arg);
@@ -696,6 +720,7 @@ bool run(int argc, char *argv[])
     arg_list.push_back(&diff_ws_arg);
     arg_list.push_back(&analyze_ws_arg);
     arg_list.push_back(&split_ws_arg);
+    arg_list.push_back(&read_ws_arg);
     cmd.xorAdd(arg_list);
 
     SwitchArg print_ws_arg( //
@@ -844,6 +869,9 @@ bool run(int argc, char *argv[])
         } else {
             split_ws_file(in, span<BufferedWriter>(out));
         }
+    } else if (read_ws_arg.isSet() && ws_in_arg.isSet()) {
+        BufferedReader in(ws_in_arg.getValue());
+        read_ws(in);
     }
     return true;
 }
