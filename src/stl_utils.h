@@ -1,6 +1,7 @@
 #ifndef STL_UTILS_H
 #define STL_UTILS_H
 
+#include <array>
 #include <bitset>
 #include <iostream>
 #include <vector>
@@ -20,6 +21,15 @@ template <size_t N>
 bool operator<(const std::bitset<N> &lhs, const std::bitset<N> &rhs)
 {
     return (lhs | rhs) == rhs;
+}
+
+template<class T, size_t N>
+bool operator==(const std::array<T, N> &lhs, const std::array<T, N> &rhs)
+{
+    for (size_t i = 0; i < N; ++i)
+        if (lhs[i] != rhs[i])
+            return false;
+    return true;
 }
 
 template <class T>

@@ -23,6 +23,7 @@
 
 using boost::optional;
 using gsl::span;
+using std::array;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -676,6 +677,87 @@ void analyze(BufferedReader &in, BufferedReader *info_in,
         cerr << stopwatch << " - statistics:\n" << stats;
 }
 
+struct WeightSystemWithHodgeNumbers {
+    WeightSystem<dim> ws{};
+    array<unsigned, dim - 3> hodge_numbers{}; // starts from index 0
+};
+
+bool operator<(const WeightSystemWithHodgeNumbers &lhs,
+                const WeightSystemWithHodgeNumbers &rhs)
+{
+    for (unsigned i = 0; i < lhs.hodge_numbers.size(); ++i)
+        if (lhs.hodge_numbers[i] != rhs.hodge_numbers[i])
+            return lhs.hodge_numbers[i] < rhs.hodge_numbers[i];
+
+    return compare(lhs.ws, rhs.ws) < 0;
+}
+
+void sort_hodge(BufferedReader &ws_in, BufferedReader &info_in,
+                BufferedWriter &ws_out, BufferedWriter &info_out)
+{
+    Stopwatch stopwatch{};
+
+    check_config(ws_in);
+
+    uint64_t count;
+    read(ws_in, count);
+
+    cerr << stopwatch << " - input weight systems: " << count << endl;
+    if (count == 0)
+        return;
+
+    vector<WeightSystemWithHodgeNumbers> ws_list{};
+    ws_list.reserve(count);
+
+    for (unsigned long i = 0; i < count; ++i) {
+        WeightSystemWithHodgeNumbers x{};
+        read_varint(ws_in, x.ws);
+
+        PolytopeInfo info{};
+        read(info_in, info);
+
+        if (!info.ip || !info.reflexive)
+            continue;
+
+        std::copy(info.hodge_numbers_1.begin() + 1, info.hodge_numbers_1.end(),
+                  x.hodge_numbers.begin());
+
+        ws_list.push_back(x);
+    }
+
+    cerr << stopwatch << " - done reading\n";
+
+    std::sort(ws_list.begin(), ws_list.end());
+
+    cerr << stopwatch << " - done sorting\n";
+
+    write_config(ws_out);
+    write(ws_out, ws_list.size());
+
+    unsigned long same_hodge_count = 0;
+    for (unsigned int i = 0; i < ws_list.size(); ++i) {
+        const auto &current = ws_list[i];
+        if (i > 0) {
+            const auto &prev = ws_list[i - 1];
+            if (prev.hodge_numbers != current.hodge_numbers) {
+                for (const auto n : prev.hodge_numbers)
+                    write_varint(info_out, n);
+                write_varint(info_out, same_hodge_count);
+                same_hodge_count = 0;
+            }
+        }
+
+        ++same_hodge_count;
+        write_varint(ws_out, current.ws);
+    }
+
+    for (const auto n : ws_list.back().hodge_numbers)
+        write_varint(info_out, n);
+    write_varint(info_out, same_hodge_count);
+
+    cerr << stopwatch << endl;
+}
+
 bool run(int argc, char *argv[])
 {
     using std::fstream;
@@ -710,6 +792,8 @@ bool run(int argc, char *argv[])
         "", "split-ws", "Split weight system file into multiple files");
     SwitchArg read_ws_arg( //
         "", "read-ws", "Read weight systems from file");
+    SwitchArg sort_hodge_arg( //
+        "", "sort-hodge", "Sort according to hodge numbers");
 
     vector<Arg *> arg_list;
     arg_list.push_back(&find_candidates_arg);
@@ -721,6 +805,7 @@ bool run(int argc, char *argv[])
     arg_list.push_back(&analyze_ws_arg);
     arg_list.push_back(&split_ws_arg);
     arg_list.push_back(&read_ws_arg);
+    arg_list.push_back(&sort_hodge_arg);
     cmd.xorAdd(arg_list);
 
     SwitchArg print_ws_arg( //
@@ -872,6 +957,14 @@ bool run(int argc, char *argv[])
     } else if (read_ws_arg.isSet() && ws_in_arg.isSet()) {
         BufferedReader in(ws_in_arg.getValue());
         read_ws(in);
+    } else if (sort_hodge_arg.isSet() && ws_in_arg.isSet() &&
+               polytope_info_in_arg.isSet() && ws_out_arg.isSet() &&
+               polytope_info_out_arg.isSet()) {
+        BufferedReader ws_in(ws_in_arg.getValue());
+        BufferedWriter ws_out(ws_out_arg.getValue());
+        BufferedReader info_in(polytope_info_in_arg.getValue());
+        BufferedWriter info_out(polytope_info_out_arg.getValue());
+        sort_hodge(ws_in, info_in, ws_out, info_out);
     }
     return true;
 }
