@@ -7,7 +7,7 @@
 
 class BufferedWriter {
 public:
-    BufferedWriter(const std::string &path);
+    BufferedWriter(const std::string &path, size_t buffer_size = 100000);
     ~BufferedWriter();
 
     BufferedWriter(const BufferedWriter &other) = delete;

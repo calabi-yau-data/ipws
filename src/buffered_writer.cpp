@@ -8,10 +8,10 @@ const char *BufferedWriter::OpenError::what() const noexcept
     return "Could not open file for writing";
 }
 
-BufferedWriter::BufferedWriter(const std::string &path)
+BufferedWriter::BufferedWriter(const std::string &path, size_t buffer_size)
         : stream{}, buffer{}, buffer_data_end{0}
 {
-    buffer.resize(100000);
+    buffer.resize(buffer_size);
 
     stream.open(path, std::ios::binary);
     if (!stream)

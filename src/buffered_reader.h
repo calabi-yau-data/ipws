@@ -11,7 +11,7 @@ struct VarintReadError : std::exception {
 
 class BufferedReader {
 public:
-    BufferedReader(const std::string &path);
+    BufferedReader(const std::string &path, size_t buffer_size = 100000);
 
     BufferedReader(const BufferedReader &other) = delete;
     BufferedReader &operator=(const BufferedReader &rhs) = delete;
