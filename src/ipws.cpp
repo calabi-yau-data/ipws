@@ -390,6 +390,8 @@ void read_ws(BufferedReader &ws_in)
 
 void combine_ws_files(span<BufferedReader> ins, BufferedWriter &out)
 {
+    using std::pair;
+
     Stopwatch stopwatch{};
 
     vector<unsigned long> counts{};
@@ -414,39 +416,37 @@ void combine_ws_files(span<BufferedReader> ins, BufferedWriter &out)
     write(out, count);
     count = 0;
 
-    vector<WeightSystem<dim>> ws{};
-    ws.resize(ins.size());
+    std::set<pair<WeightSystem<dim>, size_t>> weight_systems;
 
-    for (size_t i = 0; i < counts.size(); ++i)
-        if (counts[i] > 0)
-            read_varint(ins[i], ws[i]);
+    for (size_t i = 0; i < counts.size(); ++i) {
+        if (counts[i] > 0) {
+            WeightSystem<dim> ws{};
+            read_varint(ins[i], ws);
+            weight_systems.insert(pair<WeightSystem<dim>, size_t>(ws, i));
+        }
+    }
 
     WeightSystem<dim> prev;
 
-    while (true) {
-        WeightSystem<dim> *smallest = nullptr;
-        size_t smallest_index = 0;
-        for (size_t i = 0; i < counts.size(); ++i) {
-            if (counts[i] == 0)
-                continue;
+    while (!weight_systems.empty()) {
+        auto smallest = *weight_systems.begin();
+        weight_systems.erase(weight_systems.begin());
 
-            if (smallest && *smallest < ws[i])
-                continue;
+        const auto &smallest_ws = smallest.first;
+        const auto &smallest_index = smallest.second;
 
-            smallest = &ws[i];
-            smallest_index = i;
-        }
-        if (!smallest)
-            break;
-
-        if (count == 0 || prev != *smallest) {
+        if (count == 0 || prev != smallest_ws) {
             ++count;
-            write_varint(out, *smallest);
-            prev = *smallest;
+            write_varint(out, smallest_ws);
+            prev = smallest_ws;
         }
 
-        if (--counts[smallest_index] > 0)
-            read_varint(ins[smallest_index], ws[smallest_index]);
+        if (--counts[smallest_index] > 0) {
+            WeightSystem<dim> ws{};
+            read_varint(ins[smallest_index], ws);
+            weight_systems.insert(
+                pair<WeightSystem<dim>, size_t>(ws, smallest_index));
+        }
     }
 
     if (total != count) {
