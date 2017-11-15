@@ -679,7 +679,7 @@ void analyze(BufferedReader &in, BufferedReader *info_in,
 
 struct WeightSystemWithHodgeNumbers {
     WeightSystem<dim> ws{};
-    array<unsigned, dim - 3> hodge_numbers{}; // starts from index 0
+    Vector<unsigned, dim - 3> hodge_numbers{};
 };
 
 bool operator<(const WeightSystemWithHodgeNumbers &lhs,
@@ -719,8 +719,7 @@ void sort_hodge(BufferedReader &ws_in, BufferedReader &info_in,
         if (!info.ip || !info.reflexive)
             continue;
 
-        std::copy(info.hodge_numbers_1.begin() + 1, info.hodge_numbers_1.end(),
-                  x.hodge_numbers.begin());
+        x.hodge_numbers = info.hodge_numbers;
 
         ws_list.push_back(x);
     }
@@ -740,8 +739,7 @@ void sort_hodge(BufferedReader &ws_in, BufferedReader &info_in,
         if (i > 0) {
             const auto &prev = ws_list[i - 1];
             if (prev.hodge_numbers != current.hodge_numbers) {
-                for (const auto n : prev.hodge_numbers)
-                    write_varint(info_out, n);
+                write_varint(info_out, prev.hodge_numbers);
                 write_varint(info_out, same_hodge_count);
                 same_hodge_count = 0;
             }
@@ -751,8 +749,7 @@ void sort_hodge(BufferedReader &ws_in, BufferedReader &info_in,
         write_varint(ws_out, current.ws);
     }
 
-    for (const auto n : ws_list.back().hodge_numbers)
-        write_varint(info_out, n);
+    write_varint(info_out, ws_list.back().hodge_numbers);
     write_varint(info_out, same_hodge_count);
 
     cerr << stopwatch << endl;

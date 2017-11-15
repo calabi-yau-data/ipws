@@ -7,8 +7,8 @@ int euler_number(const PolytopeInfo &info)
 {
     assert(dim == 6);
     return 48 +
-           6 * (info.hodge_numbers_1[1] - info.hodge_numbers_1[2] +
-                info.hodge_numbers_1[3]);
+           6 * (info.hodge_numbers[0] - info.hodge_numbers[1] +
+                info.hodge_numbers[2]);
 }
 
 std::ostream &operator<<(std::ostream &os, const PolytopeInfo &info)
@@ -20,9 +20,9 @@ std::ostream &operator<<(std::ostream &os, const PolytopeInfo &info)
 
     if (info.reflexive) {
         os << " N:" << info.dual_point_count << " " << info.facet_count;
-        os << " H:" << info.hodge_numbers_1[1];
-        for (unsigned i = 2; i < info.hodge_numbers_1.size(); ++i)
-            os << "," << info.hodge_numbers_1[i];
+        os << " H:" << info.hodge_numbers[0];
+        for (unsigned i = 1; i < info.hodge_numbers.size(); ++i)
+            os << "," << info.hodge_numbers[i];
 
         if (dim == 6)
             os << " [" << euler_number(info) << "]";
@@ -60,8 +60,7 @@ void read(BufferedReader &f, PolytopeInfo &info)
 
     if (info.reflexive) {
         info.dual_point_count = static_cast<unsigned>(read_varint(f));
-        for (unsigned i = 1; i < info.hodge_numbers_1.size(); ++i)
-            info.hodge_numbers_1[i] = static_cast<unsigned>(read_varint(f));
+        read_varint(f, info.hodge_numbers);
     }
 }
 
@@ -80,8 +79,7 @@ void write(BufferedWriter &f, const PolytopeInfo &info)
 
     if (info.reflexive) {
         write_varint(f, info.dual_point_count);
-        for (unsigned i = 1; i < info.hodge_numbers_1.size(); ++i)
-            write_varint(f, info.hodge_numbers_1[i]);
+        write_varint(f, info.hodge_numbers);
     }
 }
 
@@ -173,8 +171,8 @@ void analyze(const WeightSystem<dim> &ws, PolytopeInfo &info,
 
         info.dual_point_count = BH.np;
 
-        for (unsigned i = 1; i < info.hodge_numbers_1.size(); ++i)
-            info.hodge_numbers_1[i] = BH.h1[i];
+        for (unsigned i = 0; i < info.hodge_numbers.size(); ++i)
+            info.hodge_numbers[i] = BH.h1[i + 1];
 
         int chi = euler_number(info);
 

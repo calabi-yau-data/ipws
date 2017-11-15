@@ -5,6 +5,7 @@
 #include <limits>
 #include <ostream>
 #include "buffered_writer.h"
+#include "vector.h"
 #include "weight_system.h"
 
 struct PolytopeInfo {
@@ -14,7 +15,7 @@ struct PolytopeInfo {
     unsigned facet_count{};
     unsigned dual_point_count{};
     unsigned point_count{};
-    std::array<unsigned, dim - 2> hodge_numbers_1{}; // starts from index 1
+    Vector<unsigned, dim - 3> hodge_numbers; // h1i
 };
 
 struct PolytopeStatistics {
