@@ -47,9 +47,9 @@ void check_config(BufferedReader &f)
 
 void write_config(BufferedWriter &f)
 {
-    write(f, static_cast<uint32_t>(dim));
-    write(f, static_cast<uint32_t>(r_numerator));
-    write(f, static_cast<uint32_t>(r_denominator));
+    write32u(f, dim);
+    write32u(f, r_numerator);
+    write32u(f, r_denominator);
 }
 
 void print_with_denominator(const WeightSystem<dim> &ws)
@@ -84,7 +84,7 @@ void sample(BufferedReader &in, BufferedWriter &out)
 
     write_config(out);
     uint64_t count_out = count / every + 1;
-    write(out, count_out);
+    write64u(out, count_out);
 
     unsigned long written = 0;
     for (unsigned long i = 0; i < count; ++i) {

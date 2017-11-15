@@ -104,7 +104,7 @@ void write(BufferedWriter &f, const WeightSystem<D> &ws)
     for (unsigned i = 0; i < D; ++i) {
         auto v = ws.weights[i];
         assert(v >= 0 && v <= INT32_MAX);
-        write(f, static_cast<int32_t>(v));
+        write32i(f, v);
     }
 }
 

@@ -46,9 +46,9 @@ void check_config(BufferedReader &f)
 void write_config(BufferedWriter &f, unsigned dim_, Ring r_numerator_,
                   Ring r_denominator_)
 {
-    write(f, static_cast<uint32_t>(dim_));
-    write(f, static_cast<uint32_t>(r_numerator_));
-    write(f, static_cast<uint32_t>(r_denominator_));
+    write32u(f, dim_);
+    write32u(f, r_numerator_);
+    write32u(f, r_denominator_);
 }
 
 void add_half(BufferedReader &in, BufferedWriter &out)
@@ -61,7 +61,7 @@ void add_half(BufferedReader &in, BufferedWriter &out)
     read(in, count);
 
     write_config(out, dim + 1, (r_numerator + 1) / 2, 1);
-    write(out, count);
+    write64u(out, count);
 
     for (unsigned long i = 0; i < count; ++i) {
         WeightSystem<dim> ws_in;

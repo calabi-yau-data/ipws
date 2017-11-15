@@ -69,47 +69,47 @@ void BufferedWriter::seek_relative(std::ptrdiff_t offset)
     stream.seekp(offset, std::ios_base::cur);
 }
 
-void write(BufferedWriter &f, uint8_t data)
+void write8u(BufferedWriter &f, uint8_t data)
 {
     f.write(&data, sizeof(data));
 }
 
-void write(BufferedWriter &f, uint16_t data)
+void write16u(BufferedWriter &f, uint16_t data)
 {
     data = htobe16(data);
     f.write(&data, sizeof(data));
 }
 
-void write(BufferedWriter &f, uint32_t data)
+void write32u(BufferedWriter &f, uint32_t data)
 {
     data = htobe32(data);
     f.write(&data, sizeof(data));
 }
 
-void write(BufferedWriter &f, uint64_t data)
+void write64u(BufferedWriter &f, uint64_t data)
 {
     data = htobe64(data);
     f.write(&data, sizeof(data));
 }
 
-void write(BufferedWriter &f, int8_t data)
+void write8i(BufferedWriter &f, int8_t data)
 {
-    write(f, static_cast<uint8_t>(data));
+    write8u(f, static_cast<uint8_t>(data));
 }
 
-void write(BufferedWriter &f, int16_t data)
+void write16i(BufferedWriter &f, int16_t data)
 {
-    write(f, static_cast<uint16_t>(data));
+    write16u(f, static_cast<uint16_t>(data));
 }
 
-void write(BufferedWriter &f, int32_t data)
+void write32i(BufferedWriter &f, int32_t data)
 {
-    write(f, static_cast<uint32_t>(data));
+    write32u(f, static_cast<uint32_t>(data));
 }
 
-void write(BufferedWriter &f, int64_t data)
+void write64i(BufferedWriter &f, int64_t data)
 {
-    write(f, static_cast<uint64_t>(data));
+    write64u(f, static_cast<uint64_t>(data));
 }
 
 void write_varint(BufferedWriter &f, unsigned long i)

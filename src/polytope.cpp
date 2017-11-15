@@ -68,11 +68,11 @@ void read(BufferedReader &f, PolytopeInfo &info)
 void write(BufferedWriter &f, const PolytopeInfo &info)
 {
     if (!info.ip) {
-        write(f, static_cast<uint8_t>(0));
+        write8u(f, 0);
         return;
     }
 
-    write(f, static_cast<uint8_t>(info.reflexive ? 2 : 1));
+    write8u(f, info.reflexive ? 2 : 1);
 
     write_varint(f, info.vertex_count);
     write_varint(f, info.facet_count);

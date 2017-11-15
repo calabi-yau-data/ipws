@@ -34,14 +34,14 @@ private:
     size_t buffer_data_end;
 };
 
-void write(BufferedWriter &f, uint8_t data);
-void write(BufferedWriter &f, uint16_t data);
-void write(BufferedWriter &f, uint32_t data);
-void write(BufferedWriter &f, uint64_t data);
-void write(BufferedWriter &f, int8_t data);
-void write(BufferedWriter &f, int16_t data);
-void write(BufferedWriter &f, int32_t data);
-void write(BufferedWriter &f, int64_t data);
+void write8u(BufferedWriter &f, uint8_t data);
+void write16u(BufferedWriter &f, uint16_t data);
+void write32u(BufferedWriter &f, uint32_t data);
+void write64u(BufferedWriter &f, uint64_t data);
+void write8i(BufferedWriter &f, int8_t data);
+void write16i(BufferedWriter &f, int16_t data);
+void write32i(BufferedWriter &f, int32_t data);
+void write64i(BufferedWriter &f, int64_t data);
 
 void write_varint(BufferedWriter &f, unsigned long i);
 

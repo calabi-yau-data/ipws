@@ -118,9 +118,9 @@ void rec(const WeightSystemBuilder &builder,
 
 void write_config(BufferedWriter &f)
 {
-    write(f, static_cast<uint32_t>(dim));
-    write(f, static_cast<uint32_t>(r_numerator));
-    write(f, static_cast<uint32_t>(r_denominator));
+    write32u(f, dim);
+    write32u(f, r_numerator);
+    write32u(f, r_denominator);
 }
 
 void check_config(BufferedReader &f, unsigned dim1, Ring r_numerator1,
@@ -154,7 +154,7 @@ void write_sorted(BufferedWriter &f,
     std::sort(sorted.begin(), sorted.end());
 
     write_config(f);
-    write(f, static_cast<uint64_t>(sorted.size()));
+    write64u(f, sorted.size());
     for (const auto &ws : sorted)
         write_varint(f, ws);
 }
@@ -172,7 +172,7 @@ void write_randomized(BufferedWriter &f,
     std::shuffle(sorted.begin(), sorted.end(), g);
 
     write_config(f);
-    write(f, static_cast<uint64_t>(sorted.size()));
+    write64u(f, sorted.size());
     for (const auto &pair : sorted) {
         write(f, pair.first);
         write(f, pair.second);
@@ -413,7 +413,7 @@ void combine_ws_files(span<BufferedReader> ins, BufferedWriter &out)
     write_config(out);
 
     uint64_t count = total;
-    write(out, count);
+    write64u(out, count);
     count = 0;
 
     std::set<pair<WeightSystem<dim>, size_t>> weight_systems;
@@ -453,7 +453,7 @@ void combine_ws_files(span<BufferedReader> ins, BufferedWriter &out)
         // Write header again, now with correct count
         out.seek(0);
         write_config(out);
-        write(out, count);
+        write64u(out, count);
     }
 
     cerr << stopwatch << " - combined weight systems: " << count << endl;
@@ -477,7 +477,7 @@ void split_ws_file(BufferedReader &in, span<BufferedWriter> outs)
         write_config(outs[i]);
         uint64_t out_count = i < leftover ? part_size + 1 : part_size;
         count_check -= out_count;
-        write(outs[i], out_count);
+        write64u(outs[i], out_count);
     }
     assert(count_check == 0);
 
@@ -545,7 +545,7 @@ void split_two_ws_files(BufferedReader &in1, BufferedReader &in2,
         write_config(outs[i]);
         uint64_t out_count = i < leftover ? part_size + 1 : part_size;
         count_check -= out_count;
-        write(outs[i], out_count);
+        write64u(outs[i], out_count);
     }
     assert(count_check == 0);
 
@@ -732,7 +732,7 @@ void sort_hodge(BufferedReader &ws_in, BufferedReader &info_in,
     cerr << stopwatch << " - done sorting\n";
 
     write_config(ws_out);
-    write(ws_out, ws_list.size());
+    write64u(ws_out, ws_list.size());
 
     unsigned long same_hodge_count = 0;
     for (unsigned int i = 0; i < ws_list.size(); ++i) {
