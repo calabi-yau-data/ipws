@@ -483,6 +483,58 @@ void combine_ws_files(span<BufferedReader> ins, BufferedWriter &out)
     cerr << stopwatch << " - combined weight systems: " << count << endl;
 }
 
+void sql(BufferedReader &in, BufferedWriter &out)
+{
+    // https://www.postgresql.org/docs/9.6/static/sql-copy.html
+
+    Stopwatch stopwatch{};
+
+    write8u(out, 'P');
+    write8u(out, 'G');
+    write8u(out, 'C');
+    write8u(out, 'O');
+    write8u(out, 'P');
+    write8u(out, 'Y');
+    write8u(out, '\n');
+    write8u(out, '\377');
+    write8u(out, '\r');
+    write8u(out, '\n');
+    write8u(out, '\0');
+
+    write32u(out, 0);
+    write32i(out, 0);
+
+    unsigned long hodge_count = 0;
+    unsigned long ws_count = 0;
+
+    for (;;) {
+        HodgeNumbersWithCount x{};
+
+        try {
+            read_varint(in, x);
+        } catch (BufferedReader::EofError) {
+            break;
+        }
+
+        ++hodge_count;
+        ws_count += x.count;
+
+        write16i(out, static_cast<int16_t>(x.hodge_numbers.size() + 1));
+
+        for (const auto &n : x.hodge_numbers.array) {
+            write32i(out, 4);
+            write32i(out, n);
+        }
+        write32i(out, 4);
+        write32i(out, static_cast<int32_t>(x.count));
+    }
+
+    write16i(out, -1);
+
+    cerr << stopwatch << " - hodge numbers: " << hodge_count << endl;
+    cerr << stopwatch << " - weight systems: " << ws_count << endl;
+}
+
 void split_ws_file(BufferedReader &in, span<BufferedWriter> outs)
 {
     Stopwatch stopwatch{};
@@ -883,6 +935,8 @@ bool run(int argc, char *argv[])
         "", "sort-hodge", "Sort according to hodge numbers");
     SwitchArg combine_hodge_arg( //
         "", "combine-hodge", "");
+    SwitchArg sql_arg( //
+        "", "sql", "");
 
     vector<Arg *> arg_list;
     arg_list.push_back(&find_candidates_arg);
@@ -896,6 +950,7 @@ bool run(int argc, char *argv[])
     arg_list.push_back(&read_ws_arg);
     arg_list.push_back(&sort_hodge_arg);
     arg_list.push_back(&combine_hodge_arg);
+    arg_list.push_back(&sql_arg);
     cmd.xorAdd(arg_list);
 
     SwitchArg print_ws_arg( //
@@ -1063,6 +1118,12 @@ bool run(int argc, char *argv[])
         BufferedWriter info_out(polytope_info_out_arg.getValue());
 
         combine_hodge(info_out, info_ins);
+    } else if (sql_arg.isSet() && polytope_info_in_arg.isSet() &&
+               polytope_info_out_arg.isSet()) {
+        BufferedReader in(polytope_info_in_arg.getValue());
+        BufferedWriter out(polytope_info_out_arg.getValue());
+
+        sql(in, out);
     }
     return true;
 }
