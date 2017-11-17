@@ -26,7 +26,6 @@ using boost::optional;
 using gsl::span;
 using std::array;
 using std::cerr;
-using std::cout;
 using std::endl;
 using std::unordered_set;
 using std::string;
@@ -190,7 +189,8 @@ void write(BufferedWriter &f, const WeightSystemGroup &group)
     }
 }
 
-void write_grouped(BufferedWriter &out, const vector<WeightSystemWithInfo> &list)
+void write_grouped(BufferedWriter &out,
+                   const vector<WeightSystemWithInfo> &list)
 {
     write_config(out);
 
@@ -341,11 +341,18 @@ void combine(BufferedWriter &out, span<BufferedReader> ins, bool reflexive)
     cerr << stopwatch << " - groups: " << group_count << endl;
 }
 
-void sql(BufferedReader &in, BufferedWriter &out)
+// https://www.postgresql.org/docs/9.6/static/sql-copy.html
+// create table hodge_numbers (h11 int4, h12 int4, h13 int4, h22 int4, chi int4,
+// count int4);
+// copy hodge_numbers from 'pgcopy-file-path' binary;
+void pgcopy(BufferedReader &in, BufferedWriter &out, bool reflexive)
 {
-    // https://www.postgresql.org/docs/9.6/static/sql-copy.html
+    assert(reflexive);
+    assert(dim == 6);
 
     Stopwatch stopwatch{};
+
+    check_config(in);
 
     write8u(out, 'P');
     write8u(out, 'G');
@@ -362,34 +369,38 @@ void sql(BufferedReader &in, BufferedWriter &out)
     write32u(out, 0);
     write32i(out, 0);
 
-    unsigned long hodge_count = 0;
+    unsigned long group_count = 0;
     unsigned long ws_count = 0;
 
-    // for (;;) {
-    //     HodgeNumbersWithCount x{};
+    for (;;) {
+        WeightSystemGroup g{};
+        try {
+            read(in, g, reflexive);
+        } catch (BufferedReader::EofError) {
+            break;
+        }
 
-    //     try {
-    //         read(in, x);
-    //     } catch (BufferedReader::EofError) {
-    //         break;
-    //     }
+        ++group_count;
+        ws_count += g.ws_list.size();
 
-    //     ++hodge_count;
-    //     ws_count += x.count;
+        write16i(out,
+                 static_cast<int16_t>(g.common_info.hodge_numbers.size() + 3));
 
-    //     write16i(out, static_cast<int16_t>(x.hodge_numbers.size() + 1));
-
-    //     for (const auto &n : x.hodge_numbers.array) {
-    //         write32i(out, 4);
-    //         write32i(out, n);
-    //     }
-    //     write32i(out, 4);
-    //     write32i(out, static_cast<int32_t>(x.count));
-    // }
+        for (const auto &n : g.common_info.hodge_numbers.array) {
+            write32i(out, 4);
+            write32i(out, n);
+        }
+        write32i(out, 4);
+        write32i(out, picard_number(g.common_info));
+        write32i(out, 4);
+        write32i(out, euler_number(g.common_info));
+        write32i(out, 4);
+        write32i(out, static_cast<int32_t>(g.ws_list.size()));
+    }
 
     write16i(out, -1);
 
-    cerr << stopwatch << " - hodge numbers: " << hodge_count << endl;
+    cerr << stopwatch << " - group count: " << group_count << endl;
     cerr << stopwatch << " - weight systems: " << ws_count << endl;
 }
 
@@ -411,32 +422,32 @@ bool run(int argc, char *argv[])
         "", "sort", "Sort according to polytope info");
     SwitchArg combine_arg( //
         "", "combine", "");
-    SwitchArg sql_arg( //
-        "", "sql", "");
+    ValueArg<string> pgcopy_arg( //
+        "", "pgcopy", "PostgreSQL COPY destination file", false, "", "file");
 
     vector<Arg *> arg_list;
     arg_list.push_back(&sort_arg);
     arg_list.push_back(&combine_arg);
-    arg_list.push_back(&sql_arg);
+    arg_list.push_back(&pgcopy_arg);
     cmd.xorAdd(arg_list);
 
-    ValueArg<string> ws_out_arg( //
-        "", "ws-out", "Weight systems destination file", false, "", "file",
-        cmd);
     ValueArg<string> ws_in_arg( //
         "", "ws-in", "Weight systems source file", false, "", "file", cmd);
-    ValueArg<string> polytope_info_out_arg( //
-        "", "polytope-info-out", "Polytope info destination file", false, "",
-        "file", cmd);
+    ValueArg<string> polytope_info_in_arg( //
+        "", "polytope-info-in", "Polytope info source file", false, "", "file",
+        cmd);
+
+    ValueArg<string> reflexive_in_arg( //
+        "", "reflexive-in", "Reflexive source file", false, "", "file", cmd);
+    ValueArg<string> non_reflexive_in_arg( //
+        "", "non-reflexive-in", "Non-reflexive source file", false, "", "file",
+        cmd);
     ValueArg<string> reflexive_out_arg( //
         "", "reflexive-out", "Reflexive destination file", false, "", "file",
         cmd);
     ValueArg<string> non_reflexive_out_arg( //
         "", "non-reflexive-out", "Non-reflexive destination file", false, "",
         "file", cmd);
-    ValueArg<string> polytope_info_in_arg( //
-        "", "polytope-info-in", "Polytope info source file", false, "", "file",
-        cmd);
 
     TCLAP::UnlabeledMultiArg<string> files_arg( //
         "", "Additional files", false, "file", cmd);
@@ -473,12 +484,18 @@ bool run(int argc, char *argv[])
             BufferedWriter out(non_reflexive_out_arg.getValue());
             combine(out, ins, false);
         }
-    } else if (sql_arg.isSet() && polytope_info_in_arg.isSet() &&
-               polytope_info_out_arg.isSet()) {
-        BufferedReader in(polytope_info_in_arg.getValue());
-        BufferedWriter out(polytope_info_out_arg.getValue());
+    } else if (pgcopy_arg.isSet()) {
+        BufferedWriter out(pgcopy_arg.getValue());
 
-        sql(in, out);
+        if (reflexive_in_arg.isSet() && !non_reflexive_in_arg.isSet()) {
+            BufferedReader in(reflexive_in_arg.getValue());
+            pgcopy(in, out, true);
+        }
+
+        if (!reflexive_in_arg.isSet() && non_reflexive_in_arg.isSet()) {
+            BufferedReader in(non_reflexive_in_arg.getValue());
+            pgcopy(in, out, false);
+        }
     }
     return true;
 }

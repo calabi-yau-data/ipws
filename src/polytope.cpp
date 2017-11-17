@@ -11,6 +11,13 @@ int euler_number(const PolytopeInfo &info)
                 info.hodge_numbers[2]);
 }
 
+int picard_number(const PolytopeInfo &info)
+{
+    assert(dim == 6);
+    return 44 + 4 * info.hodge_numbers[0] + 4 * info.hodge_numbers[2] -
+           2 * info.hodge_numbers[1];
+}
+
 std::ostream &operator<<(std::ostream &os, const PolytopeInfo &info)
 {
     if (!info.ip)
