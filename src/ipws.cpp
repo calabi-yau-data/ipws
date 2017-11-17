@@ -43,7 +43,8 @@ struct HodgeNumbersWithCount {
     Vector<unsigned, dim - 3> hodge_numbers{};
     unsigned long count;
 
-    bool operator<(const HodgeNumbersWithCount& rhs) const {
+    bool operator<(const HodgeNumbersWithCount &rhs) const
+    {
         for (unsigned i = 0; i < hodge_numbers.size(); ++i)
             if (hodge_numbers[i] != rhs.hodge_numbers[i])
                 return hodge_numbers[i] < rhs.hodge_numbers[i];
@@ -759,7 +760,7 @@ struct WeightSystemWithHodgeNumbers {
 };
 
 bool operator<(const WeightSystemWithHodgeNumbers &lhs,
-                const WeightSystemWithHodgeNumbers &rhs)
+               const WeightSystemWithHodgeNumbers &rhs)
 {
     for (unsigned i = 0; i < lhs.hodge_numbers.size(); ++i)
         if (lhs.hodge_numbers[i] != rhs.hodge_numbers[i])
@@ -844,8 +845,10 @@ void combine_hodge(BufferedWriter &info_out, span<BufferedReader> info_ins)
         try {
             HodgeNumbersWithCount x{};
             read_varint(info_ins[i], x);
-            hodge_numbers_list.insert(pair<HodgeNumbersWithCount, size_t>(x, i));
-        } catch (BufferedReader::EofError) { }
+            hodge_numbers_list.insert(
+                pair<HodgeNumbersWithCount, size_t>(x, i));
+        } catch (BufferedReader::EofError) {
+        }
     }
 
     HodgeNumbersWithCount prev;
@@ -872,8 +875,10 @@ void combine_hodge(BufferedWriter &info_out, span<BufferedReader> info_ins)
                 prev = smallest_hodge;
 
                 if (unique_count % 1000000 == 0) {
-                    cerr << stopwatch << " - weight system count: " << count << endl;
-                    cerr << stopwatch << " - unique hodge number combinations: " << unique_count << endl;
+                    cerr << stopwatch << " - weight system count: " << count
+                         << endl;
+                    cerr << stopwatch << " - unique hodge number combinations: "
+                         << unique_count << endl;
                 }
             }
         }
@@ -882,8 +887,10 @@ void combine_hodge(BufferedWriter &info_out, span<BufferedReader> info_ins)
         try {
             HodgeNumbersWithCount x{};
             read_varint(info_ins[smallest_index], x);
-            hodge_numbers_list.insert(pair<HodgeNumbersWithCount, size_t>(x, smallest_index));
-        } catch (BufferedReader::EofError) { }
+            hodge_numbers_list.insert(
+                pair<HodgeNumbersWithCount, size_t>(x, smallest_index));
+        } catch (BufferedReader::EofError) {
+        }
     }
 
     if (!first_iteration) {
@@ -894,7 +901,8 @@ void combine_hodge(BufferedWriter &info_out, span<BufferedReader> info_ins)
     }
 
     cerr << stopwatch << " - weight system count: " << count << endl;
-    cerr << stopwatch << " - unique hodge number combinations: " << unique_count << endl;
+    cerr << stopwatch << " - unique hodge number combinations: " << unique_count
+         << endl;
 }
 
 bool run(int argc, char *argv[])
