@@ -43,7 +43,7 @@ struct PolytopeStatistics {
     int max_h22{};
     std::array<int, dim - 2> max_h1{};
 
-    // range for chi (picard number)
+    // range for chi (Euler number)
     int min_chi{std::numeric_limits<int>::max()};
     int max_chi{std::numeric_limits<int>::min()};
 };
