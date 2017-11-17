@@ -14,6 +14,7 @@
 #include "history.h"
 #include "point.h"
 #include "polytope.h"
+#include "read_write.h"
 #include "settings.h"
 #include "stl_utils.h"
 #include "stopwatch.h"
@@ -139,32 +140,6 @@ void rec(const WeightSystemBuilder &builder,
         rec(builder.restrict(x), weight_systems, pairs, n + 1, history,
             statistics, stopwatch);
     }
-}
-
-void write_config(BufferedWriter &f)
-{
-    write32u(f, dim);
-    write32u(f, r_numerator);
-    write32u(f, r_denominator);
-}
-
-void check_config(BufferedReader &f, unsigned dim1, Ring r_numerator1,
-                  Ring r_denominator1)
-{
-    uint32_t u;
-    int32_t i;
-
-    read(f, u);
-    assert(u == dim1);
-    read(f, i);
-    assert(i == r_numerator1);
-    read(f, i);
-    assert(i == r_denominator1);
-}
-
-void check_config(BufferedReader &f)
-{
-    check_config(f, dim, r_numerator, r_denominator);
 }
 
 void write_sorted(BufferedWriter &f,

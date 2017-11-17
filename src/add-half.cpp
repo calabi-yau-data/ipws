@@ -13,6 +13,7 @@
 #include "config.h"
 #include "history.h"
 #include "point.h"
+#include "read_write.h"
 #include "settings.h"
 #include "stl_utils.h"
 #include "stopwatch.h"
@@ -30,26 +31,6 @@ using std::string;
 using std::vector;
 using std::unique_ptr;
 using std::make_unique;
-
-void check_config(BufferedReader &f)
-{
-    uint32_t v;
-
-    read(f, v);
-    assert(v == dim);
-    read(f, v);
-    assert(v == r_numerator);
-    read(f, v);
-    assert(v == r_denominator);
-}
-
-void write_config(BufferedWriter &f, unsigned dim_, Ring r_numerator_,
-                  Ring r_denominator_)
-{
-    write32u(f, dim_);
-    write32u(f, r_numerator_);
-    write32u(f, r_denominator_);
-}
 
 void add_half(BufferedReader &in, BufferedWriter &out)
 {
