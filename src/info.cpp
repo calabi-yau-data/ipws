@@ -341,10 +341,19 @@ void combine(BufferedWriter &out, span<BufferedReader> ins, bool reflexive)
     cerr << stopwatch << " - groups: " << group_count << endl;
 }
 
-// https://www.postgresql.org/docs/9.6/static/sql-copy.html
-// create table hodge_numbers (h11 int4, h12 int4, h13 int4, h22 int4, chi int4,
-// count int4);
-// copy hodge_numbers from 'pgcopy-file-path' binary;
+/*
+https://www.postgresql.org/docs/9.6/static/sql-copy.html
+create table reflexive (
+  h11 int4 not null,
+  h12 int4 not null,
+  h13 int4 not null,
+  h22 int4 not null,
+  chi int4 not null,
+  ws_count int4 not null,
+  ws_data bytea not null
+);
+copy reflexive from 'pgcopy-file-path' binary;
+*/
 void pgcopy(BufferedReader &in, BufferedWriter &out, bool reflexive)
 {
     assert(reflexive);
@@ -384,7 +393,7 @@ void pgcopy(BufferedReader &in, BufferedWriter &out, bool reflexive)
         ws_count += g.ws_list.size();
 
         write16i(out,
-                 static_cast<int16_t>(g.common_info.hodge_numbers.size() + 3));
+                 static_cast<int16_t>(g.common_info.hodge_numbers.size() + 4));
 
         for (const auto &n : g.common_info.hodge_numbers.array) {
             write32i(out, 4);
@@ -396,6 +405,26 @@ void pgcopy(BufferedReader &in, BufferedWriter &out, bool reflexive)
         write32i(out, euler_number(g.common_info));
         write32i(out, 4);
         write32i(out, static_cast<int32_t>(g.ws_list.size()));
+
+        unsigned size = 0;
+        for (const auto &x : g.ws_list) {
+            for (const auto &weight : x.ws.weights)
+                size += varint_storage_size(weight);
+            size += varint_storage_size(x.info.vertex_count);
+            size += varint_storage_size(x.info.facet_count);
+            size += varint_storage_size(x.info.point_count);
+            size += varint_storage_size(x.info.dual_point_count);
+        }
+
+        write32i(out, size);
+        for (const auto &x : g.ws_list) {
+            for (const auto &weight : x.ws.weights)
+                write_varint(out, weight);
+            write_varint(out, x.info.vertex_count);
+            write_varint(out, x.info.facet_count);
+            write_varint(out, x.info.point_count);
+            write_varint(out, x.info.dual_point_count);
+        }
     }
 
     write16i(out, -1);

@@ -123,3 +123,13 @@ void write_varint(BufferedWriter &f, unsigned long i)
     unsigned char v = static_cast<unsigned char>(i);
     f.write(reinterpret_cast<char *>(&v), sizeof(v));
 }
+
+unsigned varint_storage_size(unsigned long i)
+{
+    unsigned size = 1;
+    while (i > 127) {
+        ++size;
+        i >>= 7;
+    }
+    return size;
+}

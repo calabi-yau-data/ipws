@@ -44,5 +44,6 @@ void write32i(BufferedWriter &f, int32_t data);
 void write64i(BufferedWriter &f, int64_t data);
 
 void write_varint(BufferedWriter &f, unsigned long i);
+unsigned varint_storage_size(unsigned long i);
 
 #endif
