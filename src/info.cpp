@@ -298,7 +298,10 @@ void combine(BufferedWriter &out, span<BufferedReader> ins, bool reflexive)
         const auto &smallest_index = smallest.second;
 
         if (prev_set) {
-            if (same_common_info(prev, smallest_group)) {
+            bool max_size_reached =
+                prev.ws_list.size() + smallest_group.ws_list.size() > 1000000;
+
+            if (!max_size_reached && same_common_info(prev, smallest_group)) {
                 std::copy(smallest_group.ws_list.begin(),
                           smallest_group.ws_list.end(),
                           std::back_inserter(prev.ws_list));
