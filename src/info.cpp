@@ -135,15 +135,29 @@ bool operator<(const WeightSystemGroup &lhs, const WeightSystemGroup &rhs)
     }
 }
 
-void read(BufferedReader &f, WeightSystemGroup &group, bool reflexive)
+void read_common_info(BufferedReader &f, WeightSystemGroup &group,
+                      bool reflexive)
 {
     group.common_info.ip = true;
     group.common_info.reflexive = reflexive;
 
     if (reflexive) {
         read_varint(f, group.common_info.hodge_numbers);
-        group.ws_list.resize(read_varint(f));
+    } else {
+        group.common_info.vertex_count = static_cast<unsigned>(read_varint(f));
+        group.common_info.facet_count = static_cast<unsigned>(read_varint(f));
+        group.common_info.point_count = static_cast<unsigned>(read_varint(f));
+    }
 
+    group.ws_list.resize(0);
+}
+
+void read_weight_systems(BufferedReader &f, WeightSystemGroup &group,
+                         bool reflexive)
+{
+    group.ws_list.resize(read_varint(f));
+
+    if (reflexive) {
         for (auto &x : group.ws_list) {
             read_varint(f, x.ws);
             x.info.vertex_count = static_cast<unsigned>(read_varint(f));
@@ -152,14 +166,15 @@ void read(BufferedReader &f, WeightSystemGroup &group, bool reflexive)
             x.info.dual_point_count = static_cast<unsigned>(read_varint(f));
         }
     } else {
-        group.common_info.vertex_count = static_cast<unsigned>(read_varint(f));
-        group.common_info.facet_count = static_cast<unsigned>(read_varint(f));
-        group.common_info.point_count = static_cast<unsigned>(read_varint(f));
-        group.ws_list.resize(read_varint(f));
-
         for (auto &x : group.ws_list)
             read_varint(f, x.ws);
     }
+}
+
+void read(BufferedReader &f, WeightSystemGroup &group, bool reflexive)
+{
+    read_common_info(f, group, reflexive);
+    read_weight_systems(f, group, reflexive);
 }
 
 void write(BufferedWriter &f, const WeightSystemGroup &group)
@@ -277,7 +292,7 @@ void combine(BufferedWriter &out, span<BufferedReader> ins, bool reflexive)
         check_config(ins[i]);
         try {
             WeightSystemGroup g{};
-            read(ins[i], g, reflexive);
+            read_common_info(ins[i], g, reflexive);
             group_list.insert(pair<WeightSystemGroup, size_t>(g, i));
         } catch (BufferedReader::EofError) {
         }
@@ -294,8 +309,10 @@ void combine(BufferedWriter &out, span<BufferedReader> ins, bool reflexive)
         auto smallest = *group_list.begin();
         group_list.erase(group_list.begin());
 
-        const auto &smallest_group = smallest.first;
-        const auto &smallest_index = smallest.second;
+        auto &smallest_group = smallest.first;
+        auto smallest_index = smallest.second;
+
+        read_weight_systems(ins[smallest_index], smallest_group, reflexive);
 
         if (prev_set) {
             bool max_size_reached =
@@ -326,7 +343,7 @@ void combine(BufferedWriter &out, span<BufferedReader> ins, bool reflexive)
 
         try {
             WeightSystemGroup g{};
-            read(ins[smallest_index], g, reflexive);
+            read_common_info(ins[smallest_index], g, reflexive);
             group_list.insert(
                 pair<WeightSystemGroup, size_t>(g, smallest_index));
         } catch (BufferedReader::EofError) {
