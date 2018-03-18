@@ -27,11 +27,11 @@ using gsl::span;
 using std::cerr;
 using std::cout;
 using std::endl;
-using std::unordered_set;
-using std::string;
-using std::vector;
-using std::unique_ptr;
 using std::make_unique;
+using std::string;
+using std::unique_ptr;
+using std::unordered_set;
+using std::vector;
 
 void check_config(BufferedReader &f)
 {
@@ -101,10 +101,10 @@ void sample(BufferedReader &in, BufferedWriter &out)
 
 bool run(int argc, char *argv[])
 {
-    using std::fstream;
     using TCLAP::Arg;
     using TCLAP::SwitchArg;
     using TCLAP::ValueArg;
+    using std::fstream;
 
     TCLAP::CmdLine cmd("", ' ', GIT_REVISION);
 

@@ -6,9 +6,8 @@ using std::endl;
 int euler_number(const PolytopeInfo &info)
 {
     assert(dim == 6);
-    return 48 +
-           6 * (info.hodge_numbers[0] - info.hodge_numbers[1] +
-                info.hodge_numbers[2]);
+    return 48 + 6 * (info.hodge_numbers[0] - info.hodge_numbers[1] +
+                     info.hodge_numbers[2]);
 }
 
 int picard_number(const PolytopeInfo &info)

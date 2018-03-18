@@ -28,11 +28,11 @@ using std::array;
 using std::cerr;
 using std::cout;
 using std::endl;
-using std::unordered_set;
-using std::string;
-using std::vector;
-using std::unique_ptr;
 using std::make_unique;
+using std::string;
+using std::unique_ptr;
+using std::unordered_set;
+using std::vector;
 
 struct Statistics {
     unsigned long weight_systems_found;
@@ -168,7 +168,7 @@ void weight_systems_from_pair(unordered_set<WeightSystem<dim>> &weight_systems,
 
         if (!leads_to_allowed_weightsystem(x)
             // || (!debug_ignore_symmetries && !is_sorted(x, sym)))
-            )
+        )
             continue;
 
         WeightSystem<dim> final_ws{};
@@ -654,10 +654,10 @@ void analyze(BufferedReader &in, BufferedReader *info_in,
 
 bool run(int argc, char *argv[])
 {
-    using std::fstream;
     using TCLAP::Arg;
     using TCLAP::SwitchArg;
     using TCLAP::ValueArg;
+    using std::fstream;
 
     std::ostringstream description;
     description << "Classify weight systems with d=" << dim

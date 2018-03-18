@@ -22,7 +22,7 @@ struct hash<WeightSystemPair> {
         return ret;
     }
 };
-}
+} // namespace std
 
 const WeightSystemPair canonicalize(const WeightSystemPair &pair);
 const WeightSystem<dim> average(const WeightSystemPair &pair);

@@ -31,7 +31,7 @@ struct hash<WeightSystem<D>> {
         return ret;
     }
 };
-}
+} // namespace std
 
 class WeightSystemPointsBelow {
     WeightSystem<dim> q;

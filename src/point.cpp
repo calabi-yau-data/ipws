@@ -14,7 +14,7 @@ bool points_have_symmetry(gsl::span<const Point> points, unsigned idx1,
             return false;
     return true;
 }
-}
+} // namespace
 
 // the indices in the pairs are in ascending orders
 std::vector<std::pair<unsigned, unsigned>> symmetries(
