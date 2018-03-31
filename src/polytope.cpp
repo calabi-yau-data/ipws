@@ -10,7 +10,7 @@ int euler_number(const PolytopeInfo &info)
                      info.hodge_numbers[2]);
 }
 
-int picard_number(const PolytopeInfo &info)
+int hodge_number_22(const PolytopeInfo &info)
 {
     assert(dim == 6);
     return 44 + 4 * info.hodge_numbers[0] + 4 * info.hodge_numbers[2] -

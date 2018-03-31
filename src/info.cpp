@@ -420,7 +420,7 @@ void pgcopy(BufferedReader &in, BufferedWriter &out, bool reflexive)
             write32i(out, n);
         }
         write32i(out, 4);
-        write32i(out, picard_number(g.common_info));
+        write32i(out, hodge_number_22(g.common_info));
         write32i(out, 4);
         write32i(out, euler_number(g.common_info));
         write32i(out, 4);

@@ -49,7 +49,7 @@ struct PolytopeStatistics {
 };
 
 int euler_number(const PolytopeInfo &info);
-int picard_number(const PolytopeInfo &info);
+int hodge_number_22(const PolytopeInfo &info);
 void analyze(const WeightSystem<dim> &ws, PolytopeInfo &info,
              PolytopeStatistics &stats);
 std::ostream &operator<<(std::ostream &os, const PolytopeInfo &info);
