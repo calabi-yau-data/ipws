@@ -73,7 +73,7 @@ target_link_libraries(info-${SUFFIX} palp)
 add_executable(add-half-${SUFFIX} src/add-half.cpp src/buffered_reader.cpp
   src/buffered_writer.cpp src/history.cpp src/point.cpp src/settings.cpp
   src/weight_system.cpp src/weight_system_builder.cpp
-  src/weight_system_pair.cpp src/polytope.cpp)
+  src/weight_system_pair.cpp src/polytope.cpp src/read_write.cpp)
 target_link_libraries(add-half-${SUFFIX} palp)
 
 add_executable(sample-${SUFFIX} src/sample.cpp src/buffered_reader.cpp
