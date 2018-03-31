@@ -142,8 +142,7 @@ void write_randomized(BufferedWriter &f,
 
     std::copy(pairs.begin(), pairs.end(), std::back_inserter(sorted));
 
-    std::random_device rd;
-    std::mt19937 g(rd());
+    std::mt19937 g{};
     std::shuffle(sorted.begin(), sorted.end(), g);
 
     write_config(f);
