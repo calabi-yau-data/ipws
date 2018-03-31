@@ -21,4 +21,4 @@ work_dir = /media/data/schoeller
 pairs_dir = /media/data/schoeller/data
 ws_dir = /media/data/schoeller/data
 task_count = 12
-chunk_size = 1000
+chunk_size = 5000 # 5000 for 5d, 10000 for 6d
