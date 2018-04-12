@@ -72,7 +72,7 @@ void rec(const WeightSystemBuilder &builder,
 
     history.weight_systems[n] = ws;
 
-    if (n < dim - g_settings.redundancy_check_skip_recursions &&
+    if (n + g_settings.redundancy_check_skip_recursions < dim &&
         last_point_redundant2(builder, n, history))
         return;
 
