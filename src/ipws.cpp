@@ -72,6 +72,9 @@ void rec(const WeightSystemBuilder &builder,
 
     history.weight_systems[n] = ws;
 
+    // cout << builder;
+    // cout << "q" << n + 1 << " = " << ws << endl;
+
     if (n + g_settings.redundancy_check_skip_recursions < dim &&
         last_point_redundant2(builder, n, history))
         return;
@@ -103,6 +106,8 @@ void rec(const WeightSystemBuilder &builder,
         if (!leads_to_allowed_weightsystem(x) ||
             (!g_settings.debug_ignore_symmetries && !is_sorted(x, sym)))
             continue;
+
+        // cout << "x" << n + 1 << " = " << x << endl;
 
         history.points[n] = x;
         for (unsigned i = 0; i < n + 1; ++i)

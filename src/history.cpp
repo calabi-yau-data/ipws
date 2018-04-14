@@ -9,11 +9,22 @@ bool last_point_redundant(int n, const History &history)
     for (int i = 0; i < n; ++i) {
         Ring rel = history.point_weight_system_distances[n][i] -
                    history.point_weight_system_distances[i][i];
-        if (rel < 0)
+        if (rel < 0) {
+            // std::cout << "x" << n + 1 << ".q" << i + 1 << " < x" << i + 1
+            //           << ".q" << i+1 << "; x" << n + 1 << " = " << x << ", x"
+            //           << i + 1 << " = " << history.points[i] << ", q" << i+1
+            //           << " = " << history.weight_systems[i] << std::endl;
             return true;
+        }
         if (!g_settings.debug_disable_lex_order && rel == 0 &&
-            x > history.points[i])
+            x > history.points[i]) {
+            // std::cout << "x" << n + 1 << ".q" << i + 1 << " = x" << i + 1
+            //           << ".q" << i + 1 << " and x" << n + 1 << " > x" << i+1
+            //           << "; x" << n+1 << " = " << x << ", x" << i+1 << " = "
+            //           << history.points[i] << ", q" << i + 1 << " = "
+            //           << history.weight_systems[i] << std::endl;
             return true;
+        }
     }
 
     for (int i = 0; i < n; ++i) {
@@ -67,11 +78,22 @@ bool last_point_redundant2(const WeightSystemBuilder &builder, int n,
         for (int i = 0; i < n; ++i) {
             Ring rel = distance(history.weight_systems[i], x) -
                        history.point_weight_system_distances[i][i];
-            if (rel < 0)
+            if (rel < 0) {
+                // std::cout << "x.q" << i + 1 << " < x" << i + 1 << ".q" << i+1
+                //           << "; x = " << x << ", x" << i + 1 << " = "
+                //           << history.points[i] << ", q" << i + 1 << " = "
+                //           << history.weight_systems[i] << std::endl;
                 return true;
+            }
             if (!g_settings.debug_disable_lex_order && rel == 0 &&
-                x > history.points[i])
+                x > history.points[i]) {
+                // std::cout << "x.q" << i + 1 << " = x" << i + 1 << ".q" << i+1
+                //           << " and x > x" << i + 1 << "; x = " << x << ", x"
+                //           << i + 1 << " = " << history.points[i] << ", q"
+                //           << i + 1 << " = " << history.weight_systems[i]
+                //           << std::endl;
                 return true;
+            }
         }
     }
 
