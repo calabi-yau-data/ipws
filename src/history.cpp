@@ -10,18 +10,18 @@ bool last_point_redundant(int n, const History &history)
         Ring rel = history.point_weight_system_distances[n][i] -
                    history.point_weight_system_distances[i][i];
         if (rel < 0) {
-            // std::cout << "x" << n + 1 << ".q" << i + 1 << " < x" << i + 1
-            //           << ".q" << i+1 << "; x" << n + 1 << " = " << x << ", x"
-            //           << i + 1 << " = " << history.points[i] << ", q" << i+1
-            //           << " = " << history.weight_systems[i] << std::endl;
+            // std::cout << "x" << n + 1 << ".q" << i << " < x" << i + 1 << ".q"
+            //           << i << "; x" << n + 1 << " = " << x << ", x" << i + 1
+            //           << " = " << history.points[i] << ", q" << i << " = "
+            //           << history.weight_systems[i] << std::endl;
             return true;
         }
         if (!g_settings.debug_disable_lex_order && rel == 0 &&
             x > history.points[i]) {
-            // std::cout << "x" << n + 1 << ".q" << i + 1 << " = x" << i + 1
-            //           << ".q" << i + 1 << " and x" << n + 1 << " > x" << i+1
-            //           << "; x" << n+1 << " = " << x << ", x" << i+1 << " = "
-            //           << history.points[i] << ", q" << i + 1 << " = "
+            // std::cout << "x" << n + 1 << ".q" << i << " = x" << i + 1 << ".q"
+            //           << i << " and x" << n + 1 << " > x" << i + 1 << "; x"
+            //           << n + 1 << " = " << x << ", x" << i + 1 << " = "
+            //           << history.points[i] << ", q" << i << " = "
             //           << history.weight_systems[i] << std::endl;
             return true;
         }
@@ -79,19 +79,18 @@ bool last_point_redundant2(const WeightSystemBuilder &builder, int n,
             Ring rel = distance(history.weight_systems[i], x) -
                        history.point_weight_system_distances[i][i];
             if (rel < 0) {
-                // std::cout << "x.q" << i + 1 << " < x" << i + 1 << ".q" << i+1
+                // std::cout << "x.q" << i << " < x" << i + 1 << ".q" << i
                 //           << "; x = " << x << ", x" << i + 1 << " = "
-                //           << history.points[i] << ", q" << i + 1 << " = "
+                //           << history.points[i] << ", q" << i << " = "
                 //           << history.weight_systems[i] << std::endl;
                 return true;
             }
             if (!g_settings.debug_disable_lex_order && rel == 0 &&
                 x > history.points[i]) {
-                // std::cout << "x.q" << i + 1 << " = x" << i + 1 << ".q" << i+1
+                // std::cout << "x.q" << i << " = x" << i + 1 << ".q" << i
                 //           << " and x > x" << i + 1 << "; x = " << x << ", x"
-                //           << i + 1 << " = " << history.points[i] << ", q"
-                //           << i + 1 << " = " << history.weight_systems[i]
-                //           << std::endl;
+                //           << i + 1 << " = " << history.points[i] << ", q" << i
+                //           << " = " << history.weight_systems[i] << std::endl;
                 return true;
             }
         }

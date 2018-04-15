@@ -73,7 +73,7 @@ void rec(const WeightSystemBuilder &builder,
     history.weight_systems[n] = ws;
 
     // cout << builder;
-    // cout << "q" << n + 1 << " = " << ws << endl;
+    // cout << "q" << n << " = " << ws << endl;
 
     if (n + g_settings.redundancy_check_skip_recursions < dim &&
         last_point_redundant2(builder, n, history))
