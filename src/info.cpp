@@ -373,10 +373,18 @@ create table reflexive (
   ws_data bytea not null
 );
 copy reflexive from 'pgcopy-file-path' binary;
+
+create table non_reflexive (
+  vertex_count int4 not null,
+  facet_count int4 not null,
+  point_count int4 not null,
+  ws_count int4 not null,
+  ws_data bytea not null
+);
+copy non_reflexive from 'pgcopy-file-path' binary;
 */
 void pgcopy(BufferedReader &in, BufferedWriter &out, bool reflexive)
 {
-    assert(reflexive);
     assert(dim == 6);
 
     Stopwatch stopwatch{};
@@ -412,17 +420,23 @@ void pgcopy(BufferedReader &in, BufferedWriter &out, bool reflexive)
         ++group_count;
         ws_count += g.ws_list.size();
 
-        write16i(out,
-                 static_cast<int16_t>(g.common_info.hodge_numbers.size() + 4));
+        write16i(out, reflexive ? 7 : 5); // field count
 
-        for (const auto &n : g.common_info.hodge_numbers.array) {
+        if (reflexive) {
+            for (const auto &n : g.common_info.hodge_numbers.array) {
+                write32i(out, 4);
+                write32i(out, n);
+            }
             write32i(out, 4);
-            write32i(out, n);
+            write32i(out, hodge_number_22(g.common_info));
+            write32i(out, 4);
+            write32i(out, euler_number(g.common_info));
+        } else {
+            write32i(out, g.common_info.vertex_count);
+            write32i(out, g.common_info.facet_count);
+            write32i(out, g.common_info.point_count);
         }
-        write32i(out, 4);
-        write32i(out, hodge_number_22(g.common_info));
-        write32i(out, 4);
-        write32i(out, euler_number(g.common_info));
+
         write32i(out, 4);
         write32i(out, static_cast<int32_t>(g.ws_list.size()));
 
@@ -430,9 +444,12 @@ void pgcopy(BufferedReader &in, BufferedWriter &out, bool reflexive)
         for (const auto &x : g.ws_list) {
             for (const auto &weight : x.ws.weights)
                 size += varint_storage_size(weight);
-            size += varint_storage_size(x.info.vertex_count);
-            size += varint_storage_size(x.info.facet_count);
-            size += varint_storage_size(x.info.point_count);
+
+            if (reflexive) {
+                size += varint_storage_size(x.info.vertex_count);
+                size += varint_storage_size(x.info.facet_count);
+                size += varint_storage_size(x.info.point_count);
+            }
             size += varint_storage_size(x.info.dual_point_count);
         }
 
@@ -440,9 +457,12 @@ void pgcopy(BufferedReader &in, BufferedWriter &out, bool reflexive)
         for (const auto &x : g.ws_list) {
             for (const auto &weight : x.ws.weights)
                 write_varint(out, weight);
-            write_varint(out, x.info.vertex_count);
-            write_varint(out, x.info.facet_count);
-            write_varint(out, x.info.point_count);
+
+            if (reflexive) {
+                write_varint(out, x.info.vertex_count);
+                write_varint(out, x.info.facet_count);
+                write_varint(out, x.info.point_count);
+            }
             write_varint(out, x.info.dual_point_count);
         }
     }
