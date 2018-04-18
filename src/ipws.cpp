@@ -76,7 +76,7 @@ void rec(const WeightSystemBuilder &builder,
     // cout << "q" << n << " = " << ws << endl;
 
     if (n + g_settings.redundancy_check_skip_recursions < dim &&
-        last_point_redundant2(builder, n, history))
+        last_point_redundant(builder, n, history))
         return;
 
     if (weight_systems)
@@ -114,7 +114,7 @@ void rec(const WeightSystemBuilder &builder,
             history.point_weight_system_distances[n][i] =
                 distance(history.weight_systems[i], x);
 
-        if (last_point_redundant(n, history))
+        if (last_point_redundant_quick(n, history))
             continue;
 
         rec(builder.restrict(x), weight_systems, pairs, n + 1, history,

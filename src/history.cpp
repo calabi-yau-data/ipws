@@ -1,8 +1,7 @@
 #include "history.h"
 #include "settings.h"
 
-// TODO: verify this function
-bool last_point_redundant(int n, const History &history)
+bool last_point_redundant_quick(int n, const History &history)
 {
     Point x = history.points[n];
 
@@ -59,9 +58,8 @@ bool last_point_redundant(int n, const History &history)
     return false;
 }
 
-// TODO: verify this function
-bool last_point_redundant2(const WeightSystemBuilder &builder, int n,
-                           const History &history)
+bool last_point_redundant(const WeightSystemBuilder &builder, int n,
+                          const History &history)
 {
     auto &ws = history.weight_systems[n];
 
@@ -71,9 +69,6 @@ bool last_point_redundant2(const WeightSystemBuilder &builder, int n,
 
         if (!builder.allows(x))
             continue;
-
-        // TODO: Do we have to check if x is linearly independent of the
-        // other points?
 
         for (int i = 0; i < n; ++i) {
             Ring rel = distance(history.weight_systems[i], x) -

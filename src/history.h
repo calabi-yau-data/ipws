@@ -15,8 +15,8 @@ struct History {
     array<array<Ring, dim - 1>, dim - 1> point_weight_system_distances{};
 };
 
-bool last_point_redundant(int n, const History &history);
-bool last_point_redundant2(const WeightSystemBuilder &builder, int n,
-                           const History &history);
+bool last_point_redundant_quick(int n, const History &history);
+bool last_point_redundant(const WeightSystemBuilder &builder, int n,
+                          const History &history);
 
 #endif
