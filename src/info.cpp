@@ -432,8 +432,11 @@ void pgcopy(BufferedReader &in, BufferedWriter &out, bool reflexive)
             write32i(out, 4);
             write32i(out, euler_number(g.common_info));
         } else {
+            write32i(out, 4);
             write32i(out, g.common_info.vertex_count);
+            write32i(out, 4);
             write32i(out, g.common_info.facet_count);
+            write32i(out, 4);
             write32i(out, g.common_info.point_count);
         }
 
@@ -449,8 +452,8 @@ void pgcopy(BufferedReader &in, BufferedWriter &out, bool reflexive)
                 size += varint_storage_size(x.info.vertex_count);
                 size += varint_storage_size(x.info.facet_count);
                 size += varint_storage_size(x.info.point_count);
+                size += varint_storage_size(x.info.dual_point_count);
             }
-            size += varint_storage_size(x.info.dual_point_count);
         }
 
         write32i(out, size);
@@ -462,8 +465,8 @@ void pgcopy(BufferedReader &in, BufferedWriter &out, bool reflexive)
                 write_varint(out, x.info.vertex_count);
                 write_varint(out, x.info.facet_count);
                 write_varint(out, x.info.point_count);
+                write_varint(out, x.info.dual_point_count);
             }
-            write_varint(out, x.info.dual_point_count);
         }
     }
 
