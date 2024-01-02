@@ -1,11 +1,11 @@
 #ifndef WEIGHT_SYSTEM_PAIR_H
 #define WEIGHT_SYSTEM_PAIR_H
 
+#include "weight_system.h"
 #include <algorithm>
 #include <gsl/gsl>
 #include <utility>
 #include <vector>
-#include "weight_system.h"
 
 using WeightSystemPair = std::pair<WeightSystem<dim>, WeightSystem<dim>>;
 

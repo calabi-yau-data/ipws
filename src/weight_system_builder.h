@@ -1,12 +1,12 @@
 #ifndef WEIGHT_SYSTEM_BUILDER
 #define WEIGHT_SYSTEM_BUILDER
 
-#include <bitset>
-#include <utility>
-#include <vector>
 #include "point.h"
 #include "weight_system.h"
 #include "weight_system_pair.h"
+#include <bitset>
+#include <utility>
+#include <vector>
 
 class WeightSystemBuilder {
 public:
@@ -33,8 +33,7 @@ private:
     std::vector<Generator> generators;
     unsigned iteration;
 
-    struct NoInit {
-    };
+    struct NoInit {};
 
     WeightSystemBuilder(NoInit) {}
 };

@@ -1,8 +1,8 @@
 #include "weight_system_builder.h"
-#include <algorithm>
-#include <boost/math/common_factor.hpp>
 #include "settings.h"
 #include "stl_utils.h"
+#include <algorithm>
+#include <boost/math/common_factor.hpp>
 
 WeightSystemBuilder::WeightSystemBuilder() : iteration{0}
 {

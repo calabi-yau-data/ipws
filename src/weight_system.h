@@ -1,12 +1,12 @@
 #ifndef WEIGHT_SYSTEM_H
 #define WEIGHT_SYSTEM_H
 
-#include <array>
 #include "buffered_reader.h"
 #include "buffered_writer.h"
 #include "config.h"
 #include "point.h"
 #include "vector_mixin.h"
+#include <array>
 
 template <unsigned D>
 struct WeightSystem : VectorMixin<WeightSystem<D>, std::array<Ring, D>, D> {

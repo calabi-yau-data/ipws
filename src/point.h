@@ -1,12 +1,12 @@
 #ifndef POINT_H
 #define POINT_H
 
+#include "config.h"
+#include "vector_mixin.h"
 #include <array>
 #include <gsl/gsl>
 #include <utility>
 #include <vector>
-#include "config.h"
-#include "vector_mixin.h"
 
 struct Point : VectorMixin<Point, std::array<Ring, dim>, dim> {
     using Container = std::array<Ring, dim>;

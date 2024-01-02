@@ -1,7 +1,7 @@
 #include "buffered_reader.h"
+#include <algorithm>
 #include <endian.h>
 #include <memory.h>
-#include <algorithm>
 
 const char *BufferedReader::EofError::what() const noexcept
 {

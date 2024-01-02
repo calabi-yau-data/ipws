@@ -1,13 +1,3 @@
-#include <tclap/CmdLine.h>
-#include <algorithm>
-#include <boost/optional.hpp>
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <random>
-#include <set>
-#include <sstream>
-#include <unordered_set>
 #include "buffered_reader.h"
 #include "buffered_writer.h"
 #include "config.h"
@@ -21,6 +11,16 @@
 #include "weight_system.h"
 #include "weight_system_builder.h"
 #include "weight_system_pair.h"
+#include <algorithm>
+#include <boost/optional.hpp>
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <random>
+#include <set>
+#include <sstream>
+#include <tclap/CmdLine.h>
+#include <unordered_set>
 
 using boost::optional;
 using gsl::span;
@@ -658,10 +658,10 @@ void analyze(BufferedReader &in, BufferedReader *info_in,
 
 bool run(int argc, char *argv[])
 {
+    using std::fstream;
     using TCLAP::Arg;
     using TCLAP::SwitchArg;
     using TCLAP::ValueArg;
-    using std::fstream;
 
     std::ostringstream description;
     description << "Classify weight systems with d=" << dim

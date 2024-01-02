@@ -1,10 +1,10 @@
 #ifndef HISTORY_H
 #define HISTORY_H
 
-#include <array>
 #include "point.h"
 #include "weight_system.h"
 #include "weight_system_builder.h"
+#include <array>
 
 struct History {
     template <class T, size_t D>

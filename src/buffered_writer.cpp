@@ -1,7 +1,7 @@
 #include "buffered_writer.h"
+#include <algorithm>
 #include <endian.h>
 #include <memory.h>
-#include <algorithm>
 
 const char *BufferedWriter::OpenError::what() const noexcept
 {

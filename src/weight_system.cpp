@@ -1,9 +1,9 @@
 #include "weight_system.h"
+#include "palp/Global.h"
+#include "settings.h"
 #include <algorithm>
 #include <boost/math/common_factor.hpp>
 #include <gsl/gsl>
-#include "palp/Global.h"
-#include "settings.h"
 
 using gsl::span;
 using std::array;

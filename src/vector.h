@@ -1,12 +1,12 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#include <array>
 #include "buffered_reader.h"
 #include "buffered_writer.h"
 #include "config.h"
 #include "point.h"
 #include "vector_mixin.h"
+#include <array>
 
 template <class R, unsigned D>
 struct Vector : VectorMixin<Vector<R, D>, std::array<R, D>, D> {

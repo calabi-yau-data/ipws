@@ -1,12 +1,12 @@
 #ifndef POLYTOPE_H
 #define POLYTOPE_H
 
-#include <array>
-#include <limits>
-#include <ostream>
 #include "buffered_writer.h"
 #include "vector.h"
 #include "weight_system.h"
+#include <array>
+#include <limits>
+#include <ostream>
 
 struct PolytopeInfo {
     bool ip{};

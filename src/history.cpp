@@ -84,7 +84,8 @@ bool last_point_redundant(const WeightSystemBuilder &builder, int n,
                 x > history.points[i]) {
                 // std::cout << "x.q" << i << " = x" << i + 1 << ".q" << i
                 //           << " and x > x" << i + 1 << "; x = " << x << ", x"
-                //           << i + 1 << " = " << history.points[i] << ", q" << i
+                //           << i + 1 << " = " << history.points[i] << ", q" <<
+                //           i
                 //           << " = " << history.weight_systems[i] << std::endl;
                 return true;
             }
